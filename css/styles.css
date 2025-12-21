@@ -1086,6 +1086,68 @@ a:hover {
     color: #155724;
 }
 
+/* ================================
+   Pagination
+   ================================ */
+
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--gray-300);
+}
+
+.pagination-numbers {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.pagination-btn,
+.pagination-number {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--gray-300);
+    background-color: var(--white);
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.pagination-btn:hover:not(.disabled),
+.pagination-number:hover:not(.active) {
+    background-color: var(--gray-100);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.pagination-number.active {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+    padding: 0 0.5rem;
+    color: var(--gray-500);
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    text-align: center;
+}
+
 /* FAQ */
 .faq-list {
     margin-top: var(--spacing-md);
