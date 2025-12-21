@@ -2028,16 +2028,38 @@ a:hover {
 .partners-section {
     padding: var(--spacing-xl) 0;
     background-color: var(--white);
+    overflow: hidden;
 }
 
-.partners-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-lg);
+.partners-scroll-container {
+    width: 100%;
+    overflow: hidden;
     margin-top: var(--spacing-lg);
+    position: relative;
+}
+
+.partners-scroll {
+    display: flex;
+    gap: var(--spacing-xl);
+    animation: scroll-partners 60s linear infinite;
+    will-change: transform;
+}
+
+.partners-scroll:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scroll-partners {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
 }
 
 .partner-logo {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2045,16 +2067,19 @@ a:hover {
     background-color: var(--gray-100);
     border-radius: 8px;
     transition: all var(--transition-fast);
+    min-width: 180px;
 }
 
 .partner-logo:hover {
     background-color: var(--white);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
 }
 
 .partner-logo img {
-    max-width: 100%;
-    height: auto;
+    width: 120px;
+    height: 60px;
+    object-fit: contain;
     filter: grayscale(100%);
     opacity: 0.7;
     transition: all var(--transition-fast);
