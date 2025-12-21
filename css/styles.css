@@ -2345,3 +2345,209 @@ a:hover {
         text-align: center;
     }
 }
+
+/* ================================
+   Operations Page Enhancements
+   ================================ */
+.ops-visual-section {
+    margin: var(--spacing-xl) 0;
+}
+
+.ops-image-content {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.ops-image img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    display: block;
+}
+
+.ops-stats-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3));
+    padding: var(--spacing-lg);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.ops-stat {
+    text-align: center;
+    color: var(--white);
+}
+
+.ops-stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--gold);
+    margin-bottom: 0.25rem;
+}
+
+.ops-stat-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+/* Regional Centers */
+.regional-centers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.center-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-normal);
+}
+
+.center-card:hover {
+    box-shadow: 0 10px 20px rgba(44, 90, 160, 0.15);
+    transform: translateY(-5px);
+}
+
+.center-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.center-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-normal);
+}
+
+.center-card:hover .center-image img {
+    transform: scale(1.1);
+}
+
+.center-info {
+    padding: var(--spacing-lg);
+}
+
+.center-info h4 {
+    font-size: 1.3rem;
+    color: var(--dark-blue);
+    margin-bottom: 0.5rem;
+}
+
+.center-location {
+    font-size: 0.9rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.center-info > p {
+    font-size: 0.95rem;
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+.center-coverage {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.center-coverage li {
+    background-color: var(--gray-100);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* Impact Metrics */
+.impact-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.metric-card {
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--white) 100%);
+    border-radius: 8px;
+    border: 2px solid var(--gray-200);
+    transition: all var(--transition-normal);
+}
+
+.metric-card:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 8px 16px rgba(44, 90, 160, 0.1);
+    transform: translateY(-3px);
+}
+
+.metric-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    font-size: 1.1rem;
+    color: var(--dark-blue);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.metric-card p {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+/* Responsive Operations Page */
+@media (max-width: 768px) {
+    .ops-image img {
+        height: 300px;
+    }
+
+    .ops-stats-overlay {
+        flex-direction: column;
+        padding: var(--spacing-md);
+    }
+
+    .ops-stat-number {
+        font-size: 2rem;
+    }
+
+    .regional-centers {
+        grid-template-columns: 1fr;
+    }
+
+    .impact-metrics {
+        grid-template-columns: 1fr;
+    }
+}

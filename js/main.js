@@ -616,7 +616,7 @@ function initContactForm(form) {
 // Animated Statistics Counter
 // ================================
 function initStatsCounter() {
-    const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+    const statNumbers = document.querySelectorAll('.stat-number[data-target], .ops-stat-number[data-target]');
 
     if (statNumbers.length === 0) return;
 
@@ -648,10 +648,18 @@ function animateCounter(element) {
     const timer = setInterval(() => {
         current += increment;
         if (current >= target) {
-            element.textContent = target + '+';
+            if (target >= 1000) {
+                element.textContent = (target / 1000).toFixed(0) + 'K+';
+            } else {
+                element.textContent = target + '+';
+            }
             clearInterval(timer);
         } else {
-            element.textContent = Math.floor(current);
+            if (target >= 1000) {
+                element.textContent = (Math.floor(current) / 1000).toFixed(1) + 'K';
+            } else {
+                element.textContent = Math.floor(current);
+            }
         }
     }, stepDuration);
 }
