@@ -297,11 +297,12 @@
     <script src="js/main.js"></script>
     <script>
         // FAQ accordion functionality
-        document.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('load', function() {
             const faqQuestions = document.querySelectorAll('.faq-question');
 
-            faqQuestions.forEach(question => {
-                question.addEventListener('click', function() {
+            faqQuestions.forEach((question, index) => {
+                question.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const isExpanded = this.getAttribute('aria-expanded') === 'true';
                     const answer = this.nextElementSibling;
                     const icon = this.querySelector('.faq-icon');
