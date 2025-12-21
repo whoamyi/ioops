@@ -1,5 +1,5 @@
 <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="60" fill="white"/>
+  <!-- transparent background -->
   <circle cx="30" cy="30" r="12" fill="none" stroke="#0072C6" stroke-width="2"/>
   <path d="M 30 18 L 30 42 M 18 30 L 42 30" stroke="#0072C6" stroke-width="2"/>
   <text x="75" y="35" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#0072C6">ICAO</text>

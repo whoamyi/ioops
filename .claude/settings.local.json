@@ -14,7 +14,12 @@
       "Bash(python3:*)",
       "Bash(ls:*)",
       "Bash(python generate_pdfs.py:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(for file in *.svg)",
+      "Bash(do sed -i 's/<rect width=\"\"120\"\" height=\"\"60\"\" fill=\"\"white\"\"\\\\/>/<!-- transparent background -->/' \"$file\")",
+      "Bash(done)"
     ]
   }
 }

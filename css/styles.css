@@ -2040,8 +2040,8 @@ a:hover {
 
 .partners-scroll {
     display: flex;
-    gap: var(--spacing-xl);
-    animation: scroll-partners 60s linear infinite;
+    gap: var(--spacing-md);
+    animation: scroll-partners 40s linear infinite;
     will-change: transform;
 }
 

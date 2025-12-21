@@ -1,5 +1,5 @@
 <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="60" fill="white"/>
+  <!-- transparent background -->
   <circle cx="35" cy="30" r="14" fill="none" stroke="#009EDB" stroke-width="2"/>
   <path d="M 25 25 L 25 35 L 30 35 L 30 25 M 35 25 L 35 35 M 40 25 L 45 35 L 45 25" stroke="#009EDB" stroke-width="1.5" fill="none"/>
   <text x="80" y="35" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#009EDB">UN</text>
