@@ -2551,3 +2551,221 @@ a:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* ================================
+   Standards Page Enhancements
+   ================================ */
+.std-visual-section {
+    margin: var(--spacing-xl) 0;
+}
+
+.std-image-content {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.std-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+}
+
+.std-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(44, 90, 160, 0.95), rgba(44, 90, 160, 0.7));
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--white);
+}
+
+.std-overlay h3 {
+    color: var(--white);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.std-overlay p {
+    font-size: 1.1rem;
+    margin: 0;
+    opacity: 0.95;
+}
+
+/* Certification Timeline */
+.certification-timeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--gray-100);
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+.cert-phase {
+    flex: 1;
+    min-width: 180px;
+    text-align: center;
+    padding: var(--spacing-md);
+}
+
+.cert-phase-icon {
+    margin-bottom: var(--spacing-sm);
+}
+
+.cert-phase h4 {
+    font-size: 1.1rem;
+    color: var(--dark-blue);
+    margin-bottom: 0.5rem;
+}
+
+.cert-duration {
+    font-size: 0.85rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.cert-phase p {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.cert-arrow {
+    font-size: 2rem;
+    color: var(--primary-blue);
+    font-weight: bold;
+    margin: 0 var(--spacing-sm);
+}
+
+/* ISO Alignment */
+.iso-alignment {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.iso-card {
+    background-color: var(--white);
+    padding: var(--spacing-lg);
+    border-radius: 8px;
+    border: 2px solid var(--gray-200);
+    transition: all var(--transition-normal);
+}
+
+.iso-card:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 8px 16px rgba(44, 90, 160, 0.1);
+    transform: translateY(-5px);
+}
+
+.iso-logo {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+    color: var(--white);
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-md);
+    box-shadow: 0 4px 8px rgba(44, 90, 160, 0.2);
+}
+
+.iso-card h4 {
+    font-size: 1.3rem;
+    color: var(--dark-blue);
+    margin-bottom: var(--spacing-sm);
+}
+
+.iso-card p {
+    font-size: 0.95rem;
+    color: var(--gray-600);
+    line-height: 1.6;
+}
+
+/* Standards Stats */
+.standards-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--white) 100%);
+    border-radius: 12px;
+}
+
+.std-stat-card {
+    text-align: center;
+    padding: var(--spacing-md);
+}
+
+.std-stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.std-stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+    margin-bottom: 0.25rem;
+}
+
+.std-stat-label {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsive Standards Page */
+@media (max-width: 992px) {
+    .certification-timeline {
+        flex-direction: column;
+    }
+
+    .cert-arrow {
+        transform: rotate(90deg);
+        margin: var(--spacing-sm) 0;
+    }
+
+    .cert-phase {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .std-image img {
+        height: 300px;
+    }
+
+    .std-overlay h3 {
+        font-size: 1.5rem;
+    }
+
+    .std-overlay p {
+        font-size: 0.9rem;
+    }
+
+    .iso-alignment {
+        grid-template-columns: 1fr;
+    }
+
+    .standards-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .standards-stats {
+        grid-template-columns: 1fr;
+    }
+}
