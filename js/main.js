@@ -26,256 +26,259 @@ document.addEventListener('DOMContentLoaded', function() {
     initMobileNav();
 });
 
-// ================================
-// Network Animation (Hero Section)
-// ================================
+// Flat World Map with Neon Data Lines Animation
 function initNetworkAnimation(canvas) {
     const ctx = canvas.getContext('2d');
 
-    // Set canvas size
     function resizeCanvas() {
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
-        initGlobe();
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    let centerX, centerY, globeRadius;
-    let rotation = 0;
-    const rotationSpeed = 0.002;
-
-    // Global network hubs (latitude, longitude in degrees)
+    // Global hubs (x, y as percentage)
     const hubs = [
-        { lat: 46.2, lon: 6.1, name: 'Geneva' },        // Geneva
-        { lat: 50.8, lon: 4.3, name: 'Brussels' },      // Brussels
-        { lat: 38.9, lon: -77.0, name: 'Washington' },  // Washington DC
-        { lat: 1.3, lon: 103.8, name: 'Singapore' },    // Singapore
-        { lat: 25.2, lon: 55.3, name: 'Dubai' },        // Dubai
-        { lat: 51.5, lon: -0.1, name: 'London' },       // London
-        { lat: 40.7, lon: -74.0, name: 'New York' },    // New York
-        { lat: 35.7, lon: 139.7, name: 'Tokyo' },       // Tokyo
-        { lat: -33.9, lon: 151.2, name: 'Sydney' },     // Sydney
-        { lat: 19.4, lon: -99.1, name: 'Mexico City' }, // Mexico City
-        { lat: -23.5, lon: -46.6, name: 'São Paulo' },  // São Paulo
-        { lat: 55.8, lon: 37.6, name: 'Moscow' }        // Moscow
+        { x: 0.48, y: 0.30, name: 'Geneva' },
+        { x: 0.50, y: 0.29, name: 'Brussels' },
+        { x: 0.22, y: 0.35, name: 'Washington' },
+        { x: 0.78, y: 0.52, name: 'Singapore' },
+        { x: 0.56, y: 0.43, name: 'Dubai' },
+        { x: 0.49, y: 0.28, name: 'London' },
+        { x: 0.23, y: 0.33, name: 'New York' },
+        { x: 0.83, y: 0.36, name: 'Tokyo' },
+        { x: 0.88, y: 0.78, name: 'Sydney' },
+        { x: 0.18, y: 0.42, name: 'Mexico City' },
+        { x: 0.30, y: 0.68, name: 'São Paulo' },
+        { x: 0.58, y: 0.25, name: 'Moscow' },
+        { x: 0.52, y: 0.60, name: 'Nairobi' },
+        { x: 0.47, y: 0.50, name: 'Cairo' },
+        { x: 0.72, y: 0.48, name: 'Mumbai' },
+        { x: 0.75, y: 0.40, name: 'Beijing' }
     ];
 
-    // Data flow particles
-    const particles = [];
-    const connections = [];
+    const routes = [
+        [0, 1], [0, 4], [0, 11], [1, 5], [2, 3], [2, 6], [3, 7], [3, 8],
+        [4, 12], [5, 11], [6, 9], [7, 14], [8, 14], [9, 10], [11, 14],
+        [12, 13], [13, 14], [0, 5], [3, 15], [7, 15], [1, 11], [4, 13],
+        [5, 6], [2, 9], [7, 8], [10, 12], [14, 15]
+    ];
 
-    function initGlobe() {
-        centerX = canvas.width / 2;
-        centerY = canvas.height / 2;
-        globeRadius = Math.min(canvas.width, canvas.height) * 0.35;
+    const dataPackets = [];
 
-        // Create connections between hubs
-        connections.length = 0;
-        for (let i = 0; i < hubs.length; i++) {
-            for (let j = i + 1; j < hubs.length; j++) {
-                if (Math.random() > 0.6) { // Random connections
-                    connections.push({
-                        from: i,
-                        to: j,
-                        particles: []
-                    });
-                }
-            }
-        }
-    }
-
-    // Convert lat/lon to 3D coordinates
-    function latLonToXYZ(lat, lon, radius) {
-        const phi = (90 - lat) * Math.PI / 180;
-        const theta = (lon + rotation * 180 / Math.PI) * Math.PI / 180;
-
-        return {
-            x: radius * Math.sin(phi) * Math.cos(theta),
-            y: radius * Math.cos(phi),
-            z: radius * Math.sin(phi) * Math.sin(theta)
-        };
-    }
-
-    // Project 3D to 2D
-    function project3D(x, y, z) {
-        const scale = 200 / (200 + z);
-        return {
-            x: centerX + x * scale,
-            y: centerY - y * scale,
-            scale: scale,
-            visible: z > -globeRadius * 0.3
-        };
-    }
-
-    // Draw globe wireframe
-    function drawGlobe() {
+    function drawWorldMap() {
         ctx.strokeStyle = 'rgba(44, 90, 160, 0.15)';
         ctx.lineWidth = 1;
+        ctx.fillStyle = 'rgba(44, 90, 160, 0.03)';
 
-        // Draw latitude lines
-        for (let lat = -60; lat <= 60; lat += 30) {
-            ctx.beginPath();
-            let first = true;
-            for (let lon = 0; lon <= 360; lon += 10) {
-                const pos3d = latLonToXYZ(lat, lon, globeRadius);
-                const pos2d = project3D(pos3d.x, pos3d.y, pos3d.z);
+        const w = canvas.width;
+        const h = canvas.height;
 
-                if (pos2d.visible) {
-                    if (first) {
-                        ctx.moveTo(pos2d.x, pos2d.y);
-                        first = false;
-                    } else {
-                        ctx.lineTo(pos2d.x, pos2d.y);
-                    }
-                }
-            }
-            ctx.stroke();
-        }
+        // North America
+        ctx.beginPath();
+        ctx.moveTo(w * 0.12, h * 0.25);
+        ctx.lineTo(w * 0.15, h * 0.20);
+        ctx.lineTo(w * 0.28, h * 0.18);
+        ctx.lineTo(w * 0.30, h * 0.28);
+        ctx.lineTo(w * 0.25, h * 0.35);
+        ctx.lineTo(w * 0.20, h * 0.40);
+        ctx.lineTo(w * 0.12, h * 0.35);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
 
-        // Draw longitude lines
-        for (let lon = 0; lon < 360; lon += 30) {
-            ctx.beginPath();
-            let first = true;
-            for (let lat = -90; lat <= 90; lat += 10) {
-                const pos3d = latLonToXYZ(lat, lon, globeRadius);
-                const pos2d = project3D(pos3d.x, pos3d.y, pos3d.z);
+        // South America
+        ctx.beginPath();
+        ctx.moveTo(w * 0.24, h * 0.50);
+        ctx.lineTo(w * 0.28, h * 0.48);
+        ctx.lineTo(w * 0.32, h * 0.55);
+        ctx.lineTo(w * 0.30, h * 0.75);
+        ctx.lineTo(w * 0.26, h * 0.73);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
 
-                if (pos2d.visible) {
-                    if (first) {
-                        ctx.moveTo(pos2d.x, pos2d.y);
-                        first = false;
-                    } else {
-                        ctx.lineTo(pos2d.x, pos2d.y);
-                    }
-                }
-            }
-            ctx.stroke();
-        }
+        // Europe
+        ctx.beginPath();
+        ctx.moveTo(w * 0.45, h * 0.22);
+        ctx.lineTo(w * 0.54, h * 0.20);
+        ctx.lineTo(w * 0.55, h * 0.32);
+        ctx.lineTo(w * 0.48, h * 0.35);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Africa
+        ctx.beginPath();
+        ctx.moveTo(w * 0.48, h * 0.38);
+        ctx.lineTo(w * 0.56, h * 0.36);
+        ctx.lineTo(w * 0.58, h * 0.65);
+        ctx.lineTo(w * 0.52, h * 0.68);
+        ctx.lineTo(w * 0.46, h * 0.60);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Asia
+        ctx.beginPath();
+        ctx.moveTo(w * 0.58, h * 0.22);
+        ctx.lineTo(w * 0.85, h * 0.18);
+        ctx.lineTo(w * 0.88, h * 0.35);
+        ctx.lineTo(w * 0.82, h * 0.50);
+        ctx.lineTo(w * 0.70, h * 0.52);
+        ctx.lineTo(w * 0.60, h * 0.38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Australia
+        ctx.beginPath();
+        ctx.moveTo(w * 0.82, h * 0.72);
+        ctx.lineTo(w * 0.92, h * 0.70);
+        ctx.lineTo(w * 0.93, h * 0.80);
+        ctx.lineTo(w * 0.85, h * 0.82);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
     }
 
-    // Draw connection arc between two points
-    function drawArc(hub1, hub2, opacity = 0.3) {
-        const pos1_3d = latLonToXYZ(hub1.lat, hub1.lon, globeRadius);
-        const pos2_3d = latLonToXYZ(hub2.lat, hub2.lon, globeRadius);
+    function drawNeonLine(x1, y1, x2, y2, color, opacity = 1) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = color;
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = opacity * 0.3;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
 
-        const pos1 = project3D(pos1_3d.x, pos1_3d.y, pos1_3d.z);
-        const pos2 = project3D(pos2_3d.x, pos2_3d.y, pos2_3d.z);
+        ctx.shadowBlur = 8;
+        ctx.globalAlpha = opacity * 0.6;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
 
-        if (pos1.visible || pos2.visible) {
-            ctx.beginPath();
-            ctx.moveTo(pos1.x, pos1.y);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = opacity;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
 
-            // Create curved line
-            const steps = 20;
-            for (let i = 1; i <= steps; i++) {
-                const t = i / steps;
-                // Interpolate between two points with arc
-                const lat = hub1.lat + (hub2.lat - hub1.lat) * t;
-                const lon = hub1.lon + (hub2.lon - hub1.lon) * t;
-                const heightBoost = Math.sin(t * Math.PI) * globeRadius * 0.2;
-
-                const pos3d = latLonToXYZ(lat, lon, globeRadius + heightBoost);
-                const pos2d = project3D(pos3d.x, pos3d.y, pos3d.z);
-
-                ctx.lineTo(pos2d.x, pos2d.y);
-            }
-
-            ctx.strokeStyle = `rgba(184, 134, 11, ${opacity})`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-        }
+        ctx.globalAlpha = 1;
     }
 
-    // Animation loop
+    function drawHub(x, y, active = false) {
+        const pulseSize = active ? 3 + Math.sin(Date.now() * 0.005) * 1 : 2;
+
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, pulseSize * 4);
+        gradient.addColorStop(0, 'rgba(184, 134, 11, 0.8)');
+        gradient.addColorStop(0.5, 'rgba(184, 134, 11, 0.3)');
+        gradient.addColorStop(1, 'rgba(184, 134, 11, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, pulseSize * 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#B8860B';
+        ctx.fillStyle = '#B8860B';
+        ctx.beginPath();
+        ctx.arc(x, y, pulseSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = 'rgba(184, 134, 11, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, pulseSize + 3, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    setInterval(() => {
+        if (dataPackets.length < 15) {
+            const route = routes[Math.floor(Math.random() * routes.length)];
+            dataPackets.push({
+                route: route,
+                progress: 0,
+                speed: 0.003 + Math.random() * 0.005,
+                color: Math.random() > 0.5 ? '#00FFFF' : '#B8860B'
+            });
+        }
+    }, 800);
+
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Update rotation
-        rotation += rotationSpeed;
+        drawWorldMap();
 
-        // Draw globe wireframe
-        drawGlobe();
+        routes.forEach(route => {
+            const hub1 = hubs[route[0]];
+            const hub2 = hubs[route[1]];
+            const x1 = canvas.width * hub1.x;
+            const y1 = canvas.height * hub1.y;
+            const x2 = canvas.width * hub2.x;
+            const y2 = canvas.height * hub2.y;
 
-        // Draw connections
-        connections.forEach(conn => {
-            drawArc(hubs[conn.from], hubs[conn.to], 0.2);
-
-            // Add particles occasionally
-            if (Math.random() > 0.98) {
-                conn.particles.push({ t: 0, speed: 0.01 + Math.random() * 0.02 });
-            }
-
-            // Update and draw particles
-            conn.particles = conn.particles.filter(particle => {
-                particle.t += particle.speed;
-                if (particle.t > 1) return false;
-
-                // Draw particle
-                const hub1 = hubs[conn.from];
-                const hub2 = hubs[conn.to];
-                const t = particle.t;
-                const lat = hub1.lat + (hub2.lat - hub1.lat) * t;
-                const lon = hub1.lon + (hub2.lon - hub1.lon) * t;
-                const heightBoost = Math.sin(t * Math.PI) * globeRadius * 0.2;
-
-                const pos3d = latLonToXYZ(lat, lon, globeRadius + heightBoost);
-                const pos2d = project3D(pos3d.x, pos3d.y, pos3d.z);
-
-                if (pos2d.visible) {
-                    ctx.beginPath();
-                    ctx.arc(pos2d.x, pos2d.y, 2 * pos2d.scale, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(184, 134, 11, 0.8)';
-                    ctx.fill();
-
-                    // Glow effect
-                    const gradient = ctx.createRadialGradient(pos2d.x, pos2d.y, 0, pos2d.x, pos2d.y, 8 * pos2d.scale);
-                    gradient.addColorStop(0, 'rgba(184, 134, 11, 0.4)');
-                    gradient.addColorStop(1, 'rgba(184, 134, 11, 0)');
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                }
-
-                return true;
-            });
+            drawNeonLine(x1, y1, x2, y2, 'rgba(44, 90, 160, 0.3)', 0.3);
         });
 
-        // Draw hubs
-        hubs.forEach(hub => {
-            const pos3d = latLonToXYZ(hub.lat, hub.lon, globeRadius);
-            const pos2d = project3D(pos3d.x, pos3d.y, pos3d.z);
+        dataPackets.forEach((packet, index) => {
+            packet.progress += packet.speed;
 
-            if (pos2d.visible) {
-                // Hub node
-                ctx.beginPath();
-                ctx.arc(pos2d.x, pos2d.y, 4 * pos2d.scale, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(44, 90, 160, 0.9)';
-                ctx.fill();
-
-                // Outer ring
-                ctx.beginPath();
-                ctx.arc(pos2d.x, pos2d.y, 6 * pos2d.scale, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(44, 90, 160, 0.5)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-                // Pulse effect
-                const pulseRadius = 6 + Math.sin(Date.now() * 0.003) * 2;
-                ctx.beginPath();
-                ctx.arc(pos2d.x, pos2d.y, pulseRadius * pos2d.scale, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(184, 134, 11, 0.3)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
+            if (packet.progress >= 1) {
+                dataPackets.splice(index, 1);
+                return;
             }
+
+            const hub1 = hubs[packet.route[0]];
+            const hub2 = hubs[packet.route[1]];
+            const x1 = canvas.width * hub1.x;
+            const y1 = canvas.height * hub1.y;
+            const x2 = canvas.width * hub2.x;
+            const y2 = canvas.height * hub2.y;
+
+            const segmentLength = 0.15;
+            const segmentStart = Math.max(0, packet.progress - segmentLength);
+            const segmentEnd = packet.progress;
+
+            const sx = x1 + (x2 - x1) * segmentStart;
+            const sy = y1 + (y2 - y1) * segmentStart;
+            const ex = x1 + (x2 - x1) * segmentEnd;
+            const ey = y1 + (y2 - y1) * segmentEnd;
+
+            drawNeonLine(sx, sy, ex, ey, packet.color, 1);
+
+            const px = x1 + (x2 - x1) * packet.progress;
+            const py = y1 + (y2 - y1) * packet.progress;
+
+            const gradient = ctx.createRadialGradient(px, py, 0, px, py, 8);
+            gradient.addColorStop(0, packet.color);
+            gradient.addColorStop(1, packet.color + '00');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        hubs.forEach(hub => {
+            const x = canvas.width * hub.x;
+            const y = canvas.height * hub.y;
+            const active = dataPackets.some(p =>
+                p.route[0] === hubs.indexOf(hub) || p.route[1] === hubs.indexOf(hub)
+            );
+            drawHub(x, y, active);
         });
 
         requestAnimationFrame(animate);
     }
 
-    initGlobe();
     animate();
 }
-
 // ================================
 // Page Header Animation (Other Pages)
 // ================================
