@@ -500,3 +500,64 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ================================
 console.log('%cIOOPS', 'font-size: 24px; font-weight: bold; color: #2C5AA0;');
 console.log('%cInternational Operations & Oversight Protocol System', 'font-size: 12px; color: #6C757D;');
+
+// ================================
+// Cookie Consent Banner
+// ================================
+function initCookieBanner() {
+    // Check if user has already responded to cookie banner
+    const cookieConsent = localStorage.getItem('ioops-cookie-consent');
+    
+    if (cookieConsent === null) {
+        // Create and show banner if no consent recorded
+        createCookieBanner();
+    }
+}
+
+function createCookieBanner() {
+    const banner = document.createElement('div');
+    banner.className = 'cookie-banner';
+    banner.innerHTML = `
+        <div class="cookie-banner-content">
+            <div class="cookie-banner-text">
+                <p>This website uses cookies to ensure you get the best experience. By continuing to use this site, you consent to our use of cookies in accordance with our <a href="privacy-policy.html">Privacy Policy</a>.</p>
+            </div>
+            <div class="cookie-banner-actions">
+                <button class="cookie-accept" onclick="acceptCookies()">Accept</button>
+                <button class="cookie-decline" onclick="declineCookies()">Decline</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(banner);
+    
+    // Show banner with animation
+    setTimeout(() => {
+        banner.classList.add('show');
+    }, 500);
+}
+
+function acceptCookies() {
+    localStorage.setItem('ioops-cookie-consent', 'accepted');
+    hideCookieBanner();
+}
+
+function declineCookies() {
+    localStorage.setItem('ioops-cookie-consent', 'declined');
+    hideCookieBanner();
+}
+
+function hideCookieBanner() {
+    const banner = document.querySelector('.cookie-banner');
+    if (banner) {
+        banner.classList.remove('show');
+        setTimeout(() => {
+            banner.remove();
+        }, 300);
+    }
+}
+
+// Initialize cookie banner on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initCookieBanner();
+});
