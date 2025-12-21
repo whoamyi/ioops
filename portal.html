@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IOOPS Member Portal - Secure login for operational entities, compliance officers, and authorized personnel to access coordination systems and resources.">
+    <title>Member Portal Login - IOOPS</title>
+    <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo-section" style="text-decoration: none;">
+                    <div class="logo">
+                        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="23" stroke="#2C5AA0" stroke-width="2"/>
+                            <path d="M25 10 L25 40 M10 25 L40 25" stroke="#2C5AA0" stroke-width="2"/>
+                            <circle cx="25" cy="25" r="5" fill="#2C5AA0"/>
+                            <circle cx="15" cy="15" r="2" fill="#B8860B"/>
+                            <circle cx="35" cy="15" r="2" fill="#B8860B"/>
+                            <circle cx="15" cy="35" r="2" fill="#B8860B"/>
+                            <circle cx="35" cy="35" r="2" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>IOOPS</h1>
+                        <p class="tagline">Global Oversight of Operations & Protocols</p>
+                    </div>
+                </a>
+                <button class="menu-toggle" aria-label="Toggle menu">
+                    <span>☰</span>
+                </button>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="operations.html">Operations</a></li>
+                        <li><a href="standards.html">Standards</a></li>
+                        <li><a href="news.html">News</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <canvas id="pageCanvas" class="page-canvas"></canvas>
+        <div class="container">
+            <h2>Member Portal</h2>
+            <p>Secure Access to IOOPS Coordination Systems</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="login-container">
+                <div class="login-box">
+                    <h3>Portal Login</h3>
+                    <form id="portalLoginForm">
+                        <div class="form-group">
+                            <label for="username">Username or Entity ID</label>
+                            <input type="text" id="username" name="username" required autocomplete="username">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required autocomplete="current-password">
+                        </div>
+
+                        <div class="login-options">
+                            <label>
+                                <input type="checkbox" name="remember" id="remember">
+                                Remember me
+                            </label>
+                            <a href="#" style="color: var(--primary-blue);">Forgot password?</a>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Sign In</button>
+                    </form>
+
+                    <div class="login-help">
+                        <p><strong>Need access?</strong></p>
+                        <p>Contact your regional coordination office or email <a href="mailto:portal@ioops.org">portal@ioops.org</a></p>
+                    </div>
+                </div>
+
+                <div class="login-security">
+                    <h4>Security Notice</h4>
+                    <ul>
+                        <li>Portal access requires authorized credentials</li>
+                        <li>Sessions expire after 30 minutes of inactivity</li>
+                        <li>All access is logged and monitored</li>
+                        <li>Use of two-factor authentication is recommended</li>
+                        <li>Report security concerns to: security@ioops.org</li>
+                    </ul>
+                </div>
+
+                <div class="content-block" style="margin-top: 2rem; text-align: center;">
+                    <h4>Portal Features</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div style="padding: 1rem; background-color: var(--gray-100); border-radius: 4px;">
+                            <p style="font-weight: 500; color: var(--primary-blue);">Document Management</p>
+                            <p style="font-size: 0.9rem; margin-bottom: 0;">Access and submit compliance documentation</p>
+                        </div>
+                        <div style="padding: 1rem; background-color: var(--gray-100); border-radius: 4px;">
+                            <p style="font-weight: 500; color: var(--primary-blue);">Real-Time Monitoring</p>
+                            <p style="font-size: 0.9rem; margin-bottom: 0;">View operational status and alerts</p>
+                        </div>
+                        <div style="padding: 1rem; background-color: var(--gray-100); border-radius: 4px;">
+                            <p style="font-weight: 500; color: var(--primary-blue);">Coordination Requests</p>
+                            <p style="font-size: 0.9rem; margin-bottom: 0;">Submit and track coordination requests</p>
+                        </div>
+                        <div style="padding: 1rem; background-color: var(--gray-100); border-radius: 4px;">
+                            <p style="font-weight: 500; color: var(--primary-blue);">Training Resources</p>
+                            <p style="font-size: 0.9rem; margin-bottom: 0;">Access e-learning and certification programs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>IOOPS</h4>
+                    <p>International Operations & Oversight Protocol System</p>
+                    <p class="footer-tagline">Ensuring global operational continuity since 2008</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="operations.html">Operations</a></li>
+                        <li><a href="standards.html">Standards</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="resources.html">Downloads</a></li>
+                        <li><a href="news.html">News & Updates</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms-of-service.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: info@ioops.org</p>
+                    <p>HQ: Geneva, Switzerland</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 IOOPS. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Portal login form handler (demo only - no actual authentication)
+        document.getElementById('portalLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Portal login is for demonstration purposes only.\n\nIn a production environment, this would connect to secure authentication services.\n\nPlease contact your regional coordination office for actual portal access.');
+        });
+    </script>
+</body>
+</html>

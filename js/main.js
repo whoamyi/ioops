@@ -561,3 +561,53 @@ function hideCookieBanner() {
 document.addEventListener('DOMContentLoaded', function() {
     initCookieBanner();
 });
+
+// ================================
+// Contact Form Handler
+// ================================
+function initContactForm(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = {
+            name: form.querySelector('#name').value,
+            organization: form.querySelector('#organization').value,
+            email: form.querySelector('#email').value,
+            subject: form.querySelector('#subject').value,
+            message: form.querySelector('#message').value
+        };
+        
+        // Validate form
+        if (!formData.name || !formData.organization || !formData.email || !formData.subject || !formData.message) {
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Show loading state
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+        submitButton.textContent = 'Sending...';
+        submitButton.disabled = true;
+        
+        // Simulate form submission (in production, this would send to a backend)
+        setTimeout(() => {
+            // Hide form
+            form.style.display = 'none';
+            
+            // Show success message
+            const successDiv = document.getElementById('formSuccess');
+            successDiv.style.display = 'block';
+            
+            // Log to console (in production, this would be sent to server)
+            console.log('Contact Form Submission:', formData);
+            
+            // Reset button
+            submitButton.textContent = originalButtonText;
+            submitButton.disabled = false;
+            
+            // Scroll to success message
+            successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 1500);
+    });
+}

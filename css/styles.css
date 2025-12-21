@@ -1655,3 +1655,223 @@ a:hover {
         width: 100%;
     }
 }
+
+/* ================================
+   Resources Page Styles
+   ================================ */
+.resources-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.resource-category {
+    background-color: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+}
+
+.resource-category h4 {
+    color: var(--primary-blue);
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--accent-gold);
+}
+
+.resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.resource-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--gray-100);
+    border-radius: 4px;
+    transition: box-shadow var(--transition-fast);
+}
+
+.resource-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.resource-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.resource-info {
+    flex: 1;
+}
+
+.resource-info h5 {
+    color: var(--dark-blue);
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.resource-meta {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    margin-bottom: 0.5rem;
+}
+
+.resource-item .btn-secondary {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+@media (max-width: 768px) {
+    .resource-item {
+        flex-direction: column;
+    }
+
+    .resource-item .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ================================
+   Member Portal Login Styles
+   ================================ */
+.login-container {
+    max-width: 450px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) 0;
+}
+
+.login-box {
+    background-color: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-box h3 {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.login-box .form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.login-box label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark-blue);
+}
+
+.login-box input[type="text"],
+.login-box input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-400);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(44, 90, 160, 0.1);
+}
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    font-size: 0.9rem;
+}
+
+.login-options label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+.login-box .btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+}
+
+.login-help {
+    text-align: center;
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--gray-300);
+}
+
+.login-help p {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+}
+
+.login-security {
+    background-color: var(--gray-100);
+    padding: var(--spacing-md);
+    border-radius: 4px;
+    margin-top: var(--spacing-md);
+}
+
+.login-security h4 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-security ul {
+    list-style-position: inside;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.login-security li {
+    margin-bottom: 0.25rem;
+}
+
+/* ================================
+   Social Media Links
+   ================================ */
+.social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--gray-700);
+    color: var(--white);
+    font-size: 1.2rem;
+    transition: all var(--transition-fast);
+}
+
+.social-link:hover {
+    background-color: var(--primary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.social-link svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
