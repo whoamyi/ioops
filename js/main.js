@@ -568,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function initContactForm(form) {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Get form data
         const formData = {
             name: form.querySelector('#name').value,
@@ -577,37 +577,131 @@ function initContactForm(form) {
             subject: form.querySelector('#subject').value,
             message: form.querySelector('#message').value
         };
-        
+
         // Validate form
         if (!formData.name || !formData.organization || !formData.email || !formData.subject || !formData.message) {
             alert('Please fill in all required fields.');
             return;
         }
-        
+
         // Show loading state
         const submitButton = form.querySelector('button[type="submit"]');
         const originalButtonText = submitButton.textContent;
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
-        
+
         // Simulate form submission (in production, this would send to a backend)
         setTimeout(() => {
             // Hide form
             form.style.display = 'none';
-            
+
             // Show success message
             const successDiv = document.getElementById('formSuccess');
             successDiv.style.display = 'block';
-            
+
             // Log to console (in production, this would be sent to server)
             console.log('Contact Form Submission:', formData);
-            
+
             // Reset button
             submitButton.textContent = originalButtonText;
             submitButton.disabled = false;
-            
+
             // Scroll to success message
             successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 1500);
     });
 }
+
+// ================================
+// Animated Statistics Counter
+// ================================
+function initStatsCounter() {
+    const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+
+    if (statNumbers.length === 0) return;
+
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+                animateCounter(entry.target);
+                entry.target.classList.add('counted');
+            }
+        });
+    }, observerOptions);
+
+    statNumbers.forEach(stat => observer.observe(stat));
+}
+
+function animateCounter(element) {
+    const target = parseInt(element.getAttribute('data-target'));
+    const duration = 2000; // 2 seconds
+    const steps = 60;
+    const increment = target / steps;
+    let current = 0;
+    const stepDuration = duration / steps;
+
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            element.textContent = target + '+';
+            clearInterval(timer);
+        } else {
+            element.textContent = Math.floor(current);
+        }
+    }, stepDuration);
+}
+
+// ================================
+// Newsletter Form Handler
+// ================================
+function initNewsletterForm() {
+    const form = document.getElementById('newsletterForm');
+
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('newsletter-email').value;
+
+        // Validate email
+        if (!email || !email.includes('@')) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        // Show loading state
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+        submitButton.textContent = 'Subscribing...';
+        submitButton.disabled = true;
+
+        // Simulate subscription (in production, this would send to a backend)
+        setTimeout(() => {
+            // Hide form
+            form.style.display = 'none';
+
+            // Show success message
+            const successDiv = document.getElementById('newsletter-success');
+            successDiv.style.display = 'block';
+
+            // Log to console (in production, this would be sent to server)
+            console.log('Newsletter Subscription:', { email: email });
+
+            // Reset button
+            submitButton.textContent = originalButtonText;
+            submitButton.disabled = false;
+        }, 1500);
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initStatsCounter();
+    initNewsletterForm();
+});

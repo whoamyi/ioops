@@ -1,0 +1,2 @@
+Excel version available through IOOPS Member Portal
+PDF version: Compliance-Checklist.pdf

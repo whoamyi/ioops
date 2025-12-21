@@ -12,7 +12,8 @@
       "Bash(start chrome:*)",
       "Bash(cat js/worldmap-animation.js)",
       "Bash(python3:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(python generate_pdfs.py:*)"
     ]
   }
 }
