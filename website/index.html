@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOOPS - International Operations & Oversight Protocol System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo-section" style="text-decoration: none;">
+                    <div class="logo">
+                        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="23" stroke="#2C5AA0" stroke-width="2"/>
+                            <path d="M25 10 L25 40 M10 25 L40 25" stroke="#2C5AA0" stroke-width="2"/>
+                            <circle cx="25" cy="25" r="5" fill="#2C5AA0"/>
+                            <circle cx="15" cy="15" r="2" fill="#B8860B"/>
+                            <circle cx="35" cy="15" r="2" fill="#B8860B"/>
+                            <circle cx="15" cy="35" r="2" fill="#B8860B"/>
+                            <circle cx="35" cy="35" r="2" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>IOOPS</h1>
+                        <p class="tagline">Global Oversight of Operations & Protocols</p>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="index.html" class="active">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="operations.html">Operations</a></li>
+                        <li><a href="standards.html">Standards</a></li>
+                        <li><a href="news.html">News</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-background">
+            <canvas id="networkCanvas"></canvas>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <h2>Coordinating International Operations and Ensuring Protocol Adherence Worldwide</h2>
+                <p>IOOPS maintains operational continuity across international transit and coordination frameworks, providing authoritative oversight and ensuring compliance with unified global standards.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-links">
+        <div class="container">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="20" width="40" height="30" stroke="#2C5AA0" stroke-width="2" fill="none"/>
+                            <path d="M30 10 L40 20 M30 10 L20 20" stroke="#2C5AA0" stroke-width="2"/>
+                            <circle cx="30" cy="35" r="5" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    <h3>Mission</h3>
+                    <p>Providing authoritative oversight and ensuring operational compliance across international frameworks.</p>
+                    <a href="about.html" class="card-link">Learn More →</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="30" cy="30" r="20" stroke="#2C5AA0" stroke-width="2" fill="none"/>
+                            <circle cx="30" cy="30" r="3" fill="#2C5AA0"/>
+                            <circle cx="15" cy="30" r="3" fill="#B8860B"/>
+                            <circle cx="45" cy="30" r="3" fill="#B8860B"/>
+                            <circle cx="30" cy="15" r="3" fill="#B8860B"/>
+                            <circle cx="30" cy="45" r="3" fill="#B8860B"/>
+                            <path d="M30 30 L15 30 M30 30 L45 30 M30 30 L30 15 M30 30 L30 45" stroke="#2C5AA0" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <h3>Operations</h3>
+                    <p>Coordinating global transit oversight, protocol monitoring, and continuity management.</p>
+                    <a href="operations.html" class="card-link">Explore →</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="15" y="10" width="30" height="40" stroke="#2C5AA0" stroke-width="2" fill="none"/>
+                            <path d="M22 20 L38 20 M22 27 L38 27 M22 34 L38 34 M22 41 L32 41" stroke="#2C5AA0" stroke-width="2"/>
+                            <circle cx="19" cy="20" r="1.5" fill="#B8860B"/>
+                            <circle cx="19" cy="27" r="1.5" fill="#B8860B"/>
+                            <circle cx="19" cy="34" r="1.5" fill="#B8860B"/>
+                            <circle cx="19" cy="41" r="1.5" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    <h3>Standards & Compliance</h3>
+                    <p>Unified protocols and compliance guidelines ensuring adherence to international standards.</p>
+                    <a href="standards.html" class="card-link">View Standards →</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="30" cy="30" r="20" stroke="#2C5AA0" stroke-width="2" fill="none"/>
+                            <path d="M30 15 L30 30 L40 35" stroke="#2C5AA0" stroke-width="2"/>
+                            <circle cx="30" cy="30" r="2" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    <h3>Contact</h3>
+                    <p>Reach our coordination office for inquiries regarding operational protocols and compliance.</p>
+                    <a href="contact.html" class="card-link">Get in Touch →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="global-reach">
+        <div class="container">
+            <h2>Global Operational Framework</h2>
+            <p class="section-intro">IOOPS maintains oversight across multiple jurisdictions, ensuring seamless coordination and protocol adherence worldwide.</p>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">45+</div>
+                    <div class="stat-label">Jurisdictions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">200+</div>
+                    <div class="stat-label">Transit Hubs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Coordination</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">ISO-Aligned</div>
+                    <div class="stat-label">Protocols</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>IOOPS</h4>
+                    <p>International Operations & Oversight Protocol System</p>
+                    <p class="footer-tagline">Ensuring global operational continuity since 2008</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="operations.html">Operations</a></li>
+                        <li><a href="standards.html">Standards</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="news.html">News & Updates</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: info@ioops.org</p>
+                    <p>HQ: Geneva, Switzerland</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 IOOPS. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

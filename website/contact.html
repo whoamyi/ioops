@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - IOOPS</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo-section" style="text-decoration: none;">
+                    <div class="logo">
+                        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="23" stroke="#2C5AA0" stroke-width="2"/>
+                            <path d="M25 10 L25 40 M10 25 L40 25" stroke="#2C5AA0" stroke-width="2"/>
+                            <circle cx="25" cy="25" r="5" fill="#2C5AA0"/>
+                            <circle cx="15" cy="15" r="2" fill="#B8860B"/>
+                            <circle cx="35" cy="15" r="2" fill="#B8860B"/>
+                            <circle cx="15" cy="35" r="2" fill="#B8860B"/>
+                            <circle cx="35" cy="35" r="2" fill="#B8860B"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>IOOPS</h1>
+                        <p class="tagline">Global Oversight of Operations & Protocols</p>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="operations.html">Operations</a></li>
+                        <li><a href="standards.html">Standards</a></li>
+                        <li><a href="news.html">News</a></li>
+                        <li><a href="contact.html" class="active">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <h2>Contact IOOPS</h2>
+            <p>Coordination Office and Regional Points of Contact</p>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-form-section">
+                    <h3>General Inquiries</h3>
+                    <p>For questions regarding operational protocols, compliance requirements, or coordination procedures, please complete the form below.</p>
+
+                    <form id="contactForm" class="contact-form">
+                        <div class="form-group">
+                            <label for="name">Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="organization">Organization *</label>
+                            <input type="text" id="organization" name="organization" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Subject *</label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Select a subject</option>
+                                <option value="protocol">Protocol Inquiry</option>
+                                <option value="compliance">Compliance Question</option>
+                                <option value="coordination">Coordination Request</option>
+                                <option value="documentation">Documentation Access</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Message *</label>
+                            <textarea id="message" name="message" rows="6" required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Submit Inquiry</button>
+                    </form>
+
+                    <div id="formSuccess" style="display: none;">
+                        <div class="success-message">
+                            <h4>Inquiry Received</h4>
+                            <p>Your message has been submitted to the IOOPS Coordination Office. A representative will respond within 48-72 hours.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-info-section">
+                    <h3>Headquarters</h3>
+                    <div class="contact-card">
+                        <h4>IOOPS Global Coordination Office</h4>
+                        <p>Geneva, Switzerland</p>
+                        <p>Email: info@ioops.org</p>
+                        <p>Tel: +41 (0) 22 XXX XXXX</p>
+                    </div>
+
+                    <h3>Regional Coordination Offices</h3>
+
+                    <div class="contact-card">
+                        <h4>Europe & Central Asia</h4>
+                        <p>Brussels, Belgium</p>
+                        <p>Email: europe@ioops.org</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <h4>Americas</h4>
+                        <p>Washington D.C., United States</p>
+                        <p>Email: americas@ioops.org</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <h4>Asia-Pacific</h4>
+                        <p>Singapore</p>
+                        <p>Email: asiapacific@ioops.org</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <h4>Middle East & Africa</h4>
+                        <p>Dubai, United Arab Emirates</p>
+                        <p>Email: mea@ioops.org</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-block">
+                <h3>Operational Support</h3>
+                <p>For urgent operational matters or protocol compliance questions requiring immediate attention, operational entities should contact their designated regional coordination office directly. Standard inquiry response time is 48-72 hours.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>IOOPS</h4>
+                    <p>International Operations & Oversight Protocol System</p>
+                    <p class="footer-tagline">Ensuring global operational continuity since 2008</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="operations.html">Operations</a></li>
+                        <li><a href="standards.html">Standards</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="news.html">News & Updates</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: info@ioops.org</p>
+                    <p>HQ: Geneva, Switzerland</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 IOOPS. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
