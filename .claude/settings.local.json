@@ -19,7 +19,8 @@
       "Bash(git stash:*)",
       "Bash(for file in *.svg)",
       "Bash(do sed -i 's/<rect width=\"\"120\"\" height=\"\"60\"\" fill=\"\"white\"\"\\\\/>/<!-- transparent background -->/' \"$file\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git reset:*)"
     ]
   }
 }
