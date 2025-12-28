@@ -90,38 +90,27 @@ body {
     opacity: 0.9;
 }
 
-/* Progress Bar - Horizontal on Mobile */
-.progress-container {
-    background-color: #fff;
-    padding: 20px 15px;
-    border-bottom: 1px solid var(--ioops-border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
+/* Progress Container removed - vertical steps bar doesn't need it */
 
-/* Horizontal Steps Bar */
+/* Vertical Steps Bar */
 .steps-bar {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 30px;
-    max-width: 700px;
-    margin: 30px auto;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 200px;
+    margin: 30px 0 30px 30px;
     position: relative;
     padding: 20px 0;
 }
 
-/* Horizontal connecting line */
+/* Vertical connecting line */
 .steps-bar::before {
     content: '';
     position: absolute;
-    left: 80px;
-    right: 80px;
-    top: 19px;
-    height: 2px;
+    left: 19px;
+    top: 50px;
+    bottom: 50px;
+    width: 2px;
     background-color: #e0e0e0;
     z-index: 0;
 }
@@ -149,9 +138,8 @@ body {
 
 .step {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     position: relative;
     z-index: 1;
     transition: all 0.3s ease;
@@ -184,13 +172,13 @@ body {
 }
 
 .step-label {
-    font-size: 11px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: #999;
     font-weight: 500;
     transition: color 0.3s ease;
-    text-align: center;
+    text-align: left;
     white-space: nowrap;
 }
 
@@ -1038,25 +1026,16 @@ input[type="file"]:hover {
         font-size: 24px;
     }
 
-    /* Step indicator - keep horizontal layout */
-    .progress-container {
-        padding: 15px 10px;
-        overflow-x: auto;
+    /* Vertical steps bar - slightly smaller on tablet */
+    .steps-bar {
+        margin: 20px 0 20px 20px;
+        gap: 20px;
     }
 
-    .progress-bar {
-        min-width: 500px;
-        justify-content: space-between;
-        padding: 0 10px;
-    }
-
-    .progress-bar::before {
-        left: 40px;
-        right: 40px;
-    }
-
-    .step {
-        flex: 0 0 auto;
+    .steps-bar::before {
+        left: 17px;
+        top: 40px;
+        bottom: 40px;
     }
 
     .step-number {
@@ -1067,10 +1046,7 @@ input[type="file"]:hover {
     }
 
     .step-label {
-        font-size: 10px;
-        max-width: 70px;
-        white-space: normal;
-        word-wrap: break-word;
+        font-size: 12px;
     }
 
     /* Main content */
@@ -1199,19 +1175,17 @@ input[type="file"]:hover {
         font-size: 10px;
     }
 
-    /* Step indicator - remain horizontal with scroll */
-    .progress-container {
-        padding: 12px 8px;
+    /* Vertical steps bar - compact on small phones */
+    .steps-bar {
+        margin: 15px 0 15px 15px;
+        gap: 18px;
+        max-width: 180px;
     }
 
-    .progress-bar {
-        min-width: 450px;
-        gap: 15px;
-    }
-
-    .progress-bar::before {
-        left: 35px;
-        right: 35px;
+    .steps-bar::before {
+        left: 15px;
+        top: 35px;
+        bottom: 35px;
     }
 
     .step-number {
@@ -1222,8 +1196,7 @@ input[type="file"]:hover {
     }
 
     .step-label {
-        font-size: 9px;
-        max-width: 60px;
+        font-size: 11px;
     }
 
     /* Content adjustments */
@@ -1297,10 +1270,17 @@ input[type="file"]:hover {
         font-size: 22px;
     }
 
-    /* Step indicator */
-    .progress-bar {
-        min-width: 400px;
-        gap: 12px;
+    /* Vertical steps bar - extra compact */
+    .steps-bar {
+        margin: 10px 0 10px 10px;
+        gap: 16px;
+        max-width: 160px;
+    }
+
+    .steps-bar::before {
+        left: 14px;
+        top: 30px;
+        bottom: 30px;
     }
 
     .step-number {
@@ -1311,8 +1291,7 @@ input[type="file"]:hover {
     }
 
     .step-label {
-        font-size: 8px;
-        max-width: 55px;
+        font-size: 10px;
     }
 
     /* Content */
