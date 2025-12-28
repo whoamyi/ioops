@@ -1272,17 +1272,17 @@ input[type="file"]:hover {
         font-size: 22px;
     }
 
-    /* Vertical steps bar - extra compact */
+    /* Horizontal steps bar - extra compact */
     .steps-bar {
-        margin: 10px 0 10px 10px;
-        gap: 16px;
-        max-width: 160px;
+        margin: 10px auto;
+        gap: 10px;
+        max-width: 350px;
     }
 
     .steps-bar::before {
-        left: 14px;
-        top: 30px;
-        bottom: 30px;
+        left: 30px;
+        right: 30px;
+        top: 14px;
     }
 
     .step-number {
