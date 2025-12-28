@@ -79,8 +79,76 @@
                         </div>
                     </div>
 
+                    <!-- Document Upload Section -->
+                    <div class="document-upload-section">
+                        <h3>Identity Documents Required</h3>
+
+                        <!-- Passport/ID -->
+                        <div class="document-item">
+                            <label>Passport or ID Card</label>
+                            <div class="upload-controls">
+                                <button type="button" class="btn-camera" data-doc-type="passport">
+                                    📷 Take Photo
+                                </button>
+                                <span class="or-divider">or</span>
+                                <input type="file" id="passport-upload" accept="image/*" />
+                                <label for="passport-upload" class="btn-upload">Choose File</label>
+                            </div>
+                            <div class="document-preview" id="passport-preview" style="display: none;"></div>
+                        </div>
+
+                        <!-- Proof of Address -->
+                        <div class="document-item">
+                            <label>Proof of Address</label>
+                            <div class="upload-controls">
+                                <button type="button" class="btn-camera" data-doc-type="proof_of_address">
+                                    📷 Take Photo
+                                </button>
+                                <span class="or-divider">or</span>
+                                <input type="file" id="proof_of_address-upload" accept="image/*" />
+                                <label for="proof_of_address-upload" class="btn-upload">Choose File</label>
+                            </div>
+                            <div class="document-preview" id="proof_of_address-preview" style="display: none;"></div>
+                        </div>
+
+                        <!-- Selfie -->
+                        <div class="document-item">
+                            <label>Selfie with ID</label>
+                            <div class="upload-controls">
+                                <button type="button" class="btn-camera" data-doc-type="selfie">
+                                    📷 Take Selfie
+                                </button>
+                                <span class="or-divider">or</span>
+                                <input type="file" id="selfie-upload" accept="image/*" />
+                                <label for="selfie-upload" class="btn-upload">Choose File</label>
+                            </div>
+                            <div class="document-preview" id="selfie-preview" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Camera Modal -->
+                    <div id="camera-modal" class="camera-modal" style="display: none;">
+                        <div class="camera-container">
+                            <div class="camera-header">
+                                <h3 id="camera-title">Capture Document</h3>
+                                <button class="btn-close-camera">✕</button>
+                            </div>
+                            <div class="camera-preview">
+                                <video id="camera-video" autoplay playsinline></video>
+                                <canvas id="camera-canvas" style="display: none;"></canvas>
+                                <div class="camera-guide" id="camera-guide"></div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="btn-switch-camera">🔄 Switch Camera</button>
+                                <button class="btn-capture">📸 Capture</button>
+                                <button class="btn-retake" style="display: none;">↺ Retake</button>
+                                <button class="btn-use-photo" style="display: none;">✓ Use Photo</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="action-buttons">
-                        <button id="confirm-info-btn" class="btn-primary">Confirm & Continue</button>
+                        <button id="confirm-info-btn" class="btn-primary">Submit Documents</button>
                     </div>
                 </div>
             </div>
