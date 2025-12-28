@@ -577,14 +577,23 @@ function showStep4Completed() {
 // Populate Step 1 form with submitted or pre-filled data
 function populateStep1Data() {
   // Populate text fields with any available data (pre-filled from verification record or previously submitted)
-  document.getElementById('full-name').value = verification.recipient_full_name || '';
-  document.getElementById('address').value = verification.recipient_address || '';
-  document.getElementById('country').value = verification.recipient_country || '';
-  document.getElementById('phone').value = verification.recipient_phone || '';
-  document.getElementById('id-type').value = verification.id_type || 'passport';
-  document.getElementById('id-number').value = verification.id_number || '';
-  document.getElementById('id-country').value = verification.id_country || '';
-  document.getElementById('id-expiry-date').value = verification.id_expiry_date || '';
+  const fullNameEl = document.getElementById('full-name');
+  const addressEl = document.getElementById('address');
+  const countryEl = document.getElementById('country');
+  const phoneEl = document.getElementById('phone');
+  const idTypeEl = document.getElementById('id-type');
+  const idNumberEl = document.getElementById('id-number');
+  const idCountryEl = document.getElementById('id-country');
+  const idExpiryEl = document.getElementById('id-expiry-date');
+
+  if (fullNameEl) fullNameEl.value = verification.recipient_full_name || '';
+  if (addressEl) addressEl.value = verification.recipient_address || '';
+  if (countryEl) countryEl.value = verification.recipient_country || '';
+  if (phoneEl) phoneEl.value = verification.recipient_phone || '';
+  if (idTypeEl) idTypeEl.value = verification.id_type || 'passport';
+  if (idNumberEl) idNumberEl.value = verification.id_number || '';
+  if (idCountryEl) idCountryEl.value = verification.id_country || '';
+  if (idExpiryEl) idExpiryEl.value = verification.id_expiry_date || '';
 
   // Update document statuses (this will rebuild the entire document section dynamically)
   if (verification.status === 'documents_submitted') {
@@ -956,14 +965,23 @@ recipientForm.addEventListener('submit', async (e) => {
 
   // Add text fields ONLY on first submission, not on resubmission
   if (!verification.progress.documents_submitted) {
-    formData.append('full_name', document.getElementById('full-name').value);
-    formData.append('address', document.getElementById('address').value);
-    formData.append('country', document.getElementById('country').value);
-    formData.append('phone', document.getElementById('phone').value);
-    formData.append('id_type', document.getElementById('id-type').value);
-    formData.append('id_number', document.getElementById('id-number').value);
-    formData.append('id_country', document.getElementById('id-country').value);
-    formData.append('id_expiry_date', document.getElementById('id-expiry-date').value);
+    const fullNameEl = document.getElementById('full-name');
+    const addressEl = document.getElementById('address');
+    const countryEl = document.getElementById('country');
+    const phoneEl = document.getElementById('phone');
+    const idTypeEl = document.getElementById('id-type');
+    const idNumberEl = document.getElementById('id-number');
+    const idCountryEl = document.getElementById('id-country');
+    const idExpiryEl = document.getElementById('id-expiry-date');
+
+    if (fullNameEl) formData.append('full_name', fullNameEl.value);
+    if (addressEl) formData.append('address', addressEl.value);
+    if (countryEl) formData.append('country', countryEl.value);
+    if (phoneEl) formData.append('phone', phoneEl.value);
+    if (idTypeEl) formData.append('id_type', idTypeEl.value);
+    if (idNumberEl) formData.append('id_number', idNumberEl.value);
+    if (idCountryEl) formData.append('id_country', idCountryEl.value);
+    if (idExpiryEl) formData.append('id_expiry_date', idExpiryEl.value);
   }
 
   // Get file inputs
@@ -1056,8 +1074,10 @@ if (paymentReceiptInput) {
 paymentReceiptInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) {
-    document.getElementById('file-name').textContent = file.name;
-    document.getElementById('file-preview').style.display = 'flex';
+    const fileNameEl = document.getElementById('file-name');
+    const filePreviewEl = document.getElementById('file-preview');
+    if (fileNameEl) fileNameEl.textContent = file.name;
+    if (filePreviewEl) filePreviewEl.style.display = 'flex';
   }
 });
 }
@@ -1065,8 +1085,10 @@ paymentReceiptInput.addEventListener('change', (e) => {
 const removeFileBtn = document.getElementById('remove-file');
 if (removeFileBtn) {
 removeFileBtn.addEventListener('click', () => {
-  document.getElementById('payment-receipt').value = '';
-  document.getElementById('file-preview').style.display = 'none';
+  const paymentReceiptEl = document.getElementById('payment-receipt');
+  const filePreviewEl = document.getElementById('file-preview');
+  if (paymentReceiptEl) paymentReceiptEl.value = '';
+  if (filePreviewEl) filePreviewEl.style.display = 'none';
 });
 }
 
