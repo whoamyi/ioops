@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOOPS Admin - Verification Management</title>
+    <link rel="stylesheet" href="css/admin-verification.css">
+</head>
+<body>
+    <div class="admin-portal">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="seal">⚖</div>
+                    <div>
+                        <h1>IOOPS Admin Portal</h1>
+                        <p class="subtitle">Verification Management System</p>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">Pending Review</span>
+                        <span class="stat-value" id="pending-count">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Active Today</span>
+                        <span class="stat-value" id="active-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Status Filter:</label>
+                <select id="status-filter">
+                    <option value="all">All Verifications</option>
+                    <option value="initiated">Initiated (Pending Step 1)</option>
+                    <option value="documents_submitted">Documents Submitted (Pending Review)</option>
+                    <option value="payment_submitted">Payment Submitted (Pending Approval)</option>
+                    <option value="escrow_confirmed">Escrow Confirmed (Pending Code)</option>
+                    <option value="code_generated">Code Generated</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" id="search-input" placeholder="Tracking ID, email, or name...">
+            </div>
+            <button id="refresh-btn" class="btn-refresh">↻ Refresh</button>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="verifications">Verifications</button>
+            <button class="tab-btn" data-tab="shipments">Shipments</button>
+        </div>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Verifications List -->
+            <div class="verifications-list tab-content" id="verifications-list">
+                <div class="loading-spinner" id="loading">
+                    <div class="spinner"></div>
+                    <p>Loading verifications...</p>
+                </div>
+            </div>
+
+            <!-- Detail Panel (shown when clicking a verification) -->
+            <div class="detail-panel" id="detail-panel" style="display: none;">
+                <div class="panel-header">
+                    <h2>Verification Details</h2>
+                    <button class="btn-close" id="close-panel">×</button>
+                </div>
+
+                <div class="panel-content" id="panel-content">
+                    <!-- Dynamic content loaded here -->
+                </div>
+            </div>
+
+            <!-- Shipments Tab -->
+            <div id="shipments-tab" class="tab-content" style="display: none;">
+                <table class="shipments-table">
+                    <thead>
+                        <tr>
+                            <th>Tracking ID</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Recipient</th>
+                            <th>Verification</th>
+                            <th>Security Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipments-tbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">
+                                <div class="spinner"></div>
+                                <p>Loading shipments...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="email-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Send Email to Recipient</h2>
+                <button class="btn-close" id="close-email-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Template Category</label>
+                    <select id="template-category">
+                        <option value="">Select category...</option>
+                        <option value="VERIFICATION">Verification</option>
+                        <option value="COMPLIANCE">Compliance</option>
+                        <option value="OVERSIGHT">Oversight</option>
+                        <option value="CORRECTIONS">Corrections</option>
+                        <option value="CLEARANCE">Clearance</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Template</label>
+                    <select id="template-name">
+                        <option value="">Select template...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>From Address</label>
+                    <select id="from-alias">
+                        <option value="">Select email address...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Your Message *</label>
+                    <textarea id="custom-message" rows="5" placeholder="Enter your message here..."></textarea>
+                    <p class="field-hint">This will be inserted into the [CUSTOM_MESSAGE] placeholder in the template.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-email">Cancel</button>
+                <button class="btn-primary" id="send-email">Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Code Edit Modal -->
+    <div id="code-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Security Code</h2>
+                <button class="btn-close" id="close-code-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Tracking ID: <strong id="code-tracking-id"></strong></p>
+                <div class="form-group">
+                    <label>Security Code (10 characters)</label>
+                    <input type="text" id="new-security-code" maxlength="10" pattern="[A-Z0-9]{10}" style="text-transform: uppercase;">
+                    <p class="field-hint">Alphanumeric uppercase only (A-Z, 0-9)</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-code">Cancel</button>
+                <button class="btn-primary" id="save-code">Save Code</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO client for real-time updates -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="js/admin-verification.js"></script>
+</body>
+</html>
