@@ -1,7 +1,8 @@
 // IOOPS Verification Portal - Client-side Logic
 
-// const API_BASE = 'https://meridian-tracking.fly.dev/api/ioops';
-const API_BASE = 'http://localhost:3000/api/ioops'; // For local development
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/api/ioops'
+  : 'https://meridian-tracking.fly.dev/api/ioops';
 
 // Parse verification token from URL
 function getTokenFromURL() {
