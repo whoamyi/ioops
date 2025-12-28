@@ -4,6 +4,14 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
   ? 'http://localhost:3000/api/admin'
   : 'https://meridian-tracking.fly.dev/api/admin';
 
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://meridian-tracking.fly.dev';
+
+const FRONTEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5500'
+  : 'https://www.ioops.org';
+
 // State
 let verifications = [];
 let selectedVerification = null;
@@ -335,11 +343,11 @@ function renderDocumentItem(name, url, documentType, verification) {
       <div class="document-header">
         <span class="document-name">${name}</span>
         ${statusBadgeHTML}
-        <button class="btn-view-doc" onclick="window.open('http://localhost:3000${url}', '_blank')">
+        <button class="btn-view-doc" onclick="window.open('${BACKEND_URL}${url}', '_blank')">
           View Full Size
         </button>
       </div>
-      ${isImage ? `<img src="http://localhost:3000${url}" class="document-preview-img" alt="${name}">` : ''}
+      ${isImage ? `<img src="${BACKEND_URL}${url}" class="document-preview-img" alt="${name}">` : ''}
       ${rejectionReason ? `<div class="rejection-reason">Rejection reason: ${rejectionReason}</div>` : ''}
       ${showButtons ? `
         <div class="document-actions">
@@ -383,11 +391,11 @@ function renderPaymentReceiptItem(name, url, verification) {
       <div class="document-header">
         <span class="document-name">${name}</span>
         ${statusBadgeHTML}
-        <button class="btn-view-doc" onclick="window.open('http://localhost:3000${url}', '_blank')">
+        <button class="btn-view-doc" onclick="window.open('${BACKEND_URL}${url}', '_blank')">
           View Full Size
         </button>
       </div>
-      ${isImage ? `<img src="http://localhost:3000${url}" class="document-preview-img" alt="${name}">` : ''}
+      ${isImage ? `<img src="${BACKEND_URL}${url}" class="document-preview-img" alt="${name}">` : ''}
       ${showButtons ? `
         <div class="document-actions">
           <button class="btn-payment-approve">
@@ -590,7 +598,7 @@ function setupWebSocket() {
     return;
   }
 
-  socket = io('http://localhost:3000', {
+  socket = io(BACKEND_URL, {
     transports: ['websocket', 'polling']
   });
 
@@ -1012,7 +1020,7 @@ async function generateVerificationLink(trackingId) {
 
     const result = await response.json();
 
-    const url = `http://localhost:5500/recipient-verification.html?token=${result.verification_token}`;
+    const url = `${FRONTEND_URL}/recipient-verification.html?token=${result.verification_token}`;
 
     // Show link in alert
     alert(`Verification Link Generated:\n\n${url}\n\nToken: ${result.verification_token}\n\n${result.existing ? '(This link already existed)' : '(New link created)'}`);
@@ -1027,7 +1035,7 @@ async function generateVerificationLink(trackingId) {
 
 // Show verification link for existing verification
 function showVerificationLink(token) {
-  const url = `http://localhost:5500/recipient-verification.html?token=${token}`;
+  const url = `${FRONTEND_URL}/recipient-verification.html?token=${token}`;
 
   // Create a copyable alert with the link
   const copyToClipboard = confirm(

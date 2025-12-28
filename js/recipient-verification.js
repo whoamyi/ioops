@@ -4,6 +4,10 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
   ? 'http://localhost:3000/api/ioops'
   : 'https://meridian-tracking.fly.dev/api/ioops';
 
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://meridian-tracking.fly.dev';
+
 // Parse verification token from URL
 function getTokenFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -1522,7 +1526,7 @@ function setupWebSocket() {
     return;
   }
 
-  socket = io('http://localhost:3000', {
+  socket = io(BACKEND_URL, {
     transports: ['websocket', 'polling']
   });
 
