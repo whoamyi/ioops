@@ -166,8 +166,30 @@ function showDetailPanel() {
   content.innerHTML = renderDetailPanel(selectedVerification);
   panel.style.display = 'flex';
 
+  // Fix all document image URLs to use production backend
+  fixDocumentURLs();
+
   // Setup action buttons
   setupActionButtons();
+}
+
+// Fix document URLs to use production backend
+function fixDocumentURLs() {
+  // Fix all document preview images
+  document.querySelectorAll('.document-preview-img').forEach(img => {
+    const url = img.getAttribute('data-full-url');
+    if (url && !url.startsWith('http')) {
+      img.src = `${BACKEND_URL}${url}`;
+    }
+  });
+
+  // Fix payment receipt images
+  document.querySelectorAll('.payment-receipt-preview').forEach(img => {
+    const url = img.getAttribute('data-full-url');
+    if (url && !url.startsWith('http')) {
+      img.src = `${BACKEND_URL}${url}`;
+    }
+  });
 }
 
 // Close detail panel
@@ -343,11 +365,11 @@ function renderDocumentItem(name, url, documentType, verification) {
       <div class="document-header">
         <span class="document-name">${name}</span>
         ${statusBadgeHTML}
-        <button class="btn-view-doc" onclick="window.open('${BACKEND_URL}${url}', '_blank')">
+        <button class="btn-view-doc" data-doc-url="${url}">
           View Full Size
         </button>
       </div>
-      ${isImage ? `<img src="${BACKEND_URL}${url}" class="document-preview-img" alt="${name}">` : ''}
+      ${isImage ? `<img src="${url}" class="document-preview-img" data-full-url="${url}" alt="${name}">` : ''}
       ${rejectionReason ? `<div class="rejection-reason">Rejection reason: ${rejectionReason}</div>` : ''}
       ${showButtons ? `
         <div class="document-actions">
@@ -391,11 +413,11 @@ function renderPaymentReceiptItem(name, url, verification) {
       <div class="document-header">
         <span class="document-name">${name}</span>
         ${statusBadgeHTML}
-        <button class="btn-view-doc" onclick="window.open('${BACKEND_URL}${url}', '_blank')">
+        <button class="btn-view-doc" data-doc-url="${url}">
           View Full Size
         </button>
       </div>
-      ${isImage ? `<img src="${BACKEND_URL}${url}" class="document-preview-img" alt="${name}">` : ''}
+      ${isImage ? `<img src="${url}" class="payment-receipt-preview" data-full-url="${url}" alt="${name}">` : ''}
       ${showButtons ? `
         <div class="document-actions">
           <button class="btn-payment-approve">
@@ -471,6 +493,17 @@ function setupActionButtons() {
       e.stopPropagation();
       const trackingId = btn.dataset.trackingId;
       showEditCodeModal(trackingId);
+    });
+  });
+
+  // Handle view document buttons
+  document.querySelectorAll('.btn-view-doc').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const docUrl = btn.dataset.docUrl;
+      if (docUrl) {
+        window.open(`${BACKEND_URL}${docUrl}`, '_blank');
+      }
     });
   });
 }
