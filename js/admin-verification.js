@@ -1,6 +1,8 @@
 // IOOPS Admin Verification Portal
 
-const API_BASE = 'http://localhost:3000/api/admin';
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/api/admin'
+  : 'https://meridian-tracking.fly.dev/api/admin';
 
 // State
 let verifications = [];
