@@ -1510,12 +1510,50 @@ function hideLoading() {
   }
 }
 
-// Error State
+// Error State with defensive null checking
 function showError(message) {
-  document.getElementById('error-message').textContent = message;
-  document.getElementById('error-state').style.display = 'block';
-  document.getElementById('loading-state').style.display = 'none';
-  document.getElementById('main-content').style.display = 'none';
+  console.error('[Portal Error]:', message);
+
+  const errorMessage = document.getElementById('error-message');
+  const errorState = document.getElementById('error-state');
+  const loadingState = document.getElementById('loading-state');
+  const mainContent = document.getElementById('main-content');
+
+  if (errorMessage) {
+    errorMessage.textContent = message;
+  }
+
+  if (errorState) {
+    errorState.style.display = 'block';
+  }
+
+  if (loadingState) {
+    loadingState.style.display = 'none';
+  }
+
+  if (mainContent) {
+    mainContent.style.display = 'none';
+  }
+
+  // Fallback if DOM elements don't exist yet
+  if (!errorState && !errorMessage) {
+    const fallbackError = document.createElement('div');
+    fallbackError.className = 'error-state';
+    fallbackError.style.cssText = 'display: block; padding: 2rem; text-align: center; background: #fff5f5; border: 1px solid #fc8181; margin: 2rem; border-radius: 8px;';
+    fallbackError.innerHTML = `
+      <div style="font-size: 2rem; margin-bottom: 1rem;">⚠</div>
+      <h2 style="color: #f56565; margin-bottom: 0.5rem;">Verification Session Error</h2>
+      <p style="color: #742a2a;">${escapeHtml(message)}</p>
+    `;
+    document.body.appendChild(fallbackError);
+  }
+}
+
+// Helper function to prevent XSS
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // Setup WebSocket connection for real-time updates
