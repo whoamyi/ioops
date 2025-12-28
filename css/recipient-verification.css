@@ -1019,7 +1019,7 @@ input[type="file"]:hover {
     font-weight: 500;
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive - Tablet */
 @media (max-width: 768px) {
     body {
         background: #fff;
@@ -1038,8 +1038,175 @@ input[type="file"]:hover {
         font-size: 24px;
     }
 
+    /* Step indicator - keep horizontal layout */
     .progress-container {
         padding: 15px 10px;
+        overflow-x: auto;
+    }
+
+    .progress-bar {
+        min-width: 500px;
+        justify-content: space-between;
+        padding: 0 10px;
+    }
+
+    .progress-bar::before {
+        left: 40px;
+        right: 40px;
+    }
+
+    .step {
+        flex: 0 0 auto;
+    }
+
+    .step-number {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        font-size: 13px;
+    }
+
+    .step-label {
+        font-size: 10px;
+        max-width: 70px;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    /* Main content */
+    #main-content {
+        padding: 20px 15px;
+    }
+
+    .step-content {
+        padding: 20px 15px;
+    }
+
+    .step-content h2 {
+        font-size: 22px;
+    }
+
+    /* Form improvements */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 14px;
+        min-height: 44px; /* Touch target */
+    }
+
+    .form-group input[readonly] {
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        color: #666;
+    }
+
+    /* File upload touch targets */
+    input[type="file"] {
+        min-height: 44px;
+        padding: 14px;
+    }
+
+    .camera-capture-btn {
+        min-height: 44px;
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+
+    /* Bank details - stack on mobile */
+    .verification-info {
+        font-size: 12px;
+    }
+
+    .info-row {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .info-row .label {
+        font-size: 12px;
+    }
+
+    .info-row .value {
+        text-align: left;
+        font-size: 14px;
+        word-break: break-all; /* Break long IBAN/SWIFT codes */
+    }
+
+    /* Buttons - ensure minimum touch targets */
+    .btn-primary,
+    .btn-generate,
+    .btn-copy,
+    .btn-email,
+    .btn-download {
+        min-height: 44px;
+        padding: 14px 28px;
+        font-size: 15px;
+    }
+
+    .btn-copy {
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    /* Escrow amount */
+    .amount-value {
+        font-size: 32px;
+    }
+
+    /* Security code */
+    .security-code {
+        font-size: 36px;
+        letter-spacing: 6px;
+        padding: 18px;
+    }
+
+    /* Code actions - stack vertically */
+    .code-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-code-action {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Mobile Responsive - Small phones (480px) */
+@media (max-width: 480px) {
+    .portal-header {
+        padding: 20px 15px;
+    }
+
+    .portal-header h1 {
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
+    .portal-header .subtitle {
+        font-size: 10px;
+    }
+
+    /* Step indicator - remain horizontal with scroll */
+    .progress-container {
+        padding: 12px 8px;
+    }
+
+    .progress-bar {
+        min-width: 450px;
+        gap: 15px;
     }
 
     .progress-bar::before {
@@ -1048,76 +1215,149 @@ input[type="file"]:hover {
     }
 
     .step-number {
-        width: 35px;
-        height: 35px;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
         font-size: 12px;
     }
 
     .step-label {
         font-size: 9px;
+        max-width: 60px;
     }
 
-    #main-content {
-        padding: 20px 15px;
+    /* Content adjustments */
+    .step-content {
+        padding: 15px 10px;
     }
 
     .step-content h2 {
         font-size: 20px;
     }
 
-    .form-row {
-        grid-template-columns: 1fr;
+    .step-description {
+        font-size: 13px;
     }
 
-    .verification-info {
-        font-size: 12px;
+    /* Form fields - maintain 16px to prevent zoom */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px;
+        padding: 12px;
     }
 
-    .info-row {
-        flex-direction: column;
-        gap: 5px;
+    /* Bank details */
+    .bank-details {
+        padding: 20px 15px;
     }
 
     .info-row .value {
-        text-align: left;
+        font-size: 13px;
+    }
+
+    /* Escrow amount */
+    .escrow-amount-box {
+        padding: 25px 15px;
     }
 
     .amount-value {
         font-size: 28px;
     }
 
+    /* Security code */
     .security-code {
-        font-size: 36px;
-        letter-spacing: 6px;
+        font-size: 28px;
+        letter-spacing: 4px;
+        padding: 15px;
     }
 
-    .btn-copy {
-        margin-left: 0;
-        margin-top: 10px;
+    /* Buttons */
+    .btn-primary,
+    .btn-generate {
+        font-size: 14px;
+        padding: 14px 24px;
+    }
+
+    .btn-generate {
         width: 100%;
     }
 }
 
-/* Extra small devices */
-@media (max-width: 480px) {
+/* Mobile Responsive - Extra small phones (375px) */
+@media (max-width: 375px) {
     .portal-header h1 {
-        font-size: 20px;
-        letter-spacing: 2px;
+        font-size: 18px;
+        letter-spacing: 1.5px;
+    }
+
+    .portal-header .seal {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+    }
+
+    /* Step indicator */
+    .progress-bar {
+        min-width: 400px;
+        gap: 12px;
     }
 
     .step-number {
         width: 30px;
         height: 30px;
+        min-width: 30px;
         font-size: 11px;
     }
 
     .step-label {
         font-size: 8px;
+        max-width: 55px;
+    }
+
+    /* Content */
+    .step-content h2 {
+        font-size: 18px;
+    }
+
+    /* Bank details - better readability */
+    .info-row {
+        padding: 10px 0;
+    }
+
+    .info-row .label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .info-row .value {
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    /* Escrow */
+    .amount-value {
+        font-size: 26px;
+    }
+
+    /* Security code */
+    .code-box {
+        padding: 25px 15px;
     }
 
     .security-code {
-        font-size: 28px;
-        letter-spacing: 4px;
+        font-size: 24px;
+        letter-spacing: 3px;
+        padding: 12px;
+    }
+
+    /* Forms */
+    .form-section h3 {
+        font-size: 14px;
+    }
+
+    .form-group label {
+        font-size: 13px;
     }
 }
 
