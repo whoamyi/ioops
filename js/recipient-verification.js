@@ -793,24 +793,27 @@ function renderRejectedState() {
   // Render next steps
   renderNextSteps(statusCounts, documents);
 
-  // Show/hide resubmit button
+  // Show/hide resubmit button based on rejection count
   const resubmitBtn = document.getElementById('resubmit-rejected-btn');
   if (resubmitBtn) {
+    console.log('[Resubmit Button] Status counts:', statusCounts);
     if (statusCounts.rejected > 0) {
+      console.log('[Resubmit Button] Showing button - rejected count:', statusCounts.rejected);
       resubmitBtn.style.display = 'inline-block';
       resubmitBtn.onclick = () => {
         transitionTo(STATES.STEP_1_1_PERSONAL);
       };
     } else {
+      console.log('[Resubmit Button] Hiding button - no rejections');
       resubmitBtn.style.display = 'none';
     }
   }
 
-  // Setup support button
+  // Setup support button to show modal
   const supportBtn = document.getElementById('contact-support-btn-new');
   if (supportBtn) {
     supportBtn.onclick = () => {
-      window.location.href = `/support?token=${token}`;
+      showSupportModal();
     };
   }
 }
@@ -1746,3 +1749,48 @@ async function submitSingleDocumentResubmission(documentId, captureType) {
     showNotification('Failed to submit document: ' + error.message, 'error');
   }
 }
+
+// Support Modal Functions
+function showSupportModal() {
+  const modal = document.getElementById('support-modal');
+  if (modal) {
+    // Update email and WhatsApp links with current verification token
+    const emailLink = document.getElementById('email-support-link');
+    const whatsappLink = document.getElementById('whatsapp-support-link');
+    
+    if (emailLink && token) {
+      emailLink.href = `mailto:support@ioops.org?subject=Verification Support - ${token}`;
+    }
+    
+    if (whatsappLink && token) {
+      whatsappLink.href = `https://wa.me/1234567890?text=Hi, I need help with my verification (Token: ${token})`;
+    }
+    
+    modal.style.display = 'flex';
+  }
+}
+
+function closeSupportModal() {
+  const modal = document.getElementById('support-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Setup support modal close handlers
+document.addEventListener('DOMContentLoaded', () => {
+  const closeBtn = document.getElementById('close-support-modal');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeSupportModal);
+  }
+  
+  const modal = document.getElementById('support-modal');
+  if (modal) {
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeSupportModal();
+      }
+    });
+  }
+});
