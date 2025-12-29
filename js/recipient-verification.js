@@ -807,6 +807,11 @@ function renderRejectedState() {
       resubmitBtn.style.pointerEvents = 'auto';
       resubmitBtn.disabled = false;
       resubmitBtn.onclick = () => {
+        // Find the first rejected document and set it for resubmission
+        const rejectedDoc = documents.find(doc => doc.approved === false);
+        if (rejectedDoc) {
+          sessionStorage.setItem('resubmit_document', rejectedDoc.id);
+        }
         // Go directly to camera capture for resubmitting rejected documents
         transitionTo(STATES.STEP_1_3_CAPTURE);
       };
