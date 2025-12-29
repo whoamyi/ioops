@@ -1634,6 +1634,37 @@ document.addEventListener('DOMContentLoaded', () => {
       startCamera('face');
     });
   }
+
+  // Check Status button - allows user to manually check document approval status
+  const checkApprovalBtn = document.getElementById('check-approval-btn');
+  if (checkApprovalBtn) {
+    checkApprovalBtn.addEventListener('click', async () => {
+      console.log('[Status Check] User clicked Check Status button');
+
+      // Show loading state
+      const originalText = checkApprovalBtn.textContent;
+      checkApprovalBtn.textContent = 'Checking...';
+      checkApprovalBtn.disabled = true;
+
+      try {
+        // Reload verification data from backend
+        await loadVerification();
+
+        // The state will automatically transition based on backend data
+        // If rejected, will show document status cards
+        // If approved, will show payment form
+        // If still pending, will stay on waiting page
+
+      } catch (error) {
+        console.error('[Status Check] Error:', error);
+        showNotification('Failed to check status. Please try again.', 'error');
+      } finally {
+        // Restore button state
+        checkApprovalBtn.textContent = originalText;
+        checkApprovalBtn.disabled = false;
+      }
+    });
+  }
 });
 
 // Submit a single document resubmission
