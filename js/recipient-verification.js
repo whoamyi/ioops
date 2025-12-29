@@ -1435,14 +1435,61 @@ document.addEventListener('DOMContentLoaded', () => {
   loadVerification();
 });
 
+// Track which document is being resubmitted (if any)
+let currentResubmitDocument = null;
+
 // Camera Capture Functions
 function initializeDocumentCapture() {
-  document.getElementById('document-capture-section').style.display = 'block';
-  document.getElementById('address-capture-section').style.display = 'none';
-  document.getElementById('face-capture-section').style.display = 'none';
-  document.getElementById('capture-complete').style.display = 'none';
+  // Check if this is a resubmission of a specific document
+  const resubmitDoc = sessionStorage.getItem('resubmit_document');
 
-  startCamera('document');
+  if (resubmitDoc) {
+    console.log('[Resubmission] Recapturing specific document:', resubmitDoc);
+
+    // Map document IDs to their sections and types
+    const docMap = {
+      'passport': { section: 'document-capture-section', type: 'document', title: 'Resubmit Your ID Document' },
+      'address': { section: 'address-capture-section', type: 'address', title: 'Resubmit Proof of Address' },
+      'selfie': { section: 'face-capture-section', type: 'face', title: 'Resubmit Face Verification' }
+    };
+
+    const docConfig = docMap[resubmitDoc];
+    if (!docConfig) {
+      console.error('[Resubmission] Invalid document ID:', resubmitDoc);
+      sessionStorage.removeItem('resubmit_document');
+      return;
+    }
+
+    // Hide all sections first
+    document.getElementById('document-capture-section').style.display = 'none';
+    document.getElementById('address-capture-section').style.display = 'none';
+    document.getElementById('face-capture-section').style.display = 'none';
+    document.getElementById('capture-complete').style.display = 'none';
+
+    // Show only the section for the rejected document
+    document.getElementById(docConfig.section).style.display = 'block';
+
+    // Update the heading to indicate resubmission
+    const heading = document.querySelector(`#${docConfig.section} h3`);
+    if (heading) {
+      heading.textContent = docConfig.title;
+    }
+
+    // Start camera for this specific document
+    startCamera(docConfig.type);
+
+    // Store which document we're resubmitting for the confirm handler
+    currentResubmitDocument = resubmitDoc;
+  } else {
+    // Normal flow: capture all three documents
+    document.getElementById('document-capture-section').style.display = 'block';
+    document.getElementById('address-capture-section').style.display = 'none';
+    document.getElementById('face-capture-section').style.display = 'none';
+    document.getElementById('capture-complete').style.display = 'none';
+
+    currentResubmitDocument = null;
+    startCamera('document');
+  }
 }
 
 async function startCamera(type) {
@@ -1504,10 +1551,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Document confirm
   const confirmDocBtn = document.getElementById('confirm-document');
   if (confirmDocBtn) {
-    confirmDocBtn.addEventListener('click', () => {
-      document.getElementById('document-capture-section').style.display = 'none';
-      document.getElementById('address-capture-section').style.display = 'block';
-      startCamera('address');
+    confirmDocBtn.addEventListener('click', async () => {
+      // Check if this is a resubmission
+      if (currentResubmitDocument === 'passport') {
+        await submitSingleDocumentResubmission('passport', 'document');
+      } else {
+        // Normal flow: proceed to next document
+        document.getElementById('document-capture-section').style.display = 'none';
+        document.getElementById('address-capture-section').style.display = 'block';
+        startCamera('address');
+      }
     });
   }
 
@@ -1525,10 +1578,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Address confirm
   const confirmAddrBtn = document.getElementById('confirm-address');
   if (confirmAddrBtn) {
-    confirmAddrBtn.addEventListener('click', () => {
-      document.getElementById('address-capture-section').style.display = 'none';
-      document.getElementById('face-capture-section').style.display = 'block';
-      startCamera('face');
+    confirmAddrBtn.addEventListener('click', async () => {
+      // Check if this is a resubmission
+      if (currentResubmitDocument === 'address') {
+        await submitSingleDocumentResubmission('address', 'address');
+      } else {
+        // Normal flow: proceed to next document
+        document.getElementById('address-capture-section').style.display = 'none';
+        document.getElementById('face-capture-section').style.display = 'block';
+        startCamera('face');
+      }
     });
   }
 
@@ -1546,9 +1605,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Face confirm
   const confirmFaceBtn = document.getElementById('confirm-face');
   if (confirmFaceBtn) {
-    confirmFaceBtn.addEventListener('click', () => {
-      document.getElementById('face-capture-section').style.display = 'none';
-      document.getElementById('capture-complete').style.display = 'block';
+    confirmFaceBtn.addEventListener('click', async () => {
+      // Check if this is a resubmission
+      if (currentResubmitDocument === 'selfie') {
+        await submitSingleDocumentResubmission('selfie', 'face');
+      } else {
+        // Normal flow: show completion screen
+        document.getElementById('face-capture-section').style.display = 'none';
+        document.getElementById('capture-complete').style.display = 'block';
+      }
     });
   }
 
@@ -1563,3 +1628,66 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Submit a single document resubmission
+async function submitSingleDocumentResubmission(documentId, captureType) {
+  try {
+    console.log('[Resubmission] Submitting single document:', documentId);
+
+    const formData = new FormData();
+
+    // Map document IDs to their file field names
+    const fileFieldMap = {
+      'passport': 'passport_file',
+      'address': 'proof_of_address_file',
+      'selfie': 'selfie_file'
+    };
+
+    const captureTypeMap = {
+      'passport': 'document',
+      'address': 'address',
+      'selfie': 'face'
+    };
+
+    const actualCaptureType = captureTypeMap[documentId];
+    const capturedFile = capturedDocuments[actualCaptureType];
+
+    if (!capturedFile) {
+      throw new Error('No document captured');
+    }
+
+    // Append only the specific document being resubmitted
+    formData.append(fileFieldMap[documentId], capturedFile, `${documentId}.jpg`);
+
+    // Submit to backend
+    const response = await fetch(`${API_BASE}/verification/${token}/resubmit/${documentId}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to submit document resubmission');
+    }
+
+    const result = await response.json();
+    console.log('[Resubmission] Success:', result);
+
+    // Clear the resubmission flag
+    sessionStorage.removeItem('resubmit_document');
+    currentResubmitDocument = null;
+
+    // Show success notification
+    showNotification('Document resubmitted successfully! Our team will review it shortly.', 'success');
+
+    // Reload verification data to get updated status
+    await loadVerification();
+
+    // Transition back to waiting/rejected state to show updated status
+    // The backend will now show this document as "pending" instead of "rejected"
+
+  } catch (error) {
+    console.error('[Resubmission] Error:', error);
+    showNotification('Failed to submit document: ' + error.message, 'error');
+  }
+}
