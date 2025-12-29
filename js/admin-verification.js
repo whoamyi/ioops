@@ -800,17 +800,42 @@ async function rejectIndividualDocument(documentType) {
     'selfie': 'Selfie with ID'
   };
 
-  // First, confirm the rejection
-  if (!confirm(`Reject ${docNames[documentType]}?\n\nYou will be asked to provide a reason in the next step.`)) {
+  // Show rejection modal instead of prompt
+  pendingRejection = documentType;
+  document.getElementById('rejection-document-name').textContent = docNames[documentType];
+  document.getElementById('preset-rejection-reason').value = '';
+  document.getElementById('custom-rejection-reason').value = '';
+  document.getElementById('custom-rejection-reason-group').style.display = 'none';
+  document.getElementById('rejection-modal').style.display = 'flex';
+}
+
+// Process rejection after modal confirmation
+async function processDocumentRejection() {
+  const presetReason = document.getElementById('preset-rejection-reason').value;
+  const customReason = document.getElementById('custom-rejection-reason').value;
+  
+  let reason = '';
+  if (presetReason === 'custom') {
+    reason = customReason.trim();
+  } else {
+    reason = presetReason;
+  }
+
+  if (!reason) {
+    alert('Please select or enter a rejection reason.');
     return;
   }
 
-  // Then ask for reason
-  const reason = prompt(`Enter reason for rejecting ${docNames[documentType]}:\n\n(This will be sent to the recipient)`);
-  if (!reason || reason.trim() === '') {
-    alert('Rejection cancelled - a reason is required.');
-    return;
-  }
+  const documentType = pendingRejection;
+  const docNames = {
+    'passport': 'Passport / ID Document',
+    'proof_of_address': 'Proof of Address',
+    'selfie': 'Selfie with ID'
+  };
+  
+  // Close modal
+  document.getElementById('rejection-modal').style.display = 'none';
+  pendingRejection = null;
 
   try {
     const response = await fetch(`${API_BASE}/verifications/${selectedVerification.id}/reject-document`, {
@@ -833,9 +858,9 @@ async function rejectIndividualDocument(documentType) {
       const sections = detailPanel.querySelectorAll('[class*="document"]');
       let found = false;
       sections.forEach(section => {
-        if (found) return; // Skip if already found
+        if (found) return;
         if (section.textContent.includes(docNameMap[documentType])) {
-          found = true; // Mark as found to prevent duplicates
+          found = true;
 
           const badge = section.querySelector('.doc-status-badge');
           if (badge) {
@@ -887,11 +912,9 @@ async function rejectIndividualDocument(documentType) {
 
     await loadVerifications();
 
-    // Refresh the detail panel to show updated status
     const updatedVerification = verifications.find(v => v.id === selectedVerification.id);
     if (updatedVerification) {
       selectedVerification = updatedVerification;
-      // Don't call showDetailPanel() - we already updated the UI above
     }
   } catch (error) {
     console.error('Error rejecting document:', error);
