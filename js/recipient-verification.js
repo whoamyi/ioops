@@ -1513,12 +1513,25 @@ async function startCamera(type) {
     });
 
     videoElement.srcObject = stream;
-    statusElement.textContent = 'Position document within frame';
+    statusElement.textContent = 'Get ready... Position yourself in the frame';
 
-    // Auto-capture after 3 seconds
+    // Countdown timer - 5 seconds with visual feedback
+    let countdown = 5;
+    const countdownInterval = setInterval(() => {
+      if (countdown > 0) {
+        statusElement.textContent = `Capturing in ${countdown}...`;
+        countdown--;
+      } else {
+        statusElement.textContent = type === 'face' ? 'Smile! 📸' : 'Hold steady! 📸';
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+
+    // Auto-capture after 5 seconds
     setTimeout(() => {
+      clearInterval(countdownInterval);
       captureImage(type);
-    }, 3000);
+    }, 5000);
 
   } catch (error) {
     console.error('Camera error:', error);
