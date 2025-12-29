@@ -807,7 +807,8 @@ function renderRejectedState() {
       resubmitBtn.style.pointerEvents = 'auto';
       resubmitBtn.disabled = false;
       resubmitBtn.onclick = () => {
-        transitionTo(STATES.STEP_1_1_PERSONAL);
+        // Go directly to camera capture for resubmitting rejected documents
+        transitionTo(STATES.STEP_1_3_CAPTURE);
       };
     } else {
       console.log('[Resubmit Button] Hiding button - no rejections');
