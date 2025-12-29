@@ -287,12 +287,11 @@ function determineStateFromVerification() {
     // Check document approval status
     if (verification.all_documents_approved === true) {
       transitionTo(STATES.STEP_2_PAYMENT);
-    } else if (verification.passport_approved === false ||
-               verification.proof_of_address_approved === false ||
-               verification.selfie_approved === false) {
-      transitionTo(STATES.REJECTED);
     } else {
-      transitionTo(STATES.WAITING_APPROVAL);
+      // Show REJECTED state for all cases where documents are under review
+      // This allows users to see document status cards and track progress
+      // The resubmit button will only show when statusCounts.rejected > 0
+      transitionTo(STATES.REJECTED);
     }
   } else if (verification.status === 'payment_submitted') {
     if (verification.escrow_status === 'confirmed') {
