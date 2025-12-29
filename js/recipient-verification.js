@@ -742,11 +742,18 @@ function renderRejectedState() {
     pending: 0
   };
 
+  // SVG icons for documents
+  const icons = {
+    passport: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><circle cx="12" cy="10" r="3"></circle><path d="M7 21v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"></path></svg>',
+    address: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
+    selfie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>'
+  };
+
   const documents = [
     {
       id: 'passport',
       name: 'ID Document',
-      icon: '🆔',
+      icon: icons.passport,
       approved: verification.passport_approved,
       reason: verification.passport_rejection_reason,
       timestamp: verification.documents_reviewed_at
@@ -754,7 +761,7 @@ function renderRejectedState() {
     {
       id: 'address',
       name: 'Proof of Address',
-      icon: '🏠',
+      icon: icons.address,
       approved: verification.proof_of_address_approved,
       reason: verification.proof_of_address_rejection_reason,
       timestamp: verification.documents_reviewed_at
@@ -762,7 +769,7 @@ function renderRejectedState() {
     {
       id: 'selfie',
       name: 'Face Verification',
-      icon: '📸',
+      icon: icons.selfie,
       approved: verification.selfie_approved,
       reason: verification.selfie_rejection_reason,
       timestamp: verification.documents_reviewed_at
@@ -946,7 +953,7 @@ function renderNextSteps(statusCounts, documents) {
   const nextStepsEl = document.getElementById('next-steps-section');
   if (!nextStepsEl) return;
 
-  let nextStepsHTML = '<h3>📋 Next Steps</h3><div class="next-steps-list">';
+  let nextStepsHTML = '<h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>Next Steps</h3><div class="next-steps-list">';
 
   if (statusCounts.approved === 3) {
     // All approved - proceed to payment
@@ -981,7 +988,7 @@ function renderNextSteps(statusCounts, documents) {
       if (doc.approved === false) {
         nextStepsHTML += `
           <div class="next-step">
-            <span class="step-icon">📄</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="step-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             <p>Resubmit: ${doc.name}</p>
           </div>
         `;
@@ -1002,11 +1009,11 @@ function renderNextSteps(statusCounts, documents) {
         <p><strong>Waiting for Review:</strong> ${statusCounts.pending} document(s) under review</p>
       </div>
       <div class="next-step">
-        <span class="step-icon">📧</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="step-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
         <p>You will receive an email when the review is complete</p>
       </div>
       <div class="next-step">
-        <span class="step-icon">🔄</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="step-icon"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
         <p>This page will automatically update when status changes</p>
       </div>
     `;

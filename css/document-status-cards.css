@@ -142,8 +142,11 @@
 }
 
 .document-icon {
-  font-size: 32px;
+  width: 32px;
+  height: 32px;
   line-height: 1;
+  stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .document-card .card-header h3 {
@@ -232,18 +235,27 @@
   border-left: 4px solid #dc3545;
   border-radius: 4px;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .rejection-reason strong {
   color: #dc3545;
   display: block;
   margin-bottom: 6px;
+  font-size: 14px;
 }
 
 .rejection-reason p {
   margin: 0;
   color: #4b5563;
   line-height: 1.6;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .estimated-time {
@@ -368,12 +380,13 @@
 }
 
 .step-icon {
-  font-size: 20px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
   flex-shrink: 0;
   background: rgba(0,0,0,0.03);
   border-radius: 50%;
@@ -417,7 +430,8 @@
   }
 
   .document-icon {
-    font-size: 28px;
+    width: 28px;
+    height: 28px;
   }
 
   .card-actions {
@@ -439,9 +453,8 @@
   }
 
   .step-icon {
-    font-size: 16px;
-    width: 28px;
-    height: 28px;
+    width: 16px;
+    height: 16px;
   }
 }
 
