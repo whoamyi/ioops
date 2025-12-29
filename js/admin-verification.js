@@ -21,6 +21,7 @@ let socket = null;
 let currentTab = 'verifications';
 let shipments = [];
 let emailTemplates = [];
+let pendingRejection = null; // Track document being rejected via modal
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
