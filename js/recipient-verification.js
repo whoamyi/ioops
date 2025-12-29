@@ -801,6 +801,10 @@ function renderRejectedState() {
     if (statusCounts.rejected > 0) {
       console.log('[Resubmit Button] Showing button - rejected count:', statusCounts.rejected);
       resubmitBtn.style.display = 'inline-block';
+      resubmitBtn.style.visibility = 'visible';
+      resubmitBtn.style.opacity = '1';
+      resubmitBtn.style.position = 'static';
+      resubmitBtn.style.pointerEvents = 'auto';
       resubmitBtn.disabled = false;
       resubmitBtn.onclick = () => {
         transitionTo(STATES.STEP_1_1_PERSONAL);
@@ -808,6 +812,10 @@ function renderRejectedState() {
     } else {
       console.log('[Resubmit Button] Hiding button - no rejections');
       resubmitBtn.style.display = 'none';
+      resubmitBtn.style.visibility = 'hidden';
+      resubmitBtn.style.opacity = '0';
+      resubmitBtn.style.position = 'absolute';
+      resubmitBtn.style.pointerEvents = 'none';
       resubmitBtn.disabled = true;
     }
     console.log('[Resubmit Button] After update, display:', resubmitBtn.style.display);
