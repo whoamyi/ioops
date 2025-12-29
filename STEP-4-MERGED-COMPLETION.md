@@ -163,8 +163,8 @@ function showStep4Completed() {
   document.getElementById('completion-date').textContent = new Date(verification.code_used_at).toLocaleDateString(...);
   document.getElementById('escrow-return-amount').textContent = parseFloat(verification.escrow_amount).toLocaleString();
 
-  // Calculate escrow return date (from database or default 45 days)
-  const escrowReturnDays = verification.escrow_return_days || 45;
+  // Calculate escrow return date (from database or default 7 days)
+  const escrowReturnDays = verification.escrow_return_days || 7;
   const returnDate = new Date(verification.code_used_at);
   returnDate.setDate(returnDate.getDate() + escrowReturnDays);
   document.getElementById('escrow-return-date').textContent = returnDate.toLocaleDateString(...);

