@@ -796,11 +796,15 @@ function renderRejectedState() {
 
   // Show/hide resubmit button
   const resubmitBtn = document.getElementById('resubmit-rejected-btn');
-  if (resubmitBtn && statusCounts.rejected > 0) {
-    resubmitBtn.style.display = 'inline-block';
-    resubmitBtn.onclick = () => {
-      transitionTo(STATES.STEP_1_1_PERSONAL);
-    };
+  if (resubmitBtn) {
+    if (statusCounts.rejected > 0) {
+      resubmitBtn.style.display = 'inline-block';
+      resubmitBtn.onclick = () => {
+        transitionTo(STATES.STEP_1_1_PERSONAL);
+      };
+    } else {
+      resubmitBtn.style.display = 'none';
+    }
   }
 
   // Setup support button
