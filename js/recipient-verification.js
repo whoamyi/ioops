@@ -1650,10 +1650,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reload verification data from backend
         await loadVerification();
 
-        // The state will automatically transition based on backend data
-        // If rejected, will show document status cards
-        // If approved, will show payment form
-        // If still pending, will stay on waiting page
+        // Force transition to document status view (rejected state)
+        // This allows users to see their document status even if still pending
+        console.log('[Status Check] Transitioning to document status view');
+        currentState = STATES.REJECTED;
+        renderState();
 
       } catch (error) {
         console.error('[Status Check] Error:', error);
