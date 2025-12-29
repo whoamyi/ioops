@@ -4,6 +4,13 @@ const API_BASE = window.location.hostname === 'localhost' || window.location.hos
   ? 'http://localhost:3000/api/ioops'
   : 'https://meridian-tracking.fly.dev/api/ioops';
 
+// WebSocket connection for real-time updates
+const WS_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://meridian-tracking.fly.dev';
+
+let socket = null;
+
 // State Machine
 const STATES = {
   LOADING: 'LOADING',
@@ -508,17 +515,26 @@ function showNotification(message, type = 'info') {
   // Create notification element
   const notification = document.createElement('div');
   notification.className = `notification notification-${type}`;
+
+  // Determine background color based on type
+  let bgColor = '#3B82F6'; // info (blue)
+  if (type === 'success') bgColor = '#10B981'; // green
+  if (type === 'error') bgColor = '#EF4444'; // red
+  if (type === 'warning') bgColor = '#F59E0B'; // orange
+
   notification.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
     padding: 16px 24px;
-    background: ${type === 'success' ? '#10B981' : '#3B82F6'};
+    background: ${bgColor};
     color: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 10000;
     animation: slideIn 0.3s ease;
+    max-width: 400px;
+    font-weight: 500;
   `;
   notification.textContent = message;
 
@@ -1189,12 +1205,75 @@ async function downloadVerificationReceipt() {
   }
 }
 
+// WebSocket Integration
+function initializeWebSocket() {
+  if (!token) return;
+
+  console.log('[WebSocket] Connecting to real-time updates...');
+
+  // Load Socket.IO from CDN
+  const script = document.createElement('script');
+  script.src = 'https://cdn.socket.io/4.5.4/socket.io.min.js';
+  script.onload = () => {
+    socket = io(WS_BASE);
+
+    socket.on('connect', () => {
+      console.log('[WebSocket] Connected');
+      // Join verification-specific room
+      socket.emit('join_verification', token);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('[WebSocket] Disconnected');
+    });
+
+    // Listen for document approval/rejection events
+    socket.on('document_approved', (data) => {
+      console.log('[WebSocket] Document approved:', data);
+      showNotification(`Your ${getDocumentName(data.documentType)} has been approved!`, 'success');
+
+      // Reload verification data to get updated status
+      loadVerification();
+    });
+
+    socket.on('document_rejected', (data) => {
+      console.log('[WebSocket] Document rejected:', data);
+      showNotification(`Your ${getDocumentName(data.documentType)} was rejected. Please review the feedback.`, 'error');
+
+      // Reload verification data
+      loadVerification();
+    });
+
+    // Listen for all documents approved
+    socket.on('all_documents_approved', (data) => {
+      console.log('[WebSocket] All documents approved!', data);
+      showNotification('All documents approved! You can now proceed to payment.', 'success');
+
+      // Reload and transition to payment step
+      loadVerification();
+    });
+  };
+  document.head.appendChild(script);
+}
+
+function getDocumentName(documentType) {
+  const names = {
+    'passport': 'ID Document',
+    'proof_of_address': 'Proof of Address',
+    'selfie_with_id': 'Face Verification'
+  };
+  return names[documentType] || documentType;
+}
+
 // Event Handlers
 document.addEventListener('DOMContentLoaded', () => {
   if (!token) {
     showError('No verification token provided');
     return;
   }
+
+  // Initialize WebSocket for real-time updates
+  initializeWebSocket();
 
   // Entry point - Begin button
   const beginBtn = document.getElementById('begin-verification-btn');
