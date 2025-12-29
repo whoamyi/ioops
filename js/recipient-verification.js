@@ -797,16 +797,20 @@ function renderRejectedState() {
   const resubmitBtn = document.getElementById('resubmit-rejected-btn');
   if (resubmitBtn) {
     console.log('[Resubmit Button] Status counts:', statusCounts);
+    console.log('[Resubmit Button] Current display style:', resubmitBtn.style.display);
     if (statusCounts.rejected > 0) {
       console.log('[Resubmit Button] Showing button - rejected count:', statusCounts.rejected);
       resubmitBtn.style.display = 'inline-block';
+      resubmitBtn.disabled = false;
       resubmitBtn.onclick = () => {
         transitionTo(STATES.STEP_1_1_PERSONAL);
       };
     } else {
       console.log('[Resubmit Button] Hiding button - no rejections');
       resubmitBtn.style.display = 'none';
+      resubmitBtn.disabled = true;
     }
+    console.log('[Resubmit Button] After update, display:', resubmitBtn.style.display);
   }
 
   // Setup support button to show modal
