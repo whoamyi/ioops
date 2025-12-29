@@ -780,11 +780,12 @@ async function approveIndividualDocument(documentType) {
 
     await loadVerifications();
 
-    // Refresh the detail panel to show updated status
+    // Refresh the detail panel to show updated status from server
     const updatedVerification = verifications.find(v => v.id === selectedVerification.id);
     if (updatedVerification) {
       selectedVerification = updatedVerification;
-      // Don't call showDetailPanel() - we already updated the UI above
+      // Force re-render the detail panel with fresh data to avoid stale status
+      showDetailPanel(updatedVerification);
     }
   } catch (error) {
     console.error('Error approving document:', error);
@@ -912,9 +913,12 @@ async function processDocumentRejection() {
 
     await loadVerifications();
 
+    // Refresh the detail panel to show updated status from server
     const updatedVerification = verifications.find(v => v.id === selectedVerification.id);
     if (updatedVerification) {
       selectedVerification = updatedVerification;
+      // Force re-render the detail panel with fresh data to avoid stale status
+      showDetailPanel(updatedVerification);
     }
   } catch (error) {
     console.error('Error rejecting document:', error);
