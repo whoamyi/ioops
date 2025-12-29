@@ -1207,24 +1207,64 @@ async function downloadVerificationReceipt() {
 
 // WebSocket Integration
 function initializeWebSocket() {
-  if (!token) return;
+  if (!token) {
+    console.warn('[WebSocket] No token available, skipping WebSocket initialization');
+    return;
+  }
 
   console.log('[WebSocket] Connecting to real-time updates...');
+  console.log('[WebSocket] WS_BASE:', WS_BASE);
+  console.log('[WebSocket] Token:', token);
+
+  // Check if Socket.IO is already loaded
+  if (typeof io !== 'undefined') {
+    console.log('[WebSocket] Socket.IO already loaded, connecting...');
+    connectWebSocket();
+    return;
+  }
 
   // Load Socket.IO from CDN
   const script = document.createElement('script');
   script.src = 'https://cdn.socket.io/4.5.4/socket.io.min.js';
   script.onload = () => {
-    socket = io(WS_BASE);
+    console.log('[WebSocket] Socket.IO library loaded successfully');
+    connectWebSocket();
+  };
+  script.onerror = (error) => {
+    console.error('[WebSocket] Failed to load Socket.IO library:', error);
+    console.error('[WebSocket] Real-time updates will not work. Please check your internet connection.');
+  };
+  document.head.appendChild(script);
+}
+
+function connectWebSocket() {
+  try {
+    socket = io(WS_BASE, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
 
     socket.on('connect', () => {
-      console.log('[WebSocket] Connected');
+      console.log('[WebSocket] Connected with ID:', socket.id);
       // Join verification-specific room
+      console.log('[WebSocket] Joining room: verification_' + token);
       socket.emit('join_verification', token);
     });
 
-    socket.on('disconnect', () => {
-      console.log('[WebSocket] Disconnected');
+    socket.on('connect_error', (error) => {
+      console.error('[WebSocket] Connection error:', error.message);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('[WebSocket] Disconnected. Reason:', reason);
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('[WebSocket] Reconnected after', attemptNumber, 'attempts');
+      // Rejoin room on reconnect
+      socket.emit('join_verification', token);
     });
 
     // Listen for document approval/rejection events
@@ -1252,8 +1292,9 @@ function initializeWebSocket() {
       // Reload and transition to payment step
       loadVerification();
     });
-  };
-  document.head.appendChild(script);
+  } catch (error) {
+    console.error('[WebSocket] Error initializing WebSocket connection:', error);
+  }
 }
 
 function getDocumentName(documentType) {
