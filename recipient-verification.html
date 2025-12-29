@@ -6,6 +6,7 @@
     <title>IOOPS Verification Portal</title>
     <link rel="stylesheet" href="css/recipient-verification.css">
     <link rel="stylesheet" href="css/professional-form-fields.css">
+    <link rel="stylesheet" href="css/document-status-cards.css">
 </head>
 <body>
     <div class="verification-portal">
@@ -359,34 +360,87 @@
                 </div>
             </div>
 
-            <!-- REJECTED STATE -->
+            <!-- REJECTED STATE - ENHANCED -->
             <div id="rejected" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <div class="rejection-notice" style="text-align: center; padding: 48px 24px;">
-                        <div class="rejection-icon" style="font-size: 64px; margin-bottom: 24px; color: var(--error);">✗</div>
-                        <h2 style="color: var(--error);">Verification Documents Need Attention</h2>
-                        <p style="margin: 16px 0 24px 0; color: var(--text-secondary);">Unfortunately, some of your submitted documents couldn't be verified. Please review the issues below and resubmit.</p>
+                    <h2 style="margin-bottom: 24px;">📋 Document Verification Status</h2>
 
-                        <div class="rejection-reasons" style="background: #FEF2F2; border: 1px solid #FCA5A5; padding: 24px; border-radius: 8px; margin: 32px 0; text-align: left;">
-                            <h3 style="font-size: 16px; margin: 0 0 16px 0; color: var(--error);">Issues Found</h3>
-                            <div id="rejection-list">
-                                <!-- Populated by JavaScript -->
+                    <!-- Overall Status Summary -->
+                    <div id="verification-summary" class="verification-summary">
+                        <!-- Dynamically populated by JavaScript -->
+                    </div>
+
+                    <!-- Individual Document Status Cards -->
+                    <div class="document-status-grid">
+
+                        <!-- Card 1: ID Document -->
+                        <div id="passport-status-card" class="document-card">
+                            <div class="card-header">
+                                <span class="document-icon">🆔</span>
+                                <h3>ID Document</h3>
+                                <span id="passport-status-badge" class="status-badge"></span>
+                            </div>
+
+                            <div class="card-body">
+                                <div id="passport-status-details" class="status-details"></div>
+                                <div id="passport-action-buttons" class="card-actions"></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <span id="passport-timestamp" class="timestamp"></span>
                             </div>
                         </div>
 
-                        <div class="info-notice">
-                            <p><strong>What to do next:</strong></p>
-                            <ul style="text-align: left; margin: 12px 0 0 20px; padding: 0;">
-                                <li>Review the issues listed above</li>
-                                <li>Prepare new, clear photos addressing the feedback</li>
-                                <li>Click "Try Again" to resubmit your documents</li>
-                            </ul>
+                        <!-- Card 2: Proof of Address -->
+                        <div id="address-status-card" class="document-card">
+                            <div class="card-header">
+                                <span class="document-icon">🏠</span>
+                                <h3>Proof of Address</h3>
+                                <span id="address-status-badge" class="status-badge"></span>
+                            </div>
+
+                            <div class="card-body">
+                                <div id="address-status-details" class="status-details"></div>
+                                <div id="address-action-buttons" class="card-actions"></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <span id="address-timestamp" class="timestamp"></span>
+                            </div>
                         </div>
 
-                        <div class="action-buttons" style="margin-top: 32px; gap: 12px;">
-                            <button id="retry-verification-btn" class="btn-primary">Try Again</button>
-                            <button id="contact-support-btn" class="btn-secondary">Contact Support</button>
+                        <!-- Card 3: Face Verification -->
+                        <div id="selfie-status-card" class="document-card">
+                            <div class="card-header">
+                                <span class="document-icon">📸</span>
+                                <h3>Face Verification</h3>
+                                <span id="selfie-status-badge" class="status-badge"></span>
+                            </div>
+
+                            <div class="card-body">
+                                <div id="selfie-status-details" class="status-details"></div>
+                                <div id="selfie-action-buttons" class="card-actions"></div>
+                            </div>
+
+                            <div class="card-footer">
+                                <span id="selfie-timestamp" class="timestamp"></span>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Next Steps Section -->
+                    <div id="next-steps-section" class="next-steps">
+                        <!-- Dynamically populated by JavaScript -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons" style="margin-top: 32px; gap: 12px; display: flex; justify-content: center;">
+                        <button id="resubmit-rejected-btn" class="btn-primary" style="display: none;">
+                            Resubmit Rejected Documents
+                        </button>
+                        <button id="contact-support-btn-new" class="btn-secondary">
+                            Contact Support
+                        </button>
                     </div>
                 </div>
             </div>

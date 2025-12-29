@@ -723,33 +723,314 @@ function renderWaitingState() {
 function renderRejectedState() {
   if (!verification) return;
 
-  const reasonsEl = document.getElementById('rejection-reasons');
-  if (reasonsEl) {
-    const reasons = [];
+  // Calculate status counts
+  const statusCounts = {
+    approved: 0,
+    rejected: 0,
+    pending: 0
+  };
 
-    if (verification.passport_approved === false && verification.passport_rejection_reason) {
-      reasons.push(`ID Document: ${verification.passport_rejection_reason}`);
+  const documents = [
+    {
+      id: 'passport',
+      name: 'ID Document',
+      icon: '🆔',
+      approved: verification.passport_approved,
+      reason: verification.passport_rejection_reason,
+      timestamp: verification.documents_reviewed_at
+    },
+    {
+      id: 'address',
+      name: 'Proof of Address',
+      icon: '🏠',
+      approved: verification.proof_of_address_approved,
+      reason: verification.proof_of_address_rejection_reason,
+      timestamp: verification.documents_reviewed_at
+    },
+    {
+      id: 'selfie',
+      name: 'Face Verification',
+      icon: '📸',
+      approved: verification.selfie_approved,
+      reason: verification.selfie_rejection_reason,
+      timestamp: verification.documents_reviewed_at
     }
-    if (verification.proof_of_address_approved === false && verification.proof_of_address_rejection_reason) {
-      reasons.push(`Proof of Address: ${verification.proof_of_address_rejection_reason}`);
-    }
-    if (verification.selfie_approved === false && verification.selfie_rejection_reason) {
-      reasons.push(`Selfie: ${verification.selfie_rejection_reason}`);
-    }
+  ];
 
-    if (reasons.length > 0) {
-      reasonsEl.innerHTML = '<ul>' + reasons.map(r => `<li>${r}</li>`).join('') + '</ul>';
-    }
-  }
+  // Count statuses
+  documents.forEach(doc => {
+    if (doc.approved === true) statusCounts.approved++;
+    else if (doc.approved === false) statusCounts.rejected++;
+    else statusCounts.pending++;
+  });
 
-  // Show resubmit button
-  const resubmitBtn = document.getElementById('resubmit-documents-btn');
-  if (resubmitBtn) {
-    resubmitBtn.style.display = 'block';
-    resubmitBtn.addEventListener('click', () => {
+  // Render summary
+  renderVerificationSummary(statusCounts);
+
+  // Render each document card
+  documents.forEach(doc => {
+    renderDocumentStatusCard(doc);
+  });
+
+  // Render next steps
+  renderNextSteps(statusCounts, documents);
+
+  // Show/hide resubmit button
+  const resubmitBtn = document.getElementById('resubmit-rejected-btn');
+  if (resubmitBtn && statusCounts.rejected > 0) {
+    resubmitBtn.style.display = 'inline-block';
+    resubmitBtn.onclick = () => {
       transitionTo(STATES.STEP_1_1_PERSONAL);
-    });
+    };
   }
+
+  // Setup support button
+  const supportBtn = document.getElementById('contact-support-btn-new');
+  if (supportBtn) {
+    supportBtn.onclick = () => {
+      window.location.href = `/support?token=${token}`;
+    };
+  }
+}
+
+function renderVerificationSummary(statusCounts) {
+  const summaryEl = document.getElementById('verification-summary');
+  if (!summaryEl) return;
+
+  const total = statusCounts.approved + statusCounts.rejected + statusCounts.pending;
+  const percentage = total > 0 ? Math.round((statusCounts.approved / total) * 100) : 0;
+
+  let statusClass = 'status-warning';
+  let statusMessage = '⚠️ ATTENTION REQUIRED';
+
+  if (statusCounts.approved === 3) {
+    statusClass = 'status-success';
+    statusMessage = '✅ VERIFICATION COMPLETE';
+  } else if (statusCounts.approved === 2 && statusCounts.rejected === 0) {
+    statusClass = 'status-info';
+    statusMessage = '⏳ ALMOST COMPLETE';
+  } else if (statusCounts.rejected === 3) {
+    statusClass = 'status-error';
+    statusMessage = '❌ ALL DOCUMENTS REJECTED';
+  }
+
+  summaryEl.innerHTML = `
+    <div class="summary-card ${statusClass}">
+      <h3>${statusMessage}</h3>
+      <div class="summary-stats">
+        <div class="stat">
+          <span class="stat-value">${statusCounts.approved}</span>
+          <span class="stat-label">Approved</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">${statusCounts.rejected}</span>
+          <span class="stat-label">Rejected</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">${statusCounts.pending}</span>
+          <span class="stat-label">Pending</span>
+        </div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${percentage}%"></div>
+      </div>
+      <p class="progress-text">${percentage}% Complete</p>
+    </div>
+  `;
+}
+
+function renderDocumentStatusCard(doc) {
+  const badgeEl = document.getElementById(`${doc.id}-status-badge`);
+  const detailsEl = document.getElementById(`${doc.id}-status-details`);
+  const actionsEl = document.getElementById(`${doc.id}-action-buttons`);
+  const timestampEl = document.getElementById(`${doc.id}-timestamp`);
+  const cardEl = document.getElementById(`${doc.id}-status-card`);
+
+  if (!cardEl) return;
+
+  let statusBadge = '';
+  let statusDetails = '';
+  let actionButtons = '';
+  let cardClass = '';
+
+  if (doc.approved === true) {
+    // APPROVED
+    cardClass = 'card-approved';
+    statusBadge = '<span class="badge badge-success">✓ APPROVED</span>';
+    statusDetails = `
+      <p class="status-message success">
+        <strong>Status:</strong> Your document has been approved.
+      </p>
+    `;
+    actionButtons = ''; // No action needed
+
+  } else if (doc.approved === false) {
+    // REJECTED
+    cardClass = 'card-rejected';
+    statusBadge = '<span class="badge badge-error">✗ REJECTED</span>';
+
+    const attemptCount = 1; // TODO: Track attempt count in database
+    const maxAttempts = 3;
+
+    statusDetails = `
+      <p class="status-message error">
+        <strong>Status:</strong> Document rejected (Attempt ${attemptCount} of ${maxAttempts})
+      </p>
+      <div class="rejection-reason">
+        <strong>Reason:</strong>
+        <p>${doc.reason || 'Please resubmit a clearer image of your document.'}</p>
+      </div>
+    `;
+
+    if (attemptCount >= maxAttempts) {
+      actionButtons = `
+        <button class="btn btn-secondary btn-sm" onclick="contactSupport('${doc.id}')">
+          Contact Support
+        </button>
+      `;
+    } else {
+      actionButtons = `
+        <button class="btn btn-primary btn-sm" onclick="resubmitDocument('${doc.id}')">
+          Resubmit ${doc.name}
+        </button>
+      `;
+    }
+
+  } else {
+    // PENDING
+    cardClass = 'card-pending';
+    statusBadge = '<span class="badge badge-warning">⏳ UNDER REVIEW</span>';
+    statusDetails = `
+      <p class="status-message pending">
+        <strong>Status:</strong> Your document is being reviewed by our compliance team.
+      </p>
+      <p class="estimated-time">
+        <strong>Estimated Review Time:</strong> 1-2 hours
+      </p>
+      <div class="loading-spinner"></div>
+    `;
+    actionButtons = ''; // No action needed while pending
+  }
+
+  // Apply card styling
+  cardEl.className = `document-card ${cardClass}`;
+
+  // Populate elements
+  if (badgeEl) badgeEl.innerHTML = statusBadge;
+  if (detailsEl) detailsEl.innerHTML = statusDetails;
+  if (actionsEl) actionsEl.innerHTML = actionButtons;
+  if (timestampEl && doc.timestamp) {
+    const date = new Date(doc.timestamp);
+    timestampEl.textContent = `Submitted: ${date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })}`;
+  }
+}
+
+function renderNextSteps(statusCounts, documents) {
+  const nextStepsEl = document.getElementById('next-steps-section');
+  if (!nextStepsEl) return;
+
+  let nextStepsHTML = '<h3>📋 Next Steps</h3><div class="next-steps-list">';
+
+  if (statusCounts.approved === 3) {
+    // All approved - proceed to payment
+    nextStepsHTML += `
+      <div class="next-step completed">
+        <span class="step-icon">✓</span>
+        <p><strong>Step 1: Identity Verification</strong> - Complete</p>
+      </div>
+      <div class="next-step active">
+        <span class="step-icon">→</span>
+        <p><strong>Step 2: Payment</strong> - Proceed to escrow payment</p>
+      </div>
+      <div class="next-step">
+        <span class="step-icon">3</span>
+        <p><strong>Step 3: Generate Code</strong></p>
+      </div>
+      <div class="next-step">
+        <span class="step-icon">4</span>
+        <p><strong>Step 4: Complete</strong></p>
+      </div>
+    `;
+  } else if (statusCounts.rejected > 0 && statusCounts.pending === 0) {
+    // Some/all rejected, none pending - action required
+    nextStepsHTML += `
+      <div class="next-step action-required">
+        <span class="step-icon">⚠️</span>
+        <p><strong>Action Required:</strong> Resubmit ${statusCounts.rejected} rejected document(s)</p>
+      </div>
+    `;
+
+    documents.forEach(doc => {
+      if (doc.approved === false) {
+        nextStepsHTML += `
+          <div class="next-step">
+            <span class="step-icon">📄</span>
+            <p>Resubmit: ${doc.name}</p>
+          </div>
+        `;
+      }
+    });
+
+    nextStepsHTML += `
+      <div class="next-step">
+        <span class="step-icon">⏰</span>
+        <p><strong>Deadline:</strong> ${getResubmissionDeadline()}</p>
+      </div>
+    `;
+  } else if (statusCounts.pending > 0) {
+    // Some pending - wait for review
+    nextStepsHTML += `
+      <div class="next-step pending">
+        <span class="step-icon">⏳</span>
+        <p><strong>Waiting for Review:</strong> ${statusCounts.pending} document(s) under review</p>
+      </div>
+      <div class="next-step">
+        <span class="step-icon">📧</span>
+        <p>You will receive an email when the review is complete</p>
+      </div>
+      <div class="next-step">
+        <span class="step-icon">🔄</span>
+        <p>This page will automatically update when status changes</p>
+      </div>
+    `;
+
+    if (statusCounts.rejected > 0) {
+      nextStepsHTML += `
+        <div class="next-step action-available">
+          <span class="step-icon">✏️</span>
+          <p>While waiting, you can resubmit the rejected document(s)</p>
+        </div>
+      `;
+    }
+  }
+
+  nextStepsHTML += '</div>';
+  nextStepsEl.innerHTML = nextStepsHTML;
+}
+
+function getResubmissionDeadline() {
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + 7);
+  return deadline.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}
+
+// Helper functions for document-specific actions
+function resubmitDocument(documentId) {
+  sessionStorage.setItem('resubmit_document', documentId);
+  transitionTo(STATES.STEP_1_3_CAPTURE);
+}
+
+function contactSupport(documentId) {
+  window.location.href = `/support?issue=document_rejection&doc=${documentId}&token=${token}`;
 }
 
 function renderPaymentStep() {
