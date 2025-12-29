@@ -283,7 +283,7 @@ function determineStateFromVerification() {
   // State machine based on verification status from backend
   if (verification.status === 'initiated') {
     transitionTo(STATES.ENTRY_POINT);
-  } else if (verification.status === 'documents_submitted') {
+  } else if (verification.status === 'documents_submitted' || verification.status === 'documents_approved') {
     // Check document approval status
     if (verification.all_documents_approved === true) {
       transitionTo(STATES.STEP_2_PAYMENT);
