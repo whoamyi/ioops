@@ -256,13 +256,6 @@ function showError(message) {
 // API calls
 async function loadVerification() {
   try {
-    // Try to restore previous session first
-    if (loadVerificationState()) {
-      console.log('[Restore] Previous session restored successfully');
-      renderState();
-      return;
-    }
-
     console.log('[API] Loading verification from backend...');
     const response = await fetch(`${API_BASE}/verification/${token}`);
 
@@ -276,8 +269,11 @@ async function loadVerification() {
     verification = await response.json();
     console.log('[API] Verification loaded:', verification.status);
 
-    // Determine initial state based on backend status
+    // Determine state based on backend status (this is the source of truth)
     determineStateFromVerification();
+
+    // Save the current state for faster subsequent renders
+    saveVerificationState();
   } catch (error) {
     showError(error.message);
   }
