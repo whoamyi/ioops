@@ -1375,46 +1375,50 @@ async function viewShipmentDetails(trackingId) {
 
 // Setup modal event listeners
 function setupModalListeners() {
+  // Helper function to safely add event listeners
+  const addListener = (id, event, handler) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(event, handler);
+  };
+
   // Close email modal
-  document.getElementById('close-email-modal').addEventListener('click', () => {
+  addListener('close-email-modal', 'click', () => {
     document.getElementById('email-modal').style.display = 'none';
   });
 
-  document.getElementById('cancel-email').addEventListener('click', () => {
+  addListener('cancel-email', 'click', () => {
     document.getElementById('email-modal').style.display = 'none';
   });
 
   // Send email button
-  document.getElementById('send-email').addEventListener('click', sendEmailFromTemplate);
+  addListener('send-email', 'click', sendEmailFromTemplate);
 
   // Template category change
-  document.getElementById('template-category').addEventListener('change', populateTemplates);
+  addListener('template-category', 'change', populateTemplates);
 
   // Close code modal
-  document.getElementById('close-code-modal').addEventListener('click', () => {
+  addListener('close-code-modal', 'click', () => {
     document.getElementById('code-modal').style.display = 'none';
   });
 
-  document.getElementById('cancel-code').addEventListener('click', () => {
+  addListener('cancel-code', 'click', () => {
     document.getElementById('code-modal').style.display = 'none';
   });
 
   // Save code button
-  document.getElementById('save-code').addEventListener('click', saveSecurityCode);
+  addListener('save-code', 'click', saveSecurityCode);
 
-  // Refresh shipments button
-  document.getElementById('refresh-shipments-btn').addEventListener('click', () => {
+  // Refresh shipments button (may not exist on verifications tab)
+  addListener('refresh-shipments-btn', 'click', () => {
     loadShipments();
   });
 
-  // Shipment filters
-  document.getElementById('shipment-status-filter').addEventListener('change', () => {
-    // TODO: Implement filtering
+  // Shipment filters (may not exist on verifications tab)
+  addListener('shipment-status-filter', 'change', () => {
     loadShipments();
   });
 
-  document.getElementById('shipment-search').addEventListener('input', () => {
-    // TODO: Implement search
+  addListener('shipment-search', 'input', () => {
     loadShipments();
   });
 }
