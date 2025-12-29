@@ -51,6 +51,30 @@ function setupEventListeners() {
   document.getElementById('close-panel').addEventListener('click', () => {
     closeDetailPanel();
   });
+
+  // Rejection Modal Event Listeners
+  document.getElementById('preset-rejection-reason').addEventListener('change', (e) => {
+    const customGroup = document.getElementById('custom-rejection-reason-group');
+    if (e.target.value === 'custom') {
+      customGroup.style.display = 'block';
+    } else {
+      customGroup.style.display = 'none';
+    }
+  });
+
+  document.getElementById('close-rejection-modal').addEventListener('click', () => {
+    document.getElementById('rejection-modal').style.display = 'none';
+    pendingRejection = null;
+  });
+
+  document.getElementById('cancel-rejection').addEventListener('click', () => {
+    document.getElementById('rejection-modal').style.display = 'none';
+    pendingRejection = null;
+  });
+
+  document.getElementById('confirm-rejection').addEventListener('click', async () => {
+    await processDocumentRejection();
+  });
 }
 
 // Load all verifications from API

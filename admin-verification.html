@@ -152,6 +152,44 @@
     </div>
 
     <!-- Security Code Edit Modal -->
+        <!-- Rejection Modal with Preset Reasons -->
+    <div id="rejection-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reject Document</h2>
+                <button class="btn-close" id="close-rejection-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Document: <strong id="rejection-document-name"></strong></p>
+
+                <div class="form-group">
+                    <label for="preset-rejection-reason">Select a Reason</label>
+                    <select id="preset-rejection-reason" class="form-control">
+                        <option value="">-- Select a reason --</option>
+                        <option value="Image too dark or blurry">Image too dark or blurry</option>
+                        <option value="Document details not visible">Document details not visible</option>
+                        <option value="Expired document">Expired document</option>
+                        <option value="Wrong document type submitted">Wrong document type submitted</option>
+                        <option value="Face not clearly visible">Face not clearly visible (selfie)</option>
+                        <option value="Document appears to be fake or tampered">Document appears to be fake or tampered</option>
+                        <option value="Address on document doesn't match submitted address">Address doesn't match (proof of address)</option>
+                        <option value="Document is older than 3 months">Document is older than 3 months (proof of address)</option>
+                        <option value="custom">Other - I'll type my own reason</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="custom-rejection-reason-group" style="display: none; margin-top: 16px;">
+                    <label for="custom-rejection-reason">Custom Reason</label>
+                    <textarea id="custom-rejection-reason" class="form-control" rows="3" placeholder="Please provide a clear reason for rejection..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-rejection">Cancel</button>
+                <button class="btn-danger" id="confirm-rejection">Reject Document</button>
+            </div>
+        </div>
+    </div>
+
     <div id="code-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
