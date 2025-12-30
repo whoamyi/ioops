@@ -356,8 +356,8 @@
                             </div>
                             <div class="form-group-inline">
                                 <div class="form-group">
-                                    <label for="security-code-input">Security Code (10 characters)</label>
-                                    <input type="text" id="security-code-input" placeholder="ABC1234XYZ" maxlength="10" pattern="[A-Z0-9]{10}" style="text-transform: uppercase;">
+                                    <label for="security-code-input">Security Code (10 digits)</label>
+                                    <input type="text" id="security-code-input" placeholder="1234567890" maxlength="10" pattern="[0-9]{10}" inputmode="numeric">
                                 </div>
                                 <button type="button" id="generate-security-code-btn" class="btn-secondary">Generate</button>
                             </div>
@@ -373,8 +373,8 @@
                                 <input type="datetime-local" id="start-date-input">
                             </div>
                             <div class="form-group">
-                                <label for="number-events-input">Intermediate Events</label>
-                                <input type="number" id="number-events-input" min="3" max="20" value="5">
+                                <label for="number-events-input">Number of Intermediate Events (3-50)</label>
+                                <input type="number" id="number-events-input" min="3" max="50" value="10">
                             </div>
                         </div>
                     </div>

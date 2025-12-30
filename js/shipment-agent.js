@@ -130,12 +130,11 @@ function applyConfigTemplate(templateId) {
   showNotification(`Template "${template.name}" applied`, 'success');
 }
 
-// Generate security code (10 alphanumeric uppercase characters)
+// Generate security code (10 digits only)
 function generateSecurityCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
   for (let i = 0; i < 10; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += Math.floor(Math.random() * 10);
   }
   return code;
 }
@@ -325,11 +324,11 @@ function validateShipmentConfig(config) {
   }
 
   if (config.securityCode && config.securityCode.length !== 10) {
-    errors.push('Security code must be exactly 10 characters');
+    errors.push('Security code must be exactly 10 digits');
   }
 
-  if (config.securityCode && !/^[A-Z0-9]{10}$/.test(config.securityCode)) {
-    errors.push('Security code must contain only uppercase letters and numbers');
+  if (config.securityCode && !/^[0-9]{10}$/.test(config.securityCode)) {
+    errors.push('Security code must contain only numbers (0-9)');
   }
 
   if (errors.length > 0) {
