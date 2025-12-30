@@ -167,6 +167,9 @@
 
 .form-group {
   margin-bottom: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
@@ -419,6 +422,8 @@
   gap: 8px;
   width: 100%;
   align-items: stretch;
+  position: relative;
+  z-index: 1;
 }
 
 .currency-select {
