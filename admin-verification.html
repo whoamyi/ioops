@@ -356,8 +356,8 @@
                             </div>
                             <div class="form-group-inline">
                                 <div class="form-group">
-                                    <label for="security-code-input">Security Code</label>
-                                    <input type="text" id="security-code-input" placeholder="SEC-123456">
+                                    <label for="security-code-input">Security Code (10 characters)</label>
+                                    <input type="text" id="security-code-input" placeholder="ABC1234XYZ" maxlength="10" pattern="[A-Z0-9]{10}" style="text-transform: uppercase;">
                                 </div>
                                 <button type="button" id="generate-security-code-btn" class="btn-secondary">Generate</button>
                             </div>

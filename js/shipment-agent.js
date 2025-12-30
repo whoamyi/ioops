@@ -130,11 +130,14 @@ function applyConfigTemplate(templateId) {
   showNotification(`Template "${template.name}" applied`, 'success');
 }
 
-// Generate security code
+// Generate security code (10 alphanumeric uppercase characters)
 function generateSecurityCode() {
-  const prefix = 'SEC';
-  const random = Math.floor(100000 + Math.random() * 900000);
-  return `${prefix}-${random}`;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 10; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
 }
 
 // Generate random security code button
@@ -319,6 +322,14 @@ function validateShipmentConfig(config) {
 
   if (config.securityZone && !config.securityCode) {
     errors.push('Security code is required when security zone is selected');
+  }
+
+  if (config.securityCode && config.securityCode.length !== 10) {
+    errors.push('Security code must be exactly 10 characters');
+  }
+
+  if (config.securityCode && !/^[A-Z0-9]{10}$/.test(config.securityCode)) {
+    errors.push('Security code must contain only uppercase letters and numbers');
   }
 
   if (errors.length > 0) {
