@@ -418,15 +418,16 @@
   display: flex;
   gap: 8px;
   width: 100%;
+  align-items: stretch;
 }
 
 .currency-select {
-  flex-shrink: 0;
-  width: 110px;
+  flex: 0 0 90px;
+  width: 90px;
   padding: 10px 8px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   color: #1a1a2e;
   background: #f9fafb;
   font-weight: 500;
@@ -435,7 +436,7 @@
 .currency-input-group input[type="number"] {
   flex: 1;
   width: auto !important;
-  min-width: 100px;
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -450,24 +451,13 @@
   display: flex;
   gap: 8px;
   width: 100%;
-}
-
-.weight-unit-select {
-  flex-shrink: 0;
-  width: 80px;
-  padding: 10px 8px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #1a1a2e;
-  background: #f9fafb;
-  font-weight: 500;
+  align-items: stretch;
 }
 
 .weight-input-group input[type="number"] {
   flex: 1;
   width: auto !important;
-  min-width: 100px;
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -475,6 +465,20 @@
   color: #1a1a2e;
   background: white;
   box-sizing: border-box;
+  order: 1;
+}
+
+.weight-unit-select {
+  flex: 0 0 60px;
+  width: 60px;
+  padding: 10px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1a1a2e;
+  background: #f9fafb;
+  font-weight: 500;
+  order: 2;
 }
 
 /* Responsive */
