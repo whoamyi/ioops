@@ -256,7 +256,7 @@ function renderConfigTemplates(showAll = false) {
       <div class="template-details">
         <span class="badge">${template.origin} → ${template.destination}</span>
         ${template.securityZone ? `<span class="badge badge-security">Security Hold</span>` : ''}
-        <span class="badge">${template.events} events</span>
+        ${template.events ? `<span class="badge">${template.events} events</span>` : ''}
       </div>
     </div>
   `).join('');
@@ -288,19 +288,43 @@ function toggleTemplateView(showAll) {
 // Apply configuration template
 function applyConfigTemplate(templateId) {
   const template = configTemplates.find(t => t.id === templateId);
-  if (!template) return;
+  if (!template) {
+    console.error('[Shipment Agent] Template not found:', templateId);
+    return;
+  }
 
-  document.getElementById('origin-airport-select').value = template.origin;
-  document.getElementById('destination-airport-select').value = template.destination;
+  console.log('[Shipment Agent] Applying template:', template);
+
+  const originSelect = document.getElementById('origin-airport-select');
+  const destinationSelect = document.getElementById('destination-airport-select');
+
+  if (originSelect) {
+    originSelect.value = template.origin;
+    console.log('[Shipment Agent] Set origin to:', template.origin, 'Actual value:', originSelect.value);
+  }
+
+  if (destinationSelect) {
+    destinationSelect.value = template.destination;
+    console.log('[Shipment Agent] Set destination to:', template.destination, 'Actual value:', destinationSelect.value);
+  }
 
   if (template.securityZone) {
-    document.getElementById('security-zone-select').value = template.securityZone;
-    document.getElementById('security-code-input').value = generateSecurityCode();
+    const securitySelect = document.getElementById('security-zone-select');
+    if (securitySelect) {
+      securitySelect.value = template.securityZone;
+    }
+    const securityCodeInput = document.getElementById('security-code-input');
+    if (securityCodeInput) {
+      securityCodeInput.value = generateSecurityCode();
+    }
   }
 
   // Set number of events from template
   if (template.events) {
-    document.getElementById('number-events-select').value = template.events;
+    const eventsSelect = document.getElementById('number-events-select');
+    if (eventsSelect) {
+      eventsSelect.value = template.events;
+    }
   }
 
   // Trigger route-based security zone filtering
