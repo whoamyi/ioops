@@ -177,8 +177,8 @@
   margin-bottom: 6px;
 }
 
-.form-group input,
-.form-group select,
+.form-group input:not(.currency-input-group input):not(.weight-input-group input),
+.form-group select:not(.currency-select):not(.weight-unit-select),
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
@@ -434,13 +434,15 @@
 
 .currency-input-group input[type="number"] {
   flex: 1;
-  width: auto;
-  min-width: 0;
+  width: auto !important;
+  min-width: 100px;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 14px;
   color: #1a1a2e;
+  background: white;
+  box-sizing: border-box;
 }
 
 /* Weight Input Group */
@@ -464,13 +466,15 @@
 
 .weight-input-group input[type="number"] {
   flex: 1;
-  width: auto;
-  min-width: 0;
+  width: auto !important;
+  min-width: 100px;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 14px;
   color: #1a1a2e;
+  background: white;
+  box-sizing: border-box;
 }
 
 /* Responsive */
