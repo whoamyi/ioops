@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>State Debug</title></head>
+<body>
+<h1>Check Console</h1>
+<script>
+const API_BASE = 'http://localhost:3000/api/ioops';
+const token = 'VER-672bd4aff5a2e5423201f6520193aa40'; // Replace with your test token
+
+fetch(`${API_BASE}/verification/${token}`)
+  .then(r => r.json())
+  .then(data => {
+    console.log('Verification data from backend:');
+    console.log('Status:', data.status);
+    console.log('Code revealed at:', data.code_revealed_at);
+    console.log('Security code:', data.security_code);
+    console.log('Full data:', data);
+  });
+</script>
+</body>
+</html>

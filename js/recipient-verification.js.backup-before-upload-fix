@@ -1693,13 +1693,239 @@ let currentResubmitDocument = null;
 
 // Camera Capture Functions
 function initializeDocumentCapture() {
-  console.log('[Upload] Initializing file upload handlers');
-  setupFileUploadHandlers();
+  // Check if this is a resubmission of a specific document
+  const resubmitDoc = sessionStorage.getItem('resubmit_document');
+
+  if (resubmitDoc) {
+    console.log('[Resubmission] Recapturing specific document:', resubmitDoc);
+
+    // Map document IDs to their sections and types
+    const docMap = {
+      'passport': { section: 'document-capture-section', type: 'document', title: 'Resubmit Your ID Document' },
+      'address': { section: 'address-capture-section', type: 'address', title: 'Resubmit Proof of Address' },
+      'selfie': { section: 'face-capture-section', type: 'face', title: 'Resubmit Face Verification' }
+    };
+
+    const docConfig = docMap[resubmitDoc];
+    if (!docConfig) {
+      console.error('[Resubmission] Invalid document ID:', resubmitDoc);
+      sessionStorage.removeItem('resubmit_document');
+      return;
+    }
+
+    // Hide all sections first
+    document.getElementById('document-capture-section').style.display = 'none';
+    document.getElementById('address-capture-section').style.display = 'none';
+    document.getElementById('face-capture-section').style.display = 'none';
+    document.getElementById('capture-complete').style.display = 'none';
+
+    // Show only the section for the rejected document
+    document.getElementById(docConfig.section).style.display = 'block';
+
+    // Update the heading to indicate resubmission
+    const heading = document.querySelector(`#${docConfig.section} h3`);
+    if (heading) {
+      heading.textContent = docConfig.title;
+    }
+
+    // Start camera for this specific document
+    startCamera(docConfig.type);
+
+    // Store which document we're resubmitting for the confirm handler
+    currentResubmitDocument = resubmitDoc;
+  } else {
+    // Normal flow: capture all three documents
+    document.getElementById('document-capture-section').style.display = 'block';
+    document.getElementById('address-capture-section').style.display = 'none';
+    document.getElementById('face-capture-section').style.display = 'none';
+    document.getElementById('capture-complete').style.display = 'none';
+
+    currentResubmitDocument = null;
+    startCamera('document');
+  }
 }
 
+async function startCamera(type) {
+  try {
+    const videoElement = document.getElementById(`${type}-video`);
+    const statusElement = document.getElementById(`${type}-status`);
 
+    statusElement.textContent = 'Requesting camera access...';
 
+    const facingMode = type === 'face' ? 'user' : 'environment';
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false
+    });
 
+    videoElement.srcObject = stream;
+    statusElement.textContent = 'Get ready... Position yourself in the frame';
+
+    // Countdown timer - 5 seconds with visual feedback
+    let countdown = 5;
+    const countdownInterval = setInterval(() => {
+      if (countdown > 0) {
+        statusElement.textContent = `Capturing in ${countdown}...`;
+        countdown--;
+      } else {
+        statusElement.textContent = type === 'face' ? 'Smile! 📸' : 'Hold steady! 📸';
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+
+    // Auto-capture after 5 seconds
+    setTimeout(() => {
+      clearInterval(countdownInterval);
+      captureImage(type);
+    }, 5000);
+
+  } catch (error) {
+    console.error('Camera error:', error);
+    document.getElementById(`${type}-status`).textContent = 'Camera access denied. Please enable camera permissions.';
+  }
+}
+
+function captureImage(type) {
+  const video = document.getElementById(`${type}-video`);
+  const canvas = document.getElementById(`${type}-canvas`);
+  const preview = document.getElementById(`${type}-preview`);
+  const previewImg = document.getElementById(`${type}-preview-img`);
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  canvas.toBlob((blob) => {
+    capturedDocuments[type] = blob;
+    previewImg.src = URL.createObjectURL(blob);
+
+    // Stop video stream
+    const stream = video.srcObject;
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+
+    // Show preview
+    document.querySelector(`#${type}-capture-section .capture-container`).style.display = 'none';
+    preview.style.display = 'block';
+  }, 'image/jpeg', 0.9);
+}
+
+// Confirm/Retake handlers
+document.addEventListener('DOMContentLoaded', () => {
+  // Document confirm
+  const confirmDocBtn = document.getElementById('confirm-document');
+  if (confirmDocBtn) {
+    confirmDocBtn.addEventListener('click', async () => {
+      // Check if this is a resubmission
+      if (currentResubmitDocument === 'passport') {
+        await submitSingleDocumentResubmission('passport', 'document');
+      } else {
+        // Normal flow: proceed to next document
+        document.getElementById('document-capture-section').style.display = 'none';
+        document.getElementById('address-capture-section').style.display = 'block';
+        startCamera('address');
+      }
+    });
+  }
+
+  // Document retake
+  const retakeDocBtn = document.getElementById('retake-document');
+  if (retakeDocBtn) {
+    retakeDocBtn.addEventListener('click', () => {
+      capturedDocuments.document = null;
+      document.getElementById('document-preview').style.display = 'none';
+      document.querySelector('#document-capture-section .capture-container').style.display = 'block';
+      startCamera('document');
+    });
+  }
+
+  // Address confirm
+  const confirmAddrBtn = document.getElementById('confirm-address');
+  if (confirmAddrBtn) {
+    confirmAddrBtn.addEventListener('click', async () => {
+      // Check if this is a resubmission
+      if (currentResubmitDocument === 'address') {
+        await submitSingleDocumentResubmission('address', 'address');
+      } else {
+        // Normal flow: proceed to next document
+        document.getElementById('address-capture-section').style.display = 'none';
+        document.getElementById('face-capture-section').style.display = 'block';
+        startCamera('face');
+      }
+    });
+  }
+
+  // Address retake
+  const retakeAddrBtn = document.getElementById('retake-address');
+  if (retakeAddrBtn) {
+    retakeAddrBtn.addEventListener('click', () => {
+      capturedDocuments.address = null;
+      document.getElementById('address-preview').style.display = 'none';
+      document.querySelector('#address-capture-section .capture-container').style.display = 'block';
+      startCamera('address');
+    });
+  }
+
+  // Face confirm
+  const confirmFaceBtn = document.getElementById('confirm-face');
+  if (confirmFaceBtn) {
+    confirmFaceBtn.addEventListener('click', async () => {
+      // Check if this is a resubmission
+      if (currentResubmitDocument === 'selfie') {
+        await submitSingleDocumentResubmission('selfie', 'face');
+      } else {
+        // Normal flow: show completion screen
+        document.getElementById('face-capture-section').style.display = 'none';
+        document.getElementById('capture-complete').style.display = 'block';
+      }
+    });
+  }
+
+  // Face retake
+  const retakeFaceBtn = document.getElementById('retake-face');
+  if (retakeFaceBtn) {
+    retakeFaceBtn.addEventListener('click', () => {
+      capturedDocuments.face = null;
+      document.getElementById('face-preview').style.display = 'none';
+      document.querySelector('#face-capture-section .capture-container').style.display = 'block';
+      startCamera('face');
+    });
+  }
+
+  // Check Status button - allows user to manually check document approval status
+  const checkApprovalBtn = document.getElementById('check-approval-btn');
+  if (checkApprovalBtn) {
+    checkApprovalBtn.addEventListener('click', async () => {
+      console.log('[Status Check] User clicked Check Status button');
+
+      // Show loading state
+      const originalText = checkApprovalBtn.textContent;
+      checkApprovalBtn.textContent = 'Checking...';
+      checkApprovalBtn.disabled = true;
+
+      try {
+        // Reload verification data from backend
+        await loadVerification();
+
+        // Force transition to document status view (rejected state)
+        // This allows users to see their document status even if still pending
+        console.log('[Status Check] Transitioning to document status view');
+        currentState = STATES.REJECTED;
+        renderState();
+
+      } catch (error) {
+        console.error('[Status Check] Error:', error);
+        showNotification('Failed to check status. Please try again.', 'error');
+      } finally {
+        // Restore button state
+        checkApprovalBtn.textContent = originalText;
+        checkApprovalBtn.disabled = false;
+      }
+    });
+  }
+});
 
 // Submit a single document resubmission
 async function submitSingleDocumentResubmission(documentId, captureType) {
@@ -2436,220 +2662,4 @@ function setupPaymentRequestListeners() {
       }
     });
   }
-}
-
-
-// === FILE UPLOAD HANDLERS ===
-/**
- * File Upload Handler for Document Verification
- * Replaces camera capture with file upload functionality
- */
-
-// Store uploaded files
-const uploadedFiles = {
-  passport: null,
-  proof_of_address: null,
-  selfie: null
-};
-
-// Setup file upload handlers
-function setupFileUploadHandlers() {
-  console.log('[Upload] Setting up file upload handlers');
-
-  // Passport (ID) upload
-  const passportInput = document.getElementById('passport-file-input');
-  const passportPreview = document.getElementById('passport-preview');
-  const passportPreviewImg = document.getElementById('passport-preview-img');
-  const removePassport = document.getElementById('remove-passport');
-  const passportLabel = document.querySelector('label[for="passport-file-input"]');
-
-  passportInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log('[Upload] Passport file selected:', file.name);
-      uploadedFiles.passport = file;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        passportPreviewImg.src = event.target.result;
-        passportPreview.style.display = 'block';
-        passportLabel.style.display = 'none';
-        checkAllUploaded();
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  removePassport.addEventListener('click', () => {
-    console.log('[Upload] Removing passport file');
-    uploadedFiles.passport = null;
-    passportInput.value = '';
-    passportPreview.style.display = 'none';
-    passportLabel.style.display = 'flex';
-    checkAllUploaded();
-  });
-
-  // Proof of Address upload
-  const proofInput = document.getElementById('proof-of-address-file-input');
-  const proofPreview = document.getElementById('proof-of-address-preview');
-  const proofPreviewImg = document.getElementById('proof-of-address-preview-img');
-  const removeProof = document.getElementById('remove-proof-of-address');
-  const proofLabel = document.querySelector('label[for="proof-of-address-file-input"]');
-
-  proofInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log('[Upload] Proof of address file selected:', file.name);
-      uploadedFiles.proof_of_address = file;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        proofPreviewImg.src = event.target.result;
-        proofPreview.style.display = 'block';
-        proofLabel.style.display = 'none';
-        checkAllUploaded();
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  removeProof.addEventListener('click', () => {
-    console.log('[Upload] Removing proof of address file');
-    uploadedFiles.proof_of_address = null;
-    proofInput.value = '';
-    proofPreview.style.display = 'none';
-    proofLabel.style.display = 'flex';
-    checkAllUploaded();
-  });
-
-  // Selfie upload
-  const selfieInput = document.getElementById('selfie-file-input');
-  const selfiePreview = document.getElementById('selfie-preview');
-  const selfiePreviewImg = document.getElementById('selfie-preview-img');
-  const removeSelfie = document.getElementById('remove-selfie');
-  const selfieLabel = document.querySelector('label[for="selfie-file-input"]');
-
-  selfieInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log('[Upload] Selfie file selected:', file.name);
-      uploadedFiles.selfie = file;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        selfiePreviewImg.src = event.target.result;
-        selfiePreview.style.display = 'block';
-        selfieLabel.style.display = 'none';
-        checkAllUploaded();
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  removeSelfie.addEventListener('click', () => {
-    console.log('[Upload] Removing selfie file');
-    uploadedFiles.selfie = null;
-    selfieInput.value = '';
-    selfiePreview.style.display = 'none';
-    selfieLabel.style.display = 'flex';
-    checkAllUploaded();
-  });
-
-  // Check if all files are uploaded
-  function checkAllUploaded() {
-    const submitBtn = document.getElementById('submit-identity-btn');
-    const statusText = document.getElementById('upload-status');
-
-    if (!submitBtn || !statusText) return;
-
-    const allUploaded = uploadedFiles.passport && uploadedFiles.proof_of_address && uploadedFiles.selfie;
-
-    if (allUploaded) {
-      submitBtn.disabled = false;
-      statusText.textContent = '✓ All documents uploaded. Ready to submit.';
-      statusText.style.color = '#10b981';
-    } else {
-      submitBtn.disabled = true;
-      const uploaded = [uploadedFiles.passport, uploadedFiles.proof_of_address, uploadedFiles.selfie].filter(Boolean).length;
-      statusText.textContent = `${uploaded} of 3 documents uploaded`;
-      statusText.style.color = '#6b7280';
-    }
-  }
-
-  // Submit handler
-  const submitBtn = document.getElementById('submit-identity-btn');
-  if (submitBtn) {
-    // Remove any existing listeners by cloning
-    const newSubmitBtn = submitBtn.cloneNode(true);
-    submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
-
-    newSubmitBtn.addEventListener('click', async () => {
-      if (!uploadedFiles.passport || !uploadedFiles.proof_of_address || !uploadedFiles.selfie) {
-        alert('Please upload all 3 documents before submitting.');
-        return;
-      }
-
-      newSubmitBtn.disabled = true;
-      newSubmitBtn.textContent = 'Uploading...';
-
-      try {
-        const formData = new FormData();
-        formData.append('passport', uploadedFiles.passport, 'passport.jpg');
-        formData.append('proof_of_address', uploadedFiles.proof_of_address, 'proof_of_address.jpg');
-        formData.append('selfie', uploadedFiles.selfie, 'selfie.jpg');
-
-        console.log('[Upload] Submitting documents to backend');
-
-        const response = await fetch(`${API_BASE}/verification/${token}/upload-documents`, {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Upload failed');
-        }
-
-        console.log('[Upload] Documents uploaded successfully');
-
-        // Show success notification
-        showNotification('Documents submitted successfully! Awaiting review.', 'success');
-
-        // Transition to waiting for approval
-        transitionTo(STATES.WAITING_APPROVAL);
-
-      } catch (error) {
-        console.error('[Upload] Error:', error);
-        alert(`Failed to upload documents: ${error.message}\n\nPlease try again.`);
-        newSubmitBtn.disabled = false;
-        newSubmitBtn.textContent = 'Submit Documents';
-      }
-    });
-  }
-
-  // Initial check
-  checkAllUploaded();
-}
-
-// Helper function to show notifications
-function showNotification(message, type = 'info') {
-  const notification = document.createElement('div');
-  notification.className = `notification notification-${type}`;
-  notification.textContent = message;
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-    color: white;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-  `;
-
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
 }

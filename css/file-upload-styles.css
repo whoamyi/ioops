@@ -1,0 +1,122 @@
+/* File Upload Styles for Document Verification */
+
+.upload-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.upload-section {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.upload-section h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.upload-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.file-upload-container {
+    position: relative;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-label:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-hover);
+}
+
+.file-upload-label svg {
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+}
+
+.file-upload-label span {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.file-preview {
+    position: relative;
+    margin-top: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.file-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 400px;
+    object-fit: contain;
+    background: #000;
+}
+
+.remove-file-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.remove-file-btn:hover {
+    background: rgba(220, 38, 38, 1);
+}
+
+.upload-status-text {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .upload-section {
+        padding: 16px;
+    }
+
+    .file-upload-label {
+        padding: 30px 15px;
+    }
+
+    .file-upload-label span {
+        font-size: 14px;
+    }
+
+    .file-preview img {
+        max-height: 300px;
+    }
+}

@@ -233,92 +233,90 @@
                 </div>
             </div>
 
-                        <!-- STEP 1.3: Document Upload -->
+            <!-- STEP 1.3: Camera Capture -->
             <div id="step-1-3" class="verification-step" style="display: none;">
                 <div class="step-content">
-                    <h2>Upload Your Verification Documents</h2>
-                    <p class="step-instruction">Please upload clear photos of your documents. You can take photos with your camera or select existing images.</p>
+                    <h2>Take Your Verification Photos</h2>
+                    <p class="step-instruction">We'll guide you through taking 3 quick photos: your ID, proof of address, and a photo of yourself. Your camera will open automatically for each one.</p>
 
                     <div class="info-notice" style="margin-bottom: 24px;">
-                        <p><strong>Privacy note:</strong> Documents are transmitted securely and reviewed only by authorized verification personnel. They are not stored permanently and will be deleted after verification.</p>
+                        <p><strong>Privacy note:</strong> Photos are transmitted securely and reviewed only by authorized verification personnel. They are not stored permanently and will be deleted after verification.</p>
                     </div>
 
-                    <!-- Document Upload Sections -->
-                    <div class="upload-sections">
-                        <!-- ID Document Upload -->
-                        <div class="upload-section">
-                            <h3>1. Government-Issued ID</h3>
-                            <p class="upload-description">Upload a photo of your passport, driver's license, or national ID card. Ensure all text is clear and readable.</p>
+                    <!-- Document Capture -->
+                    <div id="document-capture-section" class="capture-section">
+                        <h3>Photo 1 of 3: Your ID Document</h3>
+                        <p>Place your ID within the frame shown below. Make sure all text is clear and readable. The photo will be taken automatically when everything looks good.</p>
 
-                            <div class="file-upload-container">
-                                <input type="file" id="passport-file-input" accept="image/*" capture="environment" style="display: none;">
-                                <label for="passport-file-input" class="file-upload-label">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                                    </svg>
-                                    <span>Take Photo or Choose File</span>
-                                </label>
-
-                                <div id="passport-preview" class="file-preview" style="display: none;">
-                                    <img id="passport-preview-img" alt="ID Document">
-                                    <button type="button" class="remove-file-btn" id="remove-passport">✕ Remove</button>
-                                </div>
-                            </div>
+                        <div class="capture-container">
+                            <video id="document-video" class="capture-video" autoplay playsinline></video>
+                            <canvas id="document-canvas" style="display: none;"></canvas>
+                            <div class="capture-guide document-guide"></div>
+                            <div class="capture-status" id="document-status">Initializing camera...</div>
                         </div>
 
-                        <!-- Proof of Address Upload -->
-                        <div class="upload-section">
-                            <h3>2. Proof of Address</h3>
-                            <p class="upload-description">Upload a utility bill, bank statement, or official letter showing your address (dated within the last 3 months).</p>
-
-                            <div class="file-upload-container">
-                                <input type="file" id="proof-of-address-file-input" accept="image/*" capture="environment" style="display: none;">
-                                <label for="proof-of-address-file-input" class="file-upload-label">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                                    </svg>
-                                    <span>Take Photo or Choose File</span>
-                                </label>
-
-                                <div id="proof-of-address-preview" class="file-preview" style="display: none;">
-                                    <img id="proof-of-address-preview-img" alt="Proof of Address">
-                                    <button type="button" class="remove-file-btn" id="remove-proof-of-address">✕ Remove</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Selfie Upload -->
-                        <div class="upload-section">
-                            <h3>3. Selfie with ID</h3>
-                            <p class="upload-description">Take a selfie holding your ID next to your face. Make sure both your face and the ID are clearly visible.</p>
-
-                            <div class="file-upload-container">
-                                <input type="file" id="selfie-file-input" accept="image/*" capture="user" style="display: none;">
-                                <label for="selfie-file-input" class="file-upload-label">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                                    </svg>
-                                    <span>Take Selfie or Choose File</span>
-                                </label>
-
-                                <div id="selfie-preview" class="file-preview" style="display: none;">
-                                    <img id="selfie-preview-img" alt="Selfie with ID">
-                                    <button type="button" class="remove-file-btn" id="remove-selfie">✕ Remove</button>
-                                </div>
+                        <div class="capture-preview" id="document-preview" style="display: none;">
+                            <img id="document-preview-img" alt="Document capture">
+                            <div class="preview-actions">
+                                <button class="btn-secondary" id="retake-document">Retake</button>
+                                <button class="btn-primary" id="confirm-document">Confirm</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="action-buttons" style="margin-top: 32px;">
-                        <button id="submit-identity-btn" class="btn-primary" disabled>Submit Documents</button>
-                        <p id="upload-status" class="upload-status-text"></p>
+                    <!-- Address Proof Capture -->
+                    <div id="address-capture-section" class="capture-section" style="display: none;">
+                        <h3>Photo 2 of 3: Proof of Address</h3>
+                        <p>Now place your proof of address document in the frame. This can be a utility bill, bank statement, or official government letter showing your address.</p>
+
+                        <div class="capture-container">
+                            <video id="address-video" class="capture-video" autoplay playsinline></video>
+                            <canvas id="address-canvas" style="display: none;"></canvas>
+                            <div class="capture-guide document-guide"></div>
+                            <div class="capture-status" id="address-status">Initializing camera...</div>
+                        </div>
+
+                        <div class="capture-preview" id="address-preview" style="display: none;">
+                            <img id="address-preview-img" alt="Address proof capture">
+                            <div class="preview-actions">
+                                <button class="btn-secondary" id="retake-address">Retake</button>
+                                <button class="btn-primary" id="confirm-address">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Face Capture -->
+                    <div id="face-capture-section" class="capture-section" style="display: none;">
+                        <h3>Photo 3 of 3: Verify It's You</h3>
+                        <p>Finally, position your face in the frame. Look directly at the camera and remove glasses or hats if possible. The photo will be taken automatically.</p>
+
+                        <div class="capture-container">
+                            <video id="face-video" class="capture-video" autoplay playsinline></video>
+                            <canvas id="face-canvas" style="display: none;"></canvas>
+                            <div class="capture-guide face-guide"></div>
+                            <div class="capture-status" id="face-status">Initializing camera...</div>
+                        </div>
+
+                        <div class="capture-preview" id="face-preview" style="display: none;">
+                            <img id="face-preview-img" alt="Face capture">
+                            <div class="preview-actions">
+                                <button class="btn-secondary" id="retake-face">Retake</button>
+                                <button class="btn-primary" id="confirm-face">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Completion -->
+                    <div id="capture-complete" class="capture-section" style="display: none;">
+                        <div class="completion-notice">
+                            <div class="completion-icon">✓</div>
+                            <h3>All Photos Captured</h3>
+                            <p>Great! We've got all three photos. They look clear and will be reviewed by our verification team.</p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button id="submit-identity-btn" class="btn-primary">Continue to Payment</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -538,8 +536,8 @@
             </div>
 
             <!-- Payment Method Selection Modal -->
-            <div id="payment-method-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0;">
-                <div style="background: white; border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); margin: auto;">
+            <div id="payment-method-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                         <h2 style="margin: 0; font-size: 28px; color: #1f2937;">Select Payment Method</h2>
                         <button id="close-payment-modal" style="background: none; border: none; font-size: 32px; cursor: pointer; color: #6b7280; line-height: 1;">&times;</button>
