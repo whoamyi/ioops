@@ -270,8 +270,24 @@
                         </div>
                     </div>
 
-                    <!-- Route Configuration -->
-                    <div class="form-section">
+                    <!-- Journey Type Selection (populated by template) -->
+                    <div class="form-section" id="journey-type-section" style="display: none;">
+                        <h3>Journey Type</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="journey-type-select">Select Journey Type *</label>
+                                <select id="journey-type-select" required>
+                                    <option value="">Select a template first</option>
+                                </select>
+                                <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                                    Choose the level of detail for your shipment timeline
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Route Configuration (Hidden - controlled by templates) -->
+                    <div class="form-section" style="display: none;">
                         <h3>Route Configuration</h3>
                         <div class="form-row">
                             <div class="form-group">
@@ -382,19 +398,18 @@
                             <div class="form-group">
                                 <label for="start-date-input">Start Date & Time</label>
                                 <input type="datetime-local" id="start-date-input">
-                            </div>
-                            <div class="form-group">
-                                <label for="number-events-select">Number of Events</label>
-                                <select id="number-events-select">
-                                    <option value="10">10 events (Quick)</option>
-                                    <option value="20">20 events (Standard)</option>
-                                    <option value="30" selected>30 events (Detailed)</option>
-                                    <option value="50">50 events (Very Detailed)</option>
-                                    <option value="75">75 events (Comprehensive)</option>
-                                    <option value="100">100 events (Maximum Detail)</option>
-                                </select>
+                                <p style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                                    Leave empty to start from current time
+                                </p>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Hidden fallback for old event selector (kept for compatibility) -->
+                    <div style="display: none;">
+                        <select id="number-events-select">
+                            <option value="30" selected>30 events</option>
+                        </select>
                     </div>
                 </form>
             </div>

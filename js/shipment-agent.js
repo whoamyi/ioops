@@ -249,17 +249,27 @@ function renderConfigTemplates(showAll = false) {
   const additionalTemplates = configTemplates.filter(t => !t.featured);
   const templatesToShow = showAll ? configTemplates : featuredTemplates;
 
-  const templateCards = templatesToShow.map(template => `
-    <div class="config-template-card" onclick="applyConfigTemplate('${template.id}')">
-      <h4>${template.name}</h4>
-      <p>${template.description}</p>
-      <div class="template-details">
-        <span class="badge">${template.origin} → ${template.destination}</span>
-        ${template.securityZone ? `<span class="badge badge-security">Security Hold</span>` : ''}
-        ${template.events ? `<span class="badge">${template.events} events</span>` : ''}
+  const templateCards = templatesToShow.map(template => {
+    // Build journey types display
+    const journeyTypesDisplay = template.journeyTypes
+      ? template.journeyTypes.map(jt => `${jt.label} (${jt.events})`).join(', ')
+      : 'Various';
+
+    // Count security zones
+    const securityZonesCount = template.securityZones ? template.securityZones.length : 0;
+
+    return `
+      <div class="config-template-card" onclick="applyConfigTemplate('${template.id}')">
+        <h4>${template.name}</h4>
+        <p>${template.description}</p>
+        <div class="template-details">
+          <span class="badge">${template.origin} → ${template.destination}</span>
+          ${securityZonesCount > 0 ? `<span class="badge badge-security">${securityZonesCount} security zones</span>` : ''}
+          <span class="badge">${journeyTypesDisplay}</span>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   const viewMoreButton = !showAll && additionalTemplates.length > 0 ? `
     <div class="view-more-templates-container">
@@ -295,6 +305,7 @@ function applyConfigTemplate(templateId) {
 
   console.log('[Shipment Agent] Applying template:', template);
 
+  // Set airports (hidden from user, but needed for backend)
   const originSelect = document.getElementById('origin-airport-select');
   const destinationSelect = document.getElementById('destination-airport-select');
 
@@ -308,29 +319,77 @@ function applyConfigTemplate(templateId) {
     console.log('[Shipment Agent] Set destination to:', template.destination, 'Actual value:', destinationSelect.value);
   }
 
-  if (template.securityZone) {
-    const securitySelect = document.getElementById('security-zone-select');
-    if (securitySelect) {
-      securitySelect.value = template.securityZone;
+  // Populate security zones dropdown with template's available zones
+  if (template.securityZones && template.securityZones.length > 0) {
+    renderTemplateSecurityZones(template.securityZones);
+
+    // Set default security zone if specified
+    if (template.defaultSecurityZone) {
+      const securitySelect = document.getElementById('security-zone-select');
+      if (securitySelect) {
+        securitySelect.value = template.defaultSecurityZone;
+
+        // Generate security code
+        const securityCodeInput = document.getElementById('security-code-input');
+        if (securityCodeInput) {
+          securityCodeInput.value = generateSecurityCode();
+        }
+      }
     }
-    const securityCodeInput = document.getElementById('security-code-input');
-    if (securityCodeInput) {
-      securityCodeInput.value = generateSecurityCode();
-    }
+  } else {
+    // Fallback to route-based filtering
+    filterSecurityZonesByRoute();
   }
 
-  // Set number of events from template
-  if (template.events) {
-    const eventsSelect = document.getElementById('number-events-select');
-    if (eventsSelect) {
-      eventsSelect.value = template.events;
+  // Populate journey type selector with template's journey types
+  if (template.journeyTypes && template.journeyTypes.length > 0) {
+    renderJourneyTypes(template.journeyTypes);
+
+    // Select the second option (Standard) by default, or first if only one
+    const journeySelect = document.getElementById('journey-type-select');
+    if (journeySelect && journeySelect.options.length > 1) {
+      journeySelect.selectedIndex = 1; // Standard
     }
   }
-
-  // Trigger route-based security zone filtering
-  filterSecurityZonesByRoute();
 
   showNotification(`Template "${template.name}" applied`, 'success');
+}
+
+// Render security zones from template
+function renderTemplateSecurityZones(templateZoneCodes) {
+  const select = document.getElementById('security-zone-select');
+  if (!select) return;
+
+  let html = '<option value="">No Security Hold</option>';
+
+  // Filter to only show zones from template
+  const filteredZones = securityZones.filter(zone => templateZoneCodes.includes(zone.code));
+
+  filteredZones.forEach(zone => {
+    html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
+  });
+
+  select.innerHTML = html;
+}
+
+// Render journey types from template
+function renderJourneyTypes(journeyTypes) {
+  const select = document.getElementById('journey-type-select');
+  if (!select) return;
+
+  let html = '';
+
+  journeyTypes.forEach((journeyType) => {
+    html += `<option value="${journeyType.events}">${journeyType.label} (${journeyType.events} events)</option>`;
+  });
+
+  select.innerHTML = html;
+
+  // Update the visible journey type section
+  const journeySection = document.getElementById('journey-type-section');
+  if (journeySection) {
+    journeySection.style.display = 'block';
+  }
 }
 
 // Generate security code (10 digits only)
@@ -500,6 +559,19 @@ function getShipmentConfig() {
   const weightValue = document.getElementById('weight-value-input').value;
   const weightUnit = document.getElementById('weight-unit-select').value;
 
+  // Check for journey type selector (new template system) or fallback to old events selector
+  const journeyTypeSelect = document.getElementById('journey-type-select');
+  let numberOfEvents = 30; // default
+
+  if (journeyTypeSelect && journeyTypeSelect.value) {
+    numberOfEvents = parseInt(journeyTypeSelect.value);
+  } else {
+    const eventsSelect = document.getElementById('number-events-select');
+    if (eventsSelect) {
+      numberOfEvents = parseInt(eventsSelect.value) || 30;
+    }
+  }
+
   return {
     originAirport: document.getElementById('origin-airport-select').value,
     destinationAirport: document.getElementById('destination-airport-select').value,
@@ -514,7 +586,7 @@ function getShipmentConfig() {
     securityZone: document.getElementById('security-zone-select').value || null,
     securityCode: document.getElementById('security-code-input').value || null,
     startDate: document.getElementById('start-date-input').value || null,
-    numberOfEvents: parseInt(document.getElementById('number-events-select').value) || 30
+    numberOfEvents: numberOfEvents
   };
 }
 
