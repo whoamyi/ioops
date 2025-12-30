@@ -1050,6 +1050,7 @@ function renderShipments() {
       <td>
         ${ship.recipient_email ? `<button class="btn-send-email" data-id="${ship.tracking_id}">📧 Email</button>` : ''}
         <button class="btn-view-details" data-id="${ship.tracking_id}">View</button>
+        <button class="btn-delete-shipment" data-id="${ship.tracking_id}" style="background: #dc3545; margin-left: 5px;">🗑️ Delete</button>
       </td>
     </tr>
   `).join('');
@@ -1105,6 +1106,14 @@ function attachShipmentActions() {
     btn.addEventListener('click', async () => {
       const trackingId = btn.dataset.id;
       await resetSecurityCodeAttempts(trackingId);
+    });
+  });
+
+  // Delete shipment buttons
+  document.querySelectorAll('.btn-delete-shipment').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const trackingId = btn.dataset.id;
+      await deleteShipment(trackingId);
     });
   });
 }
@@ -1251,6 +1260,39 @@ async function resetSecurityCodeAttempts(trackingId) {
   } catch (error) {
     console.error('Error resetting attempts:', error);
     alert('Failed to reset attempts: ' + error.message);
+  }
+}
+
+// Delete shipment and all related data
+async function deleteShipment(trackingId) {
+  if (!confirm(`⚠️ DELETE SHIPMENT ${trackingId}?\n\nThis will permanently delete:\n- The shipment record\n- All tracking events\n- IOOPS verification (if exists)\n- All related audit logs\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?`)) {
+    return;
+  }
+
+  // Double confirmation for safety
+  const confirmText = prompt(`To confirm deletion, type the tracking ID exactly:\n${trackingId}`);
+  if (confirmText !== trackingId) {
+    alert('Deletion cancelled - tracking ID did not match');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/shipments/${trackingId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete shipment');
+    }
+
+    const result = await response.json();
+    alert(`✓ Shipment ${trackingId} deleted successfully!\n\nAll related data has been permanently removed from the database.`);
+    loadShipments(); // Refresh the list
+  } catch (error) {
+    console.error('Error deleting shipment:', error);
+    alert('Failed to delete shipment: ' + error.message);
   }
 }
 
