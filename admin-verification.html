@@ -323,8 +323,10 @@
                                 <input type="text" id="recipient-address-input" placeholder="Street Address" required>
                             </div>
                             <div class="form-group">
-                                <label for="recipient-city-input">Recipient City *</label>
-                                <input type="text" id="recipient-city-input" placeholder="City" required>
+                                <label for="recipient-city-select">Recipient City *</label>
+                                <select id="recipient-city-select" required>
+                                    <option value="">Select City</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -335,11 +337,21 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="declared-value-input">Declared Value *</label>
-                                <input type="text" id="declared-value-input" placeholder="€2,500" required>
+                                <div class="currency-input-group">
+                                    <select id="currency-select" class="currency-select">
+                                        <option value="USD">$ USD</option>
+                                    </select>
+                                    <input type="number" id="declared-value-input" placeholder="2500" step="0.01" min="0" required>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="weight-input">Weight *</label>
-                                <input type="text" id="weight-input" placeholder="5kg" required>
+                                <label for="weight-value-input">Weight *</label>
+                                <div class="weight-input-group">
+                                    <input type="number" id="weight-value-input" placeholder="5" step="0.01" min="0" required>
+                                    <select id="weight-unit-select" class="weight-unit-select">
+                                        <option value="kg">kg</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -373,8 +385,15 @@
                                 <input type="datetime-local" id="start-date-input">
                             </div>
                             <div class="form-group">
-                                <label for="number-events-input">Number of Intermediate Events (3-50)</label>
-                                <input type="number" id="number-events-input" min="3" max="50" value="10">
+                                <label for="number-events-select">Number of Events</label>
+                                <select id="number-events-select">
+                                    <option value="10">10 events (Quick)</option>
+                                    <option value="20">20 events (Standard)</option>
+                                    <option value="30" selected>30 events (Detailed)</option>
+                                    <option value="50">50 events (Very Detailed)</option>
+                                    <option value="75">75 events (Comprehensive)</option>
+                                    <option value="100">100 events (Maximum Detail)</option>
+                                </select>
                             </div>
                         </div>
                     </div>

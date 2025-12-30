@@ -8,16 +8,23 @@ let airportsByRegion = {};
 let securityZones = [];
 let configTemplates = [];
 let currentPreview = null;
+let citiesByRegion = {};
+let currencies = {};
+let weightUnits = {};
+let currentRouteInfo = null;
 
 // Initialize Shipment Agent
 async function initializeShipmentAgent() {
   console.log('[Shipment Agent] Initializing...');
 
-  // Load airports and security zones
+  // Load all data
   await Promise.all([
     loadAirports(),
     loadSecurityZones(),
-    loadConfigTemplates()
+    loadConfigTemplates(),
+    loadCities(),
+    loadCurrencies(),
+    loadWeightUnits()
   ]);
 
   setupShipmentAgentEventListeners();
@@ -62,6 +69,45 @@ async function loadConfigTemplates() {
   }
 }
 
+// Load cities data
+async function loadCities() {
+  try {
+    const response = await fetch(`${API_BASE}/shipment-agent/cities`);
+    const data = await response.json();
+    citiesByRegion = data.cities;
+
+    renderCitySelection();
+  } catch (error) {
+    console.error('[Shipment Agent] Error loading cities:', error);
+  }
+}
+
+// Load currencies
+async function loadCurrencies() {
+  try {
+    const response = await fetch(`${API_BASE}/shipment-agent/currencies`);
+    const data = await response.json();
+    currencies = data.currencies;
+
+    renderCurrencySelection();
+  } catch (error) {
+    console.error('[Shipment Agent] Error loading currencies:', error);
+  }
+}
+
+// Load weight units
+async function loadWeightUnits() {
+  try {
+    const response = await fetch(`${API_BASE}/shipment-agent/weight-units`);
+    const data = await response.json();
+    weightUnits = data.weightUnits;
+
+    renderWeightUnitSelection();
+  } catch (error) {
+    console.error('[Shipment Agent] Error loading weight units:', error);
+  }
+}
+
 // Render airport dropdowns
 function renderAirportSelections() {
   const originSelect = document.getElementById('origin-airport-select');
@@ -92,6 +138,56 @@ function renderSecurityZoneSelection() {
 
   securityZones.forEach(zone => {
     html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
+  });
+
+  select.innerHTML = html;
+}
+
+// Render city selection
+function renderCitySelection() {
+  const select = document.getElementById('recipient-city-select');
+  if (!select) return;
+
+  let html = '<option value="">Select City</option>';
+
+  Object.keys(citiesByRegion).forEach(region => {
+    html += `<optgroup label="${region}">`;
+    citiesByRegion[region].forEach(city => {
+      html += `<option value="${city.name}">${city.name}, ${city.country}</option>`;
+    });
+    html += '</optgroup>';
+  });
+
+  select.innerHTML = html;
+}
+
+// Render currency selection
+function renderCurrencySelection() {
+  const select = document.getElementById('currency-select');
+  if (!select) return;
+
+  let html = '';
+
+  Object.keys(currencies).forEach(code => {
+    const currency = currencies[code];
+    const selected = code === 'USD' ? 'selected' : '';
+    html += `<option value="${code}" ${selected}>${currency.symbol} ${code}</option>`;
+  });
+
+  select.innerHTML = html;
+}
+
+// Render weight unit selection
+function renderWeightUnitSelection() {
+  const select = document.getElementById('weight-unit-select');
+  if (!select) return;
+
+  let html = '';
+
+  Object.keys(weightUnits).forEach(unit => {
+    const weightUnit = weightUnits[unit];
+    const selected = unit === 'kg' ? 'selected' : '';
+    html += `<option value="${unit}" ${selected}>${unit}</option>`;
   });
 
   select.innerHTML = html;
@@ -288,6 +384,13 @@ async function createShipment() {
 
 // Get shipment configuration from form
 function getShipmentConfig() {
+  const currencyCode = document.getElementById('currency-select').value;
+  const currencySymbol = currencies[currencyCode]?.symbol || '$';
+  const declaredAmount = document.getElementById('declared-value-input').value;
+
+  const weightValue = document.getElementById('weight-value-input').value;
+  const weightUnit = document.getElementById('weight-unit-select').value;
+
   return {
     originAirport: document.getElementById('origin-airport-select').value,
     destinationAirport: document.getElementById('destination-airport-select').value,
@@ -296,13 +399,13 @@ function getShipmentConfig() {
     recipientName: document.getElementById('recipient-name-input').value,
     recipientEmail: document.getElementById('recipient-email-input').value,
     recipientAddress: document.getElementById('recipient-address-input').value,
-    recipientCity: document.getElementById('recipient-city-input').value,
-    declaredValue: document.getElementById('declared-value-input').value,
-    weight: document.getElementById('weight-input').value,
+    recipientCity: document.getElementById('recipient-city-select').value,
+    declaredValue: `${currencySymbol}${declaredAmount} ${currencyCode}`,
+    weight: `${weightValue} ${weightUnit}`,
     securityZone: document.getElementById('security-zone-select').value || null,
     securityCode: document.getElementById('security-code-input').value || null,
     startDate: document.getElementById('start-date-input').value || null,
-    numberOfEvents: parseInt(document.getElementById('number-events-input').value) || 5
+    numberOfEvents: parseInt(document.getElementById('number-events-select').value) || 30
   };
 }
 

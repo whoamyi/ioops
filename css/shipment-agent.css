@@ -413,6 +413,50 @@
   text-transform: capitalize;
 }
 
+/* Currency Input Group */
+.currency-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.currency-select {
+  flex-shrink: 0;
+  width: 110px;
+  padding: 10px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #f9fafb;
+  font-weight: 500;
+}
+
+.currency-input-group input {
+  flex: 1;
+}
+
+/* Weight Input Group */
+.weight-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.weight-unit-select {
+  flex-shrink: 0;
+  width: 80px;
+  padding: 10px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1a1a2e;
+  background: #f9fafb;
+  font-weight: 500;
+}
+
+.weight-input-group input {
+  flex: 1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .shipment-agent-modal-content,
@@ -445,5 +489,15 @@
 
   .preview-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .currency-input-group,
+  .weight-input-group {
+    flex-direction: column;
+  }
+
+  .currency-select,
+  .weight-unit-select {
+    width: 100%;
   }
 }
