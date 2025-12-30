@@ -1340,28 +1340,37 @@ async function downloadVerificationReceipt() {
   try {
     console.log('[PDF] Downloading verification receipt...');
 
-    const response = await fetch(`${API_BASE}/verification/${token}/receipt`, {
+    const response = await fetch(`${API_BASE}/verification/${token}/receipt.pdf`, {
       method: 'GET'
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[PDF] Server error:', errorText);
       throw new Error('Failed to generate receipt');
     }
 
     // Get the PDF blob
     const blob = await response.blob();
 
+    // Verify it's actually a PDF
+    if (blob.type !== 'application/pdf') {
+      console.error('[PDF] Invalid content type:', blob.type);
+      throw new Error('Invalid response format');
+    }
+
     // Create download link
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `IOOPS-Receipt-${verification.tracking_id}.pdf`;
+    a.download = `IOOPS-Certificate-${verification.tracking_id}.pdf`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
 
     console.log('[PDF] Receipt downloaded successfully');
+    showNotification('Receipt downloaded successfully!', 'success');
   } catch (error) {
     console.error('[PDF] Error downloading receipt:', error);
     alert('Failed to download receipt. Please try again or contact support.');
