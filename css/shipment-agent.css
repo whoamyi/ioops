@@ -417,6 +417,7 @@
 .currency-input-group {
   display: flex;
   gap: 8px;
+  width: 100%;
 }
 
 .currency-select {
@@ -431,14 +432,22 @@
   font-weight: 500;
 }
 
-.currency-input-group input {
+.currency-input-group input[type="number"] {
   flex: 1;
+  width: auto;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1a1a2e;
 }
 
 /* Weight Input Group */
 .weight-input-group {
   display: flex;
   gap: 8px;
+  width: 100%;
 }
 
 .weight-unit-select {
@@ -453,8 +462,15 @@
   font-weight: 500;
 }
 
-.weight-input-group input {
+.weight-input-group input[type="number"] {
   flex: 1;
+  width: auto;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1a1a2e;
 }
 
 /* Responsive */
