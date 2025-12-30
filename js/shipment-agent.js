@@ -259,13 +259,20 @@ function renderConfigTemplates(showAll = false) {
     const securityZonesCount = template.securityZones ? template.securityZones.length : 0;
 
     return `
-      <div class="config-template-card" onclick="applyConfigTemplate('${template.id}')">
-        <h4>${template.name}</h4>
-        <p>${template.description}</p>
-        <div class="template-details">
-          <span class="badge">${template.origin} → ${template.destination}</span>
-          ${securityZonesCount > 0 ? `<span class="badge badge-security">${securityZonesCount} security zones</span>` : ''}
-          <span class="badge">${journeyTypesDisplay}</span>
+      <div class="config-template-card">
+        <div onclick="applyConfigTemplate('${template.id}')">
+          <h4>${template.name}</h4>
+          <p>${template.description}</p>
+          <div class="template-details">
+            <span class="badge">${template.origin} → ${template.destination}</span>
+            ${securityZonesCount > 0 ? `<span class="badge badge-security">${securityZonesCount} security zones</span>` : ''}
+            <span class="badge">${journeyTypesDisplay}</span>
+          </div>
+        </div>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+          <button type="button" class="btn-secondary" style="width: 100%; font-size: 12px; padding: 6px 10px;" onclick="event.stopPropagation(); applyReverseTemplate('${template.id}')">
+            ↔️ Reverse Journey (${template.destination} → ${template.origin})
+          </button>
         </div>
       </div>
     `;
@@ -295,6 +302,31 @@ function toggleTemplateView(showAll) {
   renderConfigTemplates(showAll);
 }
 
+// Apply reverse journey (swap origin and destination)
+function applyReverseTemplate(templateId) {
+  const template = configTemplates.find(t => t.id === templateId);
+  if (!template) {
+    console.error('[Shipment Agent] Template not found:', templateId);
+    return;
+  }
+
+  console.log('[Shipment Agent] Applying REVERSE template:', template);
+
+  // Create reversed template
+  const reversedTemplate = {
+    ...template,
+    origin: template.destination,
+    destination: template.origin,
+    name: `${template.destination} → ${template.origin}`,
+    description: `Reverse of ${template.name}`
+  };
+
+  // Apply the reversed template
+  applyTemplateConfig(reversedTemplate);
+
+  showNotification(`Reverse journey applied: ${reversedTemplate.name}`, 'success');
+}
+
 // Apply configuration template
 function applyConfigTemplate(templateId) {
   const template = configTemplates.find(t => t.id === templateId);
@@ -304,6 +336,14 @@ function applyConfigTemplate(templateId) {
   }
 
   console.log('[Shipment Agent] Applying template:', template);
+
+  applyTemplateConfig(template);
+
+  showNotification(`Template "${template.name}" applied`, 'success');
+}
+
+// Core template configuration logic (shared between normal and reverse)
+function applyTemplateConfig(template) {
 
   // Set airports (hidden from user, but needed for backend)
   const originSelect = document.getElementById('origin-airport-select');
@@ -351,8 +391,6 @@ function applyConfigTemplate(templateId) {
       journeySelect.selectedIndex = 1; // Standard
     }
   }
-
-  showNotification(`Template "${template.name}" applied`, 'success');
 }
 
 // Render security zones from template
@@ -563,12 +601,14 @@ function getShipmentConfig() {
   const journeyTypeSelect = document.getElementById('journey-type-select');
   let numberOfEvents = 30; // default
 
-  if (journeyTypeSelect && journeyTypeSelect.value) {
+  if (journeyTypeSelect && journeyTypeSelect.value && journeyTypeSelect.options.length > 0) {
     numberOfEvents = parseInt(journeyTypeSelect.value);
+    console.log('[Shipment Agent] Using journey type:', journeyTypeSelect.value, 'events:', numberOfEvents);
   } else {
     const eventsSelect = document.getElementById('number-events-select');
-    if (eventsSelect) {
+    if (eventsSelect && eventsSelect.value) {
       numberOfEvents = parseInt(eventsSelect.value) || 30;
+      console.log('[Shipment Agent] Using fallback events selector:', numberOfEvents);
     }
   }
 
@@ -756,6 +796,8 @@ window.openShipmentAgentModal = openShipmentAgentModal;
 window.closeShipmentAgentModal = closeShipmentAgentModal;
 window.closeShipmentPreviewModal = closeShipmentPreviewModal;
 window.applyConfigTemplate = applyConfigTemplate;
+window.applyReverseTemplate = applyReverseTemplate;
+window.toggleTemplateView = toggleTemplateView;
 window.generateRandomSecurityCode = generateRandomSecurityCode;
 window.previewShipmentTimeline = previewShipmentTimeline;
 window.createShipment = createShipment;
