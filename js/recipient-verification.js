@@ -299,6 +299,9 @@ function determineStateFromVerification() {
     } else {
       transitionTo(STATES.STEP_2_PAYMENT);
     }
+  } else if (verification.status === 'escrow_confirmed') {
+    // Payment approved, show code generation step
+    transitionTo(STATES.STEP_3_GENERATE);
   } else if (verification.status === 'code_generated') {
     transitionTo(STATES.STEP_3_GENERATE);
   } else if (verification.status === 'completed') {
