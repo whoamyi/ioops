@@ -190,6 +190,45 @@
         </div>
     </div>
 
+
+    <!-- Payment Rejection Modal -->
+    <div id="payment-rejection-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reject Payment Receipt</h2>
+                <button class="btn-close" id="close-payment-rejection-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p>You are about to reject the payment receipt for verification <strong id="payment-rejection-tracking-id"></strong></p>
+                
+                <div class="form-group">
+                    <label for="preset-payment-rejection-reason">Select a Reason</label>
+                    <select id="preset-payment-rejection-reason" class="form-control">
+                        <option value="">-- Select a reason --</option>
+                        <option value="Receipt image is too dark or blurry to verify">Receipt image is too dark or blurry</option>
+                        <option value="Payment amount does not match required amount">Payment amount does not match</option>
+                        <option value="Payment receipt appears to be edited or tampered">Receipt appears to be edited/tampered</option>
+                        <option value="Payment date is incorrect or too old">Payment date is incorrect/too old</option>
+                        <option value="Bank details or payment method not visible">Bank details not visible</option>
+                        <option value="Receipt does not show transaction confirmation">No transaction confirmation shown</option>
+                        <option value="Receipt is from wrong payment method">Wrong payment method used</option>
+                        <option value="Recipient name on receipt doesn't match verification">Recipient name doesn't match</option>
+                        <option value="custom">Other - I'll type my own reason</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="custom-payment-rejection-reason-group" style="display: none; margin-top: 16px;">
+                    <label for="custom-payment-rejection-reason">Custom Reason</label>
+                    <textarea id="custom-payment-rejection-reason" class="form-control" rows="3" placeholder="Please provide a clear reason for payment rejection..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-payment-rejection">Cancel</button>
+                <button class="btn-danger" id="confirm-payment-rejection">Reject Payment</button>
+            </div>
+        </div>
+    </div>
+
     <div id="code-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">

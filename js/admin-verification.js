@@ -555,10 +555,35 @@ async function approvePayment() {
   }
 }
 
-// Reject payment
+// Reject payment - show modal
 async function rejectPayment() {
-  const reason = prompt('Enter reason for rejection (will be sent to recipient):');
-  if (!reason) return;
+  // Show payment rejection modal
+  document.getElementById('payment-rejection-tracking-id').textContent = selectedVerification.tracking_id;
+  document.getElementById('preset-payment-rejection-reason').value = '';
+  document.getElementById('custom-payment-rejection-reason').value = '';
+  document.getElementById('custom-payment-rejection-reason-group').style.display = 'none';
+  document.getElementById('payment-rejection-modal').style.display = 'flex';
+}
+
+// Process payment rejection after modal confirmation
+async function processPaymentRejection() {
+  const presetReason = document.getElementById('preset-payment-rejection-reason').value;
+  const customReason = document.getElementById('custom-payment-rejection-reason').value;
+  
+  let reason = '';
+  if (presetReason === 'custom') {
+    reason = customReason.trim();
+  } else {
+    reason = presetReason;
+  }
+
+  if (!reason) {
+    alert('Please select or enter a rejection reason.');
+    return;
+  }
+
+  // Close modal
+  document.getElementById('payment-rejection-modal').style.display = 'none';
 
   try {
     const response = await fetch(`${API_BASE}/verifications/${selectedVerification.id}/reject-payment`, {
@@ -1409,6 +1434,28 @@ function setupModalListeners() {
 
   // Save code button
   addListener('save-code', 'click', saveSecurityCode);
+
+  // Payment rejection modal
+  addListener('preset-payment-rejection-reason', 'change', (e) => {
+    const customGroup = document.getElementById('custom-payment-rejection-reason-group');
+    if (e.target.value === 'custom') {
+      customGroup.style.display = 'block';
+    } else {
+      customGroup.style.display = 'none';
+    }
+  });
+
+  addListener('close-payment-rejection-modal', 'click', () => {
+    document.getElementById('payment-rejection-modal').style.display = 'none';
+  });
+
+  addListener('cancel-payment-rejection', 'click', () => {
+    document.getElementById('payment-rejection-modal').style.display = 'none';
+  });
+
+  addListener('confirm-payment-rejection', 'click', async () => {
+    await processPaymentRejection();
+  });
 
   // Refresh shipments button (may not exist on verifications tab)
   addListener('refresh-shipments-btn', 'click', () => {
