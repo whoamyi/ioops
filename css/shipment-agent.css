@@ -145,6 +145,17 @@
   color: #92400e;
 }
 
+/* View More Templates Container */
+.view-more-templates-container {
+  margin-top: 16px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.view-more-templates-container .btn {
+  min-width: 200px;
+}
+
 /* Form Sections */
 .form-section {
   margin-bottom: 30px;

@@ -323,10 +323,9 @@
                                 <input type="text" id="recipient-address-input" placeholder="Street Address" required>
                             </div>
                             <div class="form-group">
-                                <label for="recipient-city-select">Recipient City *</label>
-                                <select id="recipient-city-select" required>
-                                    <option value="">Select City</option>
-                                </select>
+                                <label for="recipient-city-input">Recipient City *</label>
+                                <input type="text" id="recipient-city-input" list="city-datalist" placeholder="Type to search cities..." required autocomplete="off">
+                                <datalist id="city-datalist"></datalist>
                             </div>
                         </div>
                     </div>

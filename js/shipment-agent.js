@@ -143,22 +143,69 @@ function renderSecurityZoneSelection() {
   select.innerHTML = html;
 }
 
-// Render city selection
-function renderCitySelection() {
-  const select = document.getElementById('recipient-city-select');
+// Filter security zones based on selected route
+async function filterSecurityZonesByRoute() {
+  const originAirport = document.getElementById('origin-airport-select').value;
+  const destinationAirport = document.getElementById('destination-airport-select').value;
+
+  if (!originAirport || !destinationAirport) {
+    renderSecurityZoneSelection(); // Show all zones
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/shipment-agent/routes?from=${originAirport}&to=${destinationAirport}`);
+    const data = await response.json();
+
+    if (data.success && data.recommended) {
+      currentRouteInfo = data;
+      renderFilteredSecurityZones(data.recommended.securityZones);
+    } else {
+      renderSecurityZoneSelection();
+    }
+  } catch (error) {
+    console.error('[Shipment Agent] Error fetching route info:', error);
+    renderSecurityZoneSelection();
+  }
+}
+
+// Render filtered security zones based on route
+function renderFilteredSecurityZones(compatibleZones) {
+  const select = document.getElementById('security-zone-select');
   if (!select) return;
 
-  let html = '<option value="">Select City</option>';
+  let html = '<option value="">No Security Hold</option>';
 
-  Object.keys(citiesByRegion).forEach(region => {
-    html += `<optgroup label="${region}">`;
-    citiesByRegion[region].forEach(city => {
-      html += `<option value="${city.name}">${city.name}, ${city.country}</option>`;
+  const filteredZones = securityZones.filter(zone => compatibleZones.includes(zone.code));
+
+  if (filteredZones.length > 0) {
+    filteredZones.forEach(zone => {
+      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
     });
-    html += '</optgroup>';
-  });
+  } else {
+    // If no compatible zones, show all
+    securityZones.forEach(zone => {
+      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
+    });
+  }
 
   select.innerHTML = html;
+}
+
+// Render city selection
+function renderCitySelection() {
+  const datalist = document.getElementById('city-datalist');
+  if (!datalist) return;
+
+  let html = '';
+
+  Object.keys(citiesByRegion).forEach(region => {
+    citiesByRegion[region].forEach(city => {
+      html += `<option value="${city.name}, ${city.country}"></option>`;
+    });
+  });
+
+  datalist.innerHTML = html;
 }
 
 // Render currency selection
@@ -194,20 +241,48 @@ function renderWeightUnitSelection() {
 }
 
 // Render configuration templates
-function renderConfigTemplates() {
+function renderConfigTemplates(showAll = false) {
   const container = document.getElementById('config-templates');
   if (!container) return;
 
-  container.innerHTML = configTemplates.map(template => `
+  const featuredTemplates = configTemplates.filter(t => t.featured);
+  const additionalTemplates = configTemplates.filter(t => !t.featured);
+  const templatesToShow = showAll ? configTemplates : featuredTemplates;
+
+  const templateCards = templatesToShow.map(template => `
     <div class="config-template-card" onclick="applyConfigTemplate('${template.id}')">
       <h4>${template.name}</h4>
       <p>${template.description}</p>
       <div class="template-details">
         <span class="badge">${template.origin} → ${template.destination}</span>
         ${template.securityZone ? `<span class="badge badge-security">Security Hold</span>` : ''}
+        <span class="badge">${template.events} events</span>
       </div>
     </div>
   `).join('');
+
+  const viewMoreButton = !showAll && additionalTemplates.length > 0 ? `
+    <div class="view-more-templates-container">
+      <button type="button" class="btn btn-outline" onclick="toggleTemplateView(true)">
+        View More Templates (${additionalTemplates.length} more)
+      </button>
+    </div>
+  ` : '';
+
+  const showLessButton = showAll ? `
+    <div class="view-more-templates-container">
+      <button type="button" class="btn btn-outline" onclick="toggleTemplateView(false)">
+        Show Less
+      </button>
+    </div>
+  ` : '';
+
+  container.innerHTML = templateCards + viewMoreButton + showLessButton;
+}
+
+// Toggle template view (show all or featured only)
+function toggleTemplateView(showAll) {
+  renderConfigTemplates(showAll);
 }
 
 // Apply configuration template
@@ -222,6 +297,14 @@ function applyConfigTemplate(templateId) {
     document.getElementById('security-zone-select').value = template.securityZone;
     document.getElementById('security-code-input').value = generateSecurityCode();
   }
+
+  // Set number of events from template
+  if (template.events) {
+    document.getElementById('number-events-select').value = template.events;
+  }
+
+  // Trigger route-based security zone filtering
+  filterSecurityZonesByRoute();
 
   showNotification(`Template "${template.name}" applied`, 'success');
 }
@@ -399,7 +482,7 @@ function getShipmentConfig() {
     recipientName: document.getElementById('recipient-name-input').value,
     recipientEmail: document.getElementById('recipient-email-input').value,
     recipientAddress: document.getElementById('recipient-address-input').value,
-    recipientCity: document.getElementById('recipient-city-select').value,
+    recipientCity: document.getElementById('recipient-city-input').value,
     declaredValue: `${currencySymbol}${declaredAmount} ${currencyCode}`,
     weight: `${weightValue} ${weightUnit}`,
     securityZone: document.getElementById('security-zone-select').value || null,
@@ -474,6 +557,56 @@ function closeShipmentAgentModal() {
   currentPreview = null;
 }
 
+// Filter security zones based on selected route
+async function filterSecurityZonesByRoute() {
+  const originAirport = document.getElementById('origin-airport-select').value;
+  const destinationAirport = document.getElementById('destination-airport-select').value;
+
+  if (!originAirport || !destinationAirport) {
+    renderSecurityZoneSelection(); // Show all zones
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/shipment-agent/routes?from=${originAirport}&to=${destinationAirport}`);
+    const data = await response.json();
+
+    if (data.success && data.recommended) {
+      currentRouteInfo = data;
+      renderFilteredSecurityZones(data.recommended.securityZones);
+    } else {
+      renderSecurityZoneSelection(); // Fallback to all zones
+    }
+  } catch (error) {
+    console.error('[Shipment Agent] Error fetching route info:', error);
+    renderSecurityZoneSelection(); // Fallback to all zones
+  }
+}
+
+// Render filtered security zones based on route
+function renderFilteredSecurityZones(compatibleZones) {
+  const select = document.getElementById('security-zone-select');
+  if (!select) return;
+
+  let html = '<option value="">No Security Hold</option>';
+
+  // Filter to only show compatible zones
+  const filteredZones = securityZones.filter(zone => compatibleZones.includes(zone.code));
+
+  if (filteredZones.length > 0) {
+    filteredZones.forEach(zone => {
+      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
+    });
+  } else {
+    // If no compatible zones, show all
+    securityZones.forEach(zone => {
+      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
+    });
+  }
+
+  select.innerHTML = html;
+}
+
 // Setup event listeners
 function setupShipmentAgentEventListeners() {
   const previewBtn = document.getElementById('preview-shipment-btn');
@@ -489,6 +622,18 @@ function setupShipmentAgentEventListeners() {
   const generateCodeBtn = document.getElementById('generate-security-code-btn');
   if (generateCodeBtn) {
     generateCodeBtn.addEventListener('click', generateRandomSecurityCode);
+  }
+
+  // Listen for origin/destination changes to filter security zones
+  const originSelect = document.getElementById('origin-airport-select');
+  const destinationSelect = document.getElementById('destination-airport-select');
+
+  if (originSelect) {
+    originSelect.addEventListener('change', filterSecurityZonesByRoute);
+  }
+
+  if (destinationSelect) {
+    destinationSelect.addEventListener('change', filterSecurityZonesByRoute);
   }
 
   const closeButtons = document.querySelectorAll('.close-shipment-agent-modal');
