@@ -1089,8 +1089,24 @@ function renderPaymentStep() {
     returnDaysEl.textContent = verification.escrow_return_days || 45;
   }
 
-  // If payment already submitted, show status
-  if (verification.escrow_status === 'pending_verification') {
+  // If payment was rejected, show rejection message
+  if (verification.rejection_reason && verification.escrow_status === 'pending') {
+    const rejectionEl = document.createElement('div');
+    rejectionEl.className = 'status-message error';
+    rejectionEl.style.cssText = 'background: #fff3cd; border-left: 4px solid #dc3545; padding: 16px; border-radius: 8px; margin-bottom: 24px;';
+    rejectionEl.innerHTML = `
+      <p style="margin: 0 0 12px 0;"><strong style="color: #dc3545;">❌ Payment Receipt Rejected</strong></p>
+      <p style="margin: 0 0 12px 0; color: #856404;"><strong>Reason:</strong> ${verification.rejection_reason}</p>
+      <p style="margin: 0; color: #856404;">Please upload a new payment receipt below.</p>
+    `;
+
+    const formContainer = document.getElementById('payment-confirmation-form');
+    if (formContainer && formContainer.parentElement) {
+      formContainer.parentElement.insertBefore(rejectionEl, formContainer);
+    }
+  }
+  // If payment already submitted and pending verification, show status
+  else if (verification.escrow_status === 'pending_verification') {
     const statusEl = document.createElement('div');
     statusEl.className = 'status-message info';
     statusEl.innerHTML = '<p><strong>Payment Received:</strong> Your payment receipt is being verified. You will be notified within 24-48 hours.</p>';
@@ -1317,6 +1333,23 @@ function connectWebSocket() {
       showNotification('All documents approved! You can now proceed to payment.', 'success');
 
       // Reload and transition to payment step
+      loadVerification();
+    });
+
+    // Listen for payment approval/rejection
+    socket.on('payment_approved', (data) => {
+      console.log('[WebSocket] Payment approved!', data);
+      showNotification('Your payment has been approved! Security code is now available.', 'success');
+
+      // Reload verification data
+      loadVerification();
+    });
+
+    socket.on('payment_rejected', (data) => {
+      console.log('[WebSocket] Payment rejected:', data);
+      showNotification(`Payment rejected: ${data.reason}. Please upload a new receipt.`, 'error');
+
+      // Reload verification data to show rejection message
       loadVerification();
     });
   } catch (error) {
