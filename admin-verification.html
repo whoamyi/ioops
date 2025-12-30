@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IOOPS Admin - Verification Management</title>
     <link rel="stylesheet" href="css/admin-verification.css">
+    <link rel="stylesheet" href="css/shipment-agent.css">
 </head>
 <body>
     <div class="admin-portal">
@@ -56,6 +57,7 @@
         <div class="admin-tabs">
             <button class="tab-btn active" data-tab="verifications">Verifications</button>
             <button class="tab-btn" data-tab="shipments">Shipments</button>
+            <button class="tab-btn" onclick="openShipmentAgentModal()" style="margin-left: auto; background: #d4af37; color: #1a1a2e;">🚀 Generate Shipment</button>
         </div>
 
         <!-- Main Content -->
@@ -250,8 +252,194 @@
         </div>
     </div>
 
+    <!-- Shipment Event Generator Agent Modal -->
+    <div id="shipment-agent-modal" class="shipment-agent-modal">
+        <div class="shipment-agent-modal-content">
+            <div class="modal-header">
+                <h2>🚀 Shipment Event Generator Agent</h2>
+                <button class="close-modal-btn close-shipment-agent-modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form id="shipment-agent-form">
+                    <!-- Quick Templates -->
+                    <div class="config-templates-section">
+                        <h3>Quick Templates</h3>
+                        <div id="config-templates" class="config-templates-grid">
+                            <!-- Templates loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Route Configuration -->
+                    <div class="form-section">
+                        <h3>Route Configuration</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="origin-airport-select">Origin Airport *</label>
+                                <select id="origin-airport-select" required>
+                                    <option value="">Select Origin</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="destination-airport-select">Destination Airport *</label>
+                                <select id="destination-airport-select" required>
+                                    <option value="">Select Destination</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipper Information -->
+                    <div class="form-section">
+                        <h3>Shipper Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="shipper-name-input">Shipper Name *</label>
+                                <input type="text" id="shipper-name-input" placeholder="Company or Person Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="shipper-address-input">Shipper Address *</label>
+                                <input type="text" id="shipper-address-input" placeholder="Full Address" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recipient Information -->
+                    <div class="form-section">
+                        <h3>Recipient Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="recipient-name-input">Recipient Name *</label>
+                                <input type="text" id="recipient-name-input" placeholder="Full Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-email-input">Recipient Email</label>
+                                <input type="email" id="recipient-email-input" placeholder="email@example.com">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="recipient-address-input">Recipient Address *</label>
+                                <input type="text" id="recipient-address-input" placeholder="Street Address" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-city-input">Recipient City *</label>
+                                <input type="text" id="recipient-city-input" placeholder="City" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Package Information -->
+                    <div class="form-section">
+                        <h3>Package Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="declared-value-input">Declared Value *</label>
+                                <input type="text" id="declared-value-input" placeholder="€2,500" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="weight-input">Weight *</label>
+                                <input type="text" id="weight-input" placeholder="5kg" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Configuration -->
+                    <div class="form-section">
+                        <h3>Security Configuration (Optional)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="security-zone-select">Security Hold Zone</label>
+                                <select id="security-zone-select">
+                                    <option value="">No Security Hold</option>
+                                </select>
+                            </div>
+                            <div class="form-group-inline">
+                                <div class="form-group">
+                                    <label for="security-code-input">Security Code</label>
+                                    <input type="text" id="security-code-input" placeholder="SEC-123456">
+                                </div>
+                                <button type="button" id="generate-security-code-btn" class="btn-secondary">Generate</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Configuration -->
+                    <div class="form-section">
+                        <h3>Timeline Configuration</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="start-date-input">Start Date & Time</label>
+                                <input type="datetime-local" id="start-date-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="number-events-input">Intermediate Events</label>
+                                <input type="number" id="number-events-input" min="3" max="20" value="5">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline close-shipment-agent-modal">Cancel</button>
+                <button type="button" id="preview-shipment-btn" class="btn btn-primary">Preview Timeline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipment Preview Modal -->
+    <div id="shipment-preview-modal" class="shipment-preview-modal">
+        <div class="shipment-preview-modal-content">
+            <div class="modal-header">
+                <h2>📦 Shipment Timeline Preview</h2>
+                <button class="close-modal-btn close-shipment-preview-modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="preview-summary">
+                    <div class="preview-summary-grid">
+                        <div class="preview-summary-item">
+                            <label>Origin</label>
+                            <div class="value" id="preview-origin">-</div>
+                        </div>
+                        <div class="preview-summary-item">
+                            <label>Destination</label>
+                            <div class="value" id="preview-destination">-</div>
+                        </div>
+                        <div class="preview-summary-item">
+                            <label>Total Events</label>
+                            <div class="value" id="preview-total-events">-</div>
+                        </div>
+                        <div class="preview-summary-item">
+                            <label>Estimated Duration</label>
+                            <div class="value" id="preview-duration">-</div>
+                        </div>
+                    </div>
+                    <div class="preview-summary-item" style="margin-top: 12px;">
+                        <label>Route</label>
+                        <div class="value" id="preview-route">-</div>
+                    </div>
+                    <div id="preview-security-info" class="preview-security-info" style="display: none;">
+                        <strong>Security Hold:</strong> <span id="preview-security-zone"></span>
+                    </div>
+                </div>
+
+                <div class="events-timeline" id="preview-events-timeline">
+                    <!-- Events loaded dynamically -->
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline close-shipment-preview-modal">Back to Edit</button>
+                <button type="button" id="create-shipment-btn" class="btn btn-success">Create Shipment</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Socket.IO client for real-time updates -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
     <script src="js/admin-verification.js"></script>
+    <script src="js/shipment-agent.js"></script>
 </body>
 </html>
