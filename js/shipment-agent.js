@@ -345,8 +345,10 @@ async function previewShipmentTimeline() {
 
     const data = await response.json();
 
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to generate preview');
+    if (!response.ok || !data.success) {
+      const errorMsg = data.error || 'Failed to generate preview';
+      const details = data.details ? '\n\nDetails:\n- ' + data.details.join('\n- ') : '';
+      throw new Error(errorMsg + details);
     }
 
     currentPreview = data;
