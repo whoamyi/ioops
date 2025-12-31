@@ -447,24 +447,35 @@ function generateRandomSecurityCode() {
 
 // Preview shipment timeline
 async function previewShipmentTimeline() {
+  console.log('[Shipment Agent] Preview button clicked');
+
   const config = getShipmentConfig();
+  console.log('[Shipment Agent] Config:', config);
 
   if (!validateShipmentConfig(config)) {
+    console.log('[Shipment Agent] Validation failed');
     return;
   }
+
+  console.log('[Shipment Agent] Validation passed, generating preview...');
 
   const previewBtn = document.getElementById('preview-shipment-btn');
   previewBtn.disabled = true;
   previewBtn.textContent = 'Generating Preview...';
 
   try {
+    console.log('[Shipment Agent] Sending preview request to:', `${API_BASE}/shipment-agent/preview`);
+
     const response = await fetch(`${API_BASE}/shipment-agent/preview`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config)
     });
 
+    console.log('[Shipment Agent] Response status:', response.status);
+
     const data = await response.json();
+    console.log('[Shipment Agent] Response data:', data);
 
     if (!response.ok || !data.success) {
       const errorMsg = data.error || 'Failed to generate preview';
@@ -473,6 +484,7 @@ async function previewShipmentTimeline() {
     }
 
     currentPreview = data;
+    console.log('[Shipment Agent] Preview generated successfully, showing modal');
     showPreviewModal(data);
 
   } catch (error) {
@@ -643,16 +655,15 @@ function validateShipmentConfig(config) {
   if (!config.declaredValue) errors.push('Declared value is required');
   if (!config.weight) errors.push('Weight is required');
 
-  if (config.securityZone && !config.securityCode) {
-    errors.push('Security code is required when security zone is selected');
-  }
-
-  if (config.securityCode && config.securityCode.length !== 10) {
-    errors.push('Security code must be exactly 10 digits');
-  }
-
-  if (config.securityCode && !/^[0-9]{10}$/.test(config.securityCode)) {
-    errors.push('Security code must contain only numbers (0-9)');
+  // Security code validation: If provided, must be 10 digits
+  // If security zone is selected but no code provided, one will be auto-generated
+  if (config.securityCode) {
+    if (config.securityCode.length !== 10) {
+      errors.push('Security code must be exactly 10 digits');
+    }
+    if (!/^[0-9]{10}$/.test(config.securityCode)) {
+      errors.push('Security code must contain only numbers (0-9)');
+    }
   }
 
   if (errors.length > 0) {
