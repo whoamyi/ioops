@@ -246,7 +246,7 @@
                     <!-- Document Upload Sections -->
                     <div class="upload-sections">
                         <!-- ID Document Upload -->
-                        <div class="upload-section">
+                        <div class="upload-section" id="passport-upload-section">
                             <h3>1. Government-Issued ID</h3>
                             <p class="upload-description">Upload a photo of your passport, driver's license, or national ID card. Ensure all text is clear and readable.</p>
 
@@ -269,7 +269,7 @@
                         </div>
 
                         <!-- Proof of Address Upload -->
-                        <div class="upload-section">
+                        <div class="upload-section" id="proof-of-address-upload-section">
                             <h3>2. Proof of Address</h3>
                             <p class="upload-description">Upload a utility bill, bank statement, or official letter showing your address (dated within the last 3 months).</p>
 
@@ -292,9 +292,9 @@
                         </div>
 
                         <!-- Selfie Upload -->
-                        <div class="upload-section">
-                            <h3>3. Selfie with ID</h3>
-                            <p class="upload-description">Take a selfie holding your ID next to your face. Make sure both your face and the ID are clearly visible.</p>
+                        <div class="upload-section" id="selfie-upload-section">
+                            <h3>3. Selfie Photo</h3>
+                            <p class="upload-description">Take a clear selfie photo. Make sure your face is clearly visible and well-lit.</p>
 
                             <div class="file-upload-container">
                                 <input type="file" id="selfie-file-input" accept="image/*" capture="user" style="display: none;">
@@ -308,7 +308,7 @@
                                 </label>
 
                                 <div id="selfie-preview" class="file-preview" style="display: none;">
-                                    <img id="selfie-preview-img" alt="Selfie with ID">
+                                    <img id="selfie-preview-img" alt="Selfie Photo">
                                     <button type="button" class="remove-file-btn" id="remove-selfie">✕ Remove</button>
                                 </div>
                             </div>

@@ -703,14 +703,32 @@ function validateDocumentInfo() {
 function validateCapturedDocuments() {
   const issues = [];
 
-  if (!capturedDocuments.document) {
+  // Check if resubmitting a specific document
+  const resubmitDoc = sessionStorage.getItem('resubmit_document');
+
+  // Determine which documents are required
+  let needsPassport, needsProofOfAddress, needsSelfie;
+
+  if (resubmitDoc) {
+    // Individual document resubmission
+    needsPassport = (resubmitDoc === 'passport');
+    needsProofOfAddress = (resubmitDoc === 'address');
+    needsSelfie = (resubmitDoc === 'selfie');
+  } else {
+    // Full submission - documents that are not uploaded yet OR rejected
+    needsPassport = !verification?.passport_document_url || verification?.passport_approved === false;
+    needsProofOfAddress = !verification?.proof_of_address_url || verification?.proof_of_address_approved === false;
+    needsSelfie = !verification?.selfie_with_id_url || verification?.selfie_approved === false;
+  }
+
+  if (needsPassport && !capturedDocuments.document) {
     issues.push('Identity document not captured');
   }
-  if (!capturedDocuments.address) {
+  if (needsProofOfAddress && !capturedDocuments.address) {
     issues.push('Proof of address not captured');
   }
-  if (!capturedDocuments.face) {
-    issues.push('Face capture not completed');
+  if (needsSelfie && !capturedDocuments.face) {
+    issues.push('Selfie photo not captured');
   }
 
   return issues;
@@ -812,6 +830,31 @@ function renderWaitingState() {
   const messageEl = document.querySelector('#waiting-approval p');
   if (messageEl) {
     messageEl.textContent = 'Your documents are currently being reviewed by our compliance team. This usually takes 24-48 hours. You will be notified via email once the review is complete.';
+  }
+
+  // Setup "Check Status" button
+  const checkStatusBtn = document.getElementById('check-approval-btn');
+  if (checkStatusBtn) {
+    // Remove any existing listeners by cloning
+    const newBtn = checkStatusBtn.cloneNode(true);
+    checkStatusBtn.parentNode.replaceChild(newBtn, checkStatusBtn);
+
+    newBtn.addEventListener('click', async () => {
+      console.log('[Check Status] Reloading verification status...');
+      newBtn.disabled = true;
+      newBtn.textContent = 'Checking...';
+
+      try {
+        await loadVerification();
+        showNotification('Status updated', 'success');
+      } catch (error) {
+        console.error('[Check Status] Error:', error);
+        showNotification('Failed to check status', 'error');
+      } finally {
+        newBtn.disabled = false;
+        newBtn.textContent = 'Check Status';
+      }
+    });
   }
 }
 
@@ -1527,16 +1570,29 @@ function connectWebSocket() {
       // Stop polling
       stopPaymentDetailsPolling();
 
-      // Update verification with payment details
-      verification.payment_method_requested = data.payment_method;
-      verification.payment_details = data.payment_details;
-      verification.payment_details_status = 'provided';
+      // CRITICAL: Reload full verification data to get complete payment details
+      // The WebSocket event may have incomplete data, so we fetch from backend
+      loadVerification().then(() => {
+        console.log('[WebSocket] Verification reloaded after payment details event');
 
-      // Show payment details with notification (this is a real-time event)
-      showPaymentDetails(data, true);
+        // The loadVerification will update verification object and trigger state transition
+        // No need to manually call showPaymentDetails here - renderPaymentStep will handle it
 
-      console.log('[WebSocket] After showPaymentDetails - payment-details-section display:',
-        document.getElementById('payment-details-section')?.style.display);
+        // Show notification
+        showNotification('Payment details received! You can now proceed with your deposit.', 'success');
+      }).catch(error => {
+        console.error('[WebSocket] Error reloading verification:', error);
+
+        // Fallback: update verification with data from event
+        verification.payment_method_requested = data.payment_method;
+        verification.payment_details = data.payment_details;
+        verification.payment_details_status = 'provided';
+
+        // Show payment details with notification
+        showPaymentDetails(data, true);
+      });
+
+      console.log('[WebSocket] After payment details handling - initiating reload');
     });
   } catch (error) {
     console.error('[WebSocket] Error initializing WebSocket connection:', error);
@@ -2251,31 +2307,51 @@ function renderPaymentDetailsHTML(paymentData) {
   const method = paymentData.payment_method;
   const details = paymentData.payment_details || {};
 
+  // Helper function to create a copyable field
+  const createCopyableField = (value, label) => {
+    if (!value || value === 'Not provided') {
+      return `<span class="value">${value || 'Not provided'}</span>`;
+    }
+    return `
+      <span class="value" style="display: flex; align-items: center; gap: 8px;">
+        <span style="flex: 1;">${value}</span>
+        <button class="copy-btn" onclick="copyToClipboard('${value.replace(/'/g, "\\'")}', '${label}')"
+                style="padding: 6px 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy
+        </button>
+      </span>
+    `;
+  };
+
   if (method === 'bank_transfer') {
     return `
       <div class="info-row">
         <span class="label">Amount:</span>
-        <span class="value" id="escrow-amount">${paymentData.escrow_amount || verification.escrow_amount || '€450'}</span>
+        <span class="value">${paymentData.escrow_amount || verification.escrow_amount || '€450'}</span>
       </div>
       <div class="info-row">
         <span class="label">Bank Name:</span>
-        <span class="value">${details.bank_name || 'Not provided'}</span>
+        ${createCopyableField(details.bank_name, 'Bank Name')}
       </div>
       <div class="info-row">
         <span class="label">Account Holder:</span>
-        <span class="value">${details.account_holder || 'Not provided'}</span>
+        ${createCopyableField(details.account_holder, 'Account Holder')}
       </div>
       <div class="info-row">
         <span class="label">IBAN:</span>
-        <span class="value" style="font-family: 'Courier New', monospace;">${details.iban || 'Not provided'}</span>
+        ${createCopyableField(details.iban, 'IBAN')}
       </div>
       <div class="info-row">
         <span class="label">SWIFT/BIC:</span>
-        <span class="value" style="font-family: 'Courier New', monospace;">${details.swift_bic || 'Not provided'}</span>
+        ${createCopyableField(details.swift_bic, 'SWIFT/BIC')}
       </div>
       <div class="info-row">
         <span class="label">Reference:</span>
-        <span class="value" style="font-family: 'Courier New', monospace;">${details.reference || verification.tracking_id || 'Not provided'}</span>
+        ${createCopyableField(details.reference || verification.tracking_id, 'Reference')}
       </div>
       ${details.additional_info ? `
       <div class="info-row">
@@ -2300,12 +2376,12 @@ function renderPaymentDetailsHTML(paymentData) {
       </div>
       <div class="info-row">
         <span class="label">Wallet Address:</span>
-        <span class="value" style="font-family: 'Courier New', monospace; word-break: break-all; font-size: 13px;">${details.wallet_address || 'Not provided'}</span>
+        ${createCopyableField(details.wallet_address, 'Wallet Address')}
       </div>
       ${details.amount_crypto ? `
       <div class="info-row">
         <span class="label">Amount in Crypto:</span>
-        <span class="value">${details.amount_crypto}</span>
+        ${createCopyableField(details.amount_crypto, 'Crypto Amount')}
       </div>
       ` : ''}
       ${details.additional_info ? `
@@ -2329,19 +2405,19 @@ function renderPaymentDetailsHTML(paymentData) {
       ${details.account_info ? `
       <div class="info-row">
         <span class="label">Account/ID:</span>
-        <span class="value" style="font-family: 'Courier New', monospace;">${details.account_info}</span>
+        ${createCopyableField(details.account_info, 'Account/ID')}
       </div>
       ` : ''}
       ${details.recipient_name ? `
       <div class="info-row">
         <span class="label">Recipient Name:</span>
-        <span class="value">${details.recipient_name}</span>
+        ${createCopyableField(details.recipient_name, 'Recipient Name')}
       </div>
       ` : ''}
       ${details.reference ? `
       <div class="info-row">
         <span class="label">Reference:</span>
-        <span class="value" style="font-family: 'Courier New', monospace;">${details.reference}</span>
+        ${createCopyableField(details.reference, 'Reference')}
       </div>
       ` : ''}
       ${details.instructions ? `
@@ -2352,6 +2428,16 @@ function renderPaymentDetailsHTML(paymentData) {
       ` : ''}
     `;
   }
+}
+
+// Copy to clipboard function
+function copyToClipboard(text, label) {
+  navigator.clipboard.writeText(text).then(() => {
+    showNotification(`${label} copied to clipboard!`, 'success');
+  }).catch(err => {
+    console.error('[Copy] Failed to copy:', err);
+    showNotification('Failed to copy to clipboard', 'error');
+  });
 }
 
 // Poll for payment details updates
@@ -2456,6 +2542,44 @@ const uploadedFiles = {
 function setupFileUploadHandlers() {
   console.log('[Upload] Setting up file upload handlers');
 
+  // Check if resubmitting a specific document
+  const resubmitDoc = sessionStorage.getItem('resubmit_document');
+  currentResubmitDocument = resubmitDoc;
+
+  // Get upload section elements
+  const passportSection = document.getElementById('passport-upload-section');
+  const proofSection = document.getElementById('proof-of-address-upload-section');
+  const selfieSection = document.getElementById('selfie-upload-section');
+
+  // Determine which documents to show
+  let needsPassport, needsProofOfAddress, needsSelfie;
+
+  if (resubmitDoc) {
+    // Individual document resubmission - only show the specific rejected document
+    console.log('[Upload] Resubmitting single document:', resubmitDoc);
+    needsPassport = (resubmitDoc === 'passport');
+    needsProofOfAddress = (resubmitDoc === 'address');
+    needsSelfie = (resubmitDoc === 'selfie');
+  } else {
+    // Full submission or general resubmission
+    // Show documents that are: (a) not uploaded yet OR (b) rejected
+    needsPassport = !verification?.passport_document_url || verification?.passport_approved === false;
+    needsProofOfAddress = !verification?.proof_of_address_url || verification?.proof_of_address_approved === false;
+    needsSelfie = !verification?.selfie_with_id_url || verification?.selfie_approved === false;
+  }
+
+  // Show/hide sections based on what needs to be submitted
+  if (passportSection) passportSection.style.display = needsPassport ? 'block' : 'none';
+  if (proofSection) proofSection.style.display = needsProofOfAddress ? 'block' : 'none';
+  if (selfieSection) selfieSection.style.display = needsSelfie ? 'block' : 'none';
+
+  console.log('[Upload] Showing upload sections:', {
+    passport: needsPassport,
+    proofOfAddress: needsProofOfAddress,
+    selfie: needsSelfie,
+    singleDocResubmit: resubmitDoc
+  });
+
   // Passport (ID) upload
   const passportInput = document.getElementById('passport-file-input');
   const passportPreview = document.getElementById('passport-preview');
@@ -2559,16 +2683,50 @@ function setupFileUploadHandlers() {
 
     if (!submitBtn || !statusText) return;
 
-    const allUploaded = uploadedFiles.passport && uploadedFiles.proof_of_address && uploadedFiles.selfie;
+    // Check if resubmitting a specific document
+    const resubmitDoc = sessionStorage.getItem('resubmit_document');
 
-    if (allUploaded) {
+    // Determine which documents are required
+    let needsPassport, needsProofOfAddress, needsSelfie;
+
+    if (resubmitDoc) {
+      // Individual document resubmission
+      needsPassport = (resubmitDoc === 'passport');
+      needsProofOfAddress = (resubmitDoc === 'address');
+      needsSelfie = (resubmitDoc === 'selfie');
+    } else {
+      // Full submission - documents that are not uploaded yet OR rejected
+      needsPassport = !verification?.passport_document_url || verification?.passport_approved === false;
+      needsProofOfAddress = !verification?.proof_of_address_url || verification?.proof_of_address_approved === false;
+      needsSelfie = !verification?.selfie_with_id_url || verification?.selfie_approved === false;
+    }
+
+    // Check if all required documents are uploaded
+    const requiredDocuments = [];
+    const uploadedDocuments = [];
+
+    if (needsPassport) {
+      requiredDocuments.push('passport');
+      if (uploadedFiles.passport) uploadedDocuments.push('passport');
+    }
+    if (needsProofOfAddress) {
+      requiredDocuments.push('proof_of_address');
+      if (uploadedFiles.proof_of_address) uploadedDocuments.push('proof_of_address');
+    }
+    if (needsSelfie) {
+      requiredDocuments.push('selfie');
+      if (uploadedFiles.selfie) uploadedDocuments.push('selfie');
+    }
+
+    const allRequiredUploaded = uploadedDocuments.length === requiredDocuments.length && requiredDocuments.length > 0;
+
+    if (allRequiredUploaded) {
       submitBtn.disabled = false;
-      statusText.textContent = '✓ All documents uploaded. Ready to submit.';
+      statusText.textContent = '✓ All required documents uploaded. Ready to submit.';
       statusText.style.color = '#10b981';
     } else {
       submitBtn.disabled = true;
-      const uploaded = [uploadedFiles.passport, uploadedFiles.proof_of_address, uploadedFiles.selfie].filter(Boolean).length;
-      statusText.textContent = `${uploaded} of 3 documents uploaded`;
+      statusText.textContent = `${uploadedDocuments.length} of ${requiredDocuments.length} required documents uploaded`;
       statusText.style.color = '#6b7280';
     }
   }
@@ -2581,8 +2739,32 @@ function setupFileUploadHandlers() {
     submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
 
     newSubmitBtn.addEventListener('click', async () => {
-      if (!uploadedFiles.passport || !uploadedFiles.proof_of_address || !uploadedFiles.selfie) {
-        alert('Please upload all 3 documents before submitting.');
+      // Check if resubmitting a specific document
+      const resubmitDoc = sessionStorage.getItem('resubmit_document');
+
+      // Determine which documents are required
+      let needsPassport, needsProofOfAddress, needsSelfie;
+
+      if (resubmitDoc) {
+        // Individual document resubmission
+        needsPassport = (resubmitDoc === 'passport');
+        needsProofOfAddress = (resubmitDoc === 'address');
+        needsSelfie = (resubmitDoc === 'selfie');
+      } else {
+        // Full submission - documents that are not uploaded yet OR rejected
+        needsPassport = !verification?.passport_document_url || verification?.passport_approved === false;
+        needsProofOfAddress = !verification?.proof_of_address_url || verification?.proof_of_address_approved === false;
+        needsSelfie = !verification?.selfie_with_id_url || verification?.selfie_approved === false;
+      }
+
+      // Validate all required documents are present
+      const missingDocs = [];
+      if (needsPassport && !uploadedFiles.passport) missingDocs.push('passport');
+      if (needsProofOfAddress && !uploadedFiles.proof_of_address) missingDocs.push('proof of address');
+      if (needsSelfie && !uploadedFiles.selfie) missingDocs.push('selfie photo');
+
+      if (missingDocs.length > 0) {
+        alert(`Please upload the following required documents: ${missingDocs.join(', ')}`);
         return;
       }
 
@@ -2591,13 +2773,76 @@ function setupFileUploadHandlers() {
 
       try {
         const formData = new FormData();
-        formData.append('passport', uploadedFiles.passport, 'passport.jpg');
-        formData.append('proof_of_address', uploadedFiles.proof_of_address, 'proof_of_address.jpg');
-        formData.append('selfie', uploadedFiles.selfie, 'selfie.jpg');
+
+        // Use stored data if available, otherwise fall back to verification data (for resubmissions)
+        const personalInfo = personalInfoData || {
+          full_name: verification.recipient_full_name,
+          address: verification.recipient_address,
+          country: verification.recipient_country,
+          phone: verification.recipient_phone
+        };
+
+        const documentInfo = documentInfoData || {
+          id_type: verification.id_type,
+          id_number: verification.id_number,
+          id_country: verification.id_country,
+          id_expiry_date: verification.id_expiry_date
+        };
+
+        console.log('[Upload] Personal info:', personalInfo);
+        console.log('[Upload] Document info:', documentInfo);
+
+        // Validation: Check that we have all required personal info
+        if (!personalInfo.full_name || !personalInfo.address || !personalInfo.country || !personalInfo.phone) {
+          console.error('[Upload] Missing personal information:', personalInfo);
+          alert('Error: Missing personal information. Please refresh and start from the beginning.');
+          newSubmitBtn.disabled = false;
+          newSubmitBtn.textContent = 'Submit Documents';
+          return;
+        }
+
+        // Validation: Check that we have all required document info
+        if (!documentInfo.id_type || !documentInfo.id_number || !documentInfo.id_country || !documentInfo.id_expiry_date) {
+          console.error('[Upload] Missing document information:', documentInfo);
+          alert('Error: Missing document information. Please refresh and start from the beginning.');
+          newSubmitBtn.disabled = false;
+          newSubmitBtn.textContent = 'Submit Documents';
+          return;
+        }
+
+        // Add personal information
+        formData.append('full_name', personalInfo.full_name);
+        formData.append('address', personalInfo.address);
+        formData.append('country', personalInfo.country);
+        formData.append('phone', personalInfo.phone);
+
+        // Add document information
+        formData.append('id_type', documentInfo.id_type);
+        formData.append('id_number', documentInfo.id_number);
+        formData.append('id_country', documentInfo.id_country);
+        formData.append('id_expiry_date', documentInfo.id_expiry_date);
+
+        // CRITICAL: Send resubmission context to backend
+        // This tells backend which specific document is being resubmitted
+        if (resubmitDoc) {
+          formData.append('resubmit_specific_document', resubmitDoc);
+          console.log('[Upload] Sending specific document resubmission flag:', resubmitDoc);
+        }
+
+        // Add files (only include new files, backend will keep existing approved ones)
+        if (uploadedFiles.passport) {
+          formData.append('passport', uploadedFiles.passport, 'passport.jpg');
+        }
+        if (uploadedFiles.proof_of_address) {
+          formData.append('proof_of_address', uploadedFiles.proof_of_address, 'proof_of_address.jpg');
+        }
+        if (uploadedFiles.selfie) {
+          formData.append('selfie_with_id', uploadedFiles.selfie, 'selfie.jpg');
+        }
 
         console.log('[Upload] Submitting documents to backend');
 
-        const response = await fetch(`${API_BASE}/verification/${token}/upload-documents`, {
+        const response = await fetch(`${API_BASE}/verification/${token}/submit-info`, {
           method: 'POST',
           body: formData
         });
@@ -2609,8 +2854,18 @@ function setupFileUploadHandlers() {
 
         console.log('[Upload] Documents uploaded successfully');
 
+        // Clear resubmission flag if it was set
+        if (sessionStorage.getItem('resubmit_document')) {
+          sessionStorage.removeItem('resubmit_document');
+          currentResubmitDocument = null;
+          console.log('[Upload] Cleared resubmission flag');
+        }
+
         // Show success notification
         showNotification('Documents submitted successfully! Awaiting review.', 'success');
+
+        // Reload verification to get updated status
+        await loadVerification();
 
         // Transition to waiting for approval
         transitionTo(STATES.WAITING_APPROVAL);

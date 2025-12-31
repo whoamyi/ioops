@@ -57,11 +57,20 @@ body {
 }
 
 @media (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        overflow-x: hidden;
+    }
+
     .verification-portal {
         margin: 0;
-        width: 100%;
+        width: 100vw;
+        max-width: 100vw;
         border-radius: 0;
         min-height: 100vh;
+        box-shadow: none;
     }
 }
 
