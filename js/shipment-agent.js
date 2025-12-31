@@ -1,448 +1,433 @@
 /**
- * Shipment Event Generator Agent
- * Admin UI for creating realistic shipment timelines
+ * Shipment Event Generator Agent - Template-Based System
+ * Admin UI for creating shipment timelines using preset route templates
  */
 
 // State
-let airportsByRegion = {};
-let securityZones = [];
-let configTemplates = [];
+let routeTemplates = [];
 let currentPreview = null;
-let citiesByRegion = {};
-let currencies = {};
-let weightUnits = {};
-let currentRouteInfo = null;
+let selectedTemplate = null;
+
+// Note: API_BASE is defined by admin-verification.js which loads before this script
 
 // Initialize Shipment Agent
 async function initializeShipmentAgent() {
-  console.log('[Shipment Agent] Initializing...');
+  console.log('[Shipment Agent] Initializing template-based system...');
 
-  // Load all data
-  await Promise.all([
-    loadAirports(),
-    loadSecurityZones(),
-    loadConfigTemplates(),
-    loadCities(),
-    loadCurrencies(),
-    loadWeightUnits()
-  ]);
-
+  await loadRouteTemplates();
   setupShipmentAgentEventListeners();
+  renderTemplateSelector();
 }
 
-// Load airports data
-async function loadAirports() {
+// Load route templates from API
+async function loadRouteTemplates() {
   try {
-    const response = await fetch(`${API_BASE}/shipment-agent/airports`);
+    const response = await fetch(`${API_BASE}/shipment-agent/templates`);
     const data = await response.json();
-    airportsByRegion = data.airports;
+    routeTemplates = data.templates;
 
-    renderAirportSelections();
-  } catch (error) {
-    console.error('[Shipment Agent] Error loading airports:', error);
-  }
-}
-
-// Load security zones
-async function loadSecurityZones() {
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/security-zones`);
-    const data = await response.json();
-    securityZones = data.securityZones;
-
-    renderSecurityZoneSelection();
-  } catch (error) {
-    console.error('[Shipment Agent] Error loading security zones:', error);
-  }
-}
-
-// Load configuration templates
-async function loadConfigTemplates() {
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/config-templates`);
-    const data = await response.json();
-    configTemplates = data.templates;
-
-    renderConfigTemplates();
+    console.log('[Shipment Agent] Loaded templates:', routeTemplates);
   } catch (error) {
     console.error('[Shipment Agent] Error loading templates:', error);
+    alert('Failed to load route templates. Please refresh the page.');
   }
 }
 
-// Load cities data
-async function loadCities() {
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/cities`);
-    const data = await response.json();
-    citiesByRegion = data.cities;
-
-    renderCitySelection();
-  } catch (error) {
-    console.error('[Shipment Agent] Error loading cities:', error);
-  }
-}
-
-// Load currencies
-async function loadCurrencies() {
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/currencies`);
-    const data = await response.json();
-    currencies = data.currencies;
-
-    renderCurrencySelection();
-  } catch (error) {
-    console.error('[Shipment Agent] Error loading currencies:', error);
-  }
-}
-
-// Load weight units
-async function loadWeightUnits() {
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/weight-units`);
-    const data = await response.json();
-    weightUnits = data.weightUnits;
-
-    renderWeightUnitSelection();
-  } catch (error) {
-    console.error('[Shipment Agent] Error loading weight units:', error);
-  }
-}
-
-// Render airport dropdowns
-function renderAirportSelections() {
-  const originSelect = document.getElementById('origin-airport-select');
-  const destinationSelect = document.getElementById('destination-airport-select');
-
-  if (!originSelect || !destinationSelect) return;
-
-  let optionsHTML = '<option value="">Select Airport</option>';
-
-  Object.keys(airportsByRegion).forEach(region => {
-    optionsHTML += `<optgroup label="${region}">`;
-    airportsByRegion[region].forEach(airport => {
-      optionsHTML += `<option value="${airport.code}">${airport.code} - ${airport.name}, ${airport.city}, ${airport.country}</option>`;
-    });
-    optionsHTML += '</optgroup>';
-  });
-
-  originSelect.innerHTML = optionsHTML;
-  destinationSelect.innerHTML = optionsHTML;
-}
-
-// Render security zone selection
-function renderSecurityZoneSelection() {
-  const select = document.getElementById('security-zone-select');
-  if (!select) return;
-
-  let html = '<option value="">No Security Hold</option>';
-
-  securityZones.forEach(zone => {
-    html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
-  });
-
-  select.innerHTML = html;
-}
-
-// Filter security zones based on selected route
-async function filterSecurityZonesByRoute() {
-  const originAirport = document.getElementById('origin-airport-select').value;
-  const destinationAirport = document.getElementById('destination-airport-select').value;
-
-  if (!originAirport || !destinationAirport) {
-    renderSecurityZoneSelection(); // Show all zones
+// Render template selector
+function renderTemplateSelector() {
+  // Use the form container that exists in the HTML
+  const formContainer = document.getElementById('shipment-agent-form');
+  if (!formContainer) {
+    console.error('[Shipment Agent] Form container not found');
     return;
   }
 
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/routes?from=${originAirport}&to=${destinationAirport}`);
-    const data = await response.json();
-
-    if (data.success && data.recommended) {
-      currentRouteInfo = data;
-      renderFilteredSecurityZones(data.recommended.securityZones);
-    } else {
-      renderSecurityZoneSelection();
-    }
-  } catch (error) {
-    console.error('[Shipment Agent] Error fetching route info:', error);
-    renderSecurityZoneSelection();
-  }
-}
-
-// Render filtered security zones based on route
-function renderFilteredSecurityZones(compatibleZones) {
-  const select = document.getElementById('security-zone-select');
-  if (!select) return;
-
-  let html = '<option value="">No Security Hold</option>';
-
-  const filteredZones = securityZones.filter(zone => compatibleZones.includes(zone.code));
-
-  if (filteredZones.length > 0) {
-    filteredZones.forEach(zone => {
-      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
-    });
-  } else {
-    // If no compatible zones, show all
-    securityZones.forEach(zone => {
-      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
-    });
+  if (routeTemplates.length === 0) {
+    formContainer.innerHTML = '<p>No templates available. Please configure templates in the backend.</p>';
+    return;
   }
 
-  select.innerHTML = html;
-}
+  const currentTemplate = routeTemplates[0]; // Default to first template
+  selectedTemplate = currentTemplate;
 
-// Render city selection
-function renderCitySelection() {
-  const datalist = document.getElementById('city-datalist');
-  if (!datalist) return;
-
-  let html = '';
-
-  Object.keys(citiesByRegion).forEach(region => {
-    citiesByRegion[region].forEach(city => {
-      html += `<option value="${city.name}, ${city.country}"></option>`;
-    });
-  });
-
-  datalist.innerHTML = html;
-}
-
-// Render currency selection
-function renderCurrencySelection() {
-  const select = document.getElementById('currency-select');
-  if (!select) return;
-
-  let html = '';
-
-  Object.keys(currencies).forEach(code => {
-    const currency = currencies[code];
-    const selected = code === 'USD' ? 'selected' : '';
-    html += `<option value="${code}" ${selected}>${currency.symbol} ${code}</option>`;
-  });
-
-  select.innerHTML = html;
-}
-
-// Render weight unit selection
-function renderWeightUnitSelection() {
-  const select = document.getElementById('weight-unit-select');
-  if (!select) return;
-
-  let html = '';
-
-  Object.keys(weightUnits).forEach(unit => {
-    const weightUnit = weightUnits[unit];
-    const selected = unit === 'kg' ? 'selected' : '';
-    html += `<option value="${unit}" ${selected}>${unit}</option>`;
-  });
-
-  select.innerHTML = html;
-}
-
-// Render configuration templates
-function renderConfigTemplates(showAll = false) {
-  const container = document.getElementById('config-templates');
-  if (!container) return;
-
-  const featuredTemplates = configTemplates.filter(t => t.featured);
-  const additionalTemplates = configTemplates.filter(t => !t.featured);
-  const templatesToShow = showAll ? configTemplates : featuredTemplates;
-
-  const templateCards = templatesToShow.map(template => {
-    // Build journey types display
-    const journeyTypesDisplay = template.journeyTypes
-      ? template.journeyTypes.map(jt => `${jt.label} (${jt.events})`).join(', ')
-      : 'Various';
-
-    // Count security zones
-    const securityZonesCount = template.securityZones ? template.securityZones.length : 0;
-
-    return `
-      <div class="config-template-card">
-        <div onclick="applyConfigTemplate('${template.id}')">
-          <h4>${template.name}</h4>
-          <p>${template.description}</p>
-          <div class="template-details">
-            <span class="badge">${template.origin} → ${template.destination}</span>
-            ${securityZonesCount > 0 ? `<span class="badge badge-security">${securityZonesCount} security zones</span>` : ''}
-            <span class="badge">${journeyTypesDisplay}</span>
-          </div>
-        </div>
-        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-          <button type="button" class="btn-secondary" style="width: 100%; font-size: 12px; padding: 6px 10px;" onclick="event.stopPropagation(); applyReverseTemplate('${template.id}')">
-            ↔️ Reverse Journey (${template.destination} → ${template.origin})
+  // Clear and rebuild the entire form
+  formContainer.innerHTML = `
+    <div class="form-section">
+      <h3>Select Route Template</h3>
+      <div class="form-group">
+        <label for="template-select">Origin → Destination</label>
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <select id="template-select" class="form-control" style="flex: 1;">
+            ${routeTemplates.map((template, index) => `
+              <option value="${index}" ${index === 0 ? 'selected' : ''}>
+                ${template.name}
+              </option>
+            `).join('')}
+          </select>
+          <button type="button" id="swap-route-btn" class="btn-secondary" style="padding: 8px 16px; white-space: nowrap;" title="Swap origin and destination">
+            <span style="font-size: 16px;">⇄</span> Swap
           </button>
         </div>
+        <small class="form-text">Total available routes: ${routeTemplates.length}</small>
       </div>
-    `;
-  }).join('');
 
-  const viewMoreButton = !showAll && additionalTemplates.length > 0 ? `
-    <div class="view-more-templates-container">
-      <button type="button" class="btn btn-outline" onclick="toggleTemplateView(true)">
-        View More Templates (${additionalTemplates.length} more)
+      <div class="template-info" id="template-info-display">
+        <div class="template-header">
+          <span class="template-icon">✈️</span>
+          <div>
+            <h4>${currentTemplate.name}</h4>
+            <p class="template-route">${currentTemplate.originCity}, ${currentTemplate.originCountry} → ${currentTemplate.destinationCity}, ${currentTemplate.destinationCountry}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Route Options</h3>
+      <div class="form-group">
+        <label for="route-select">Security Zone Route</label>
+        <select id="route-select" class="form-control">
+          ${currentTemplate.routes.map(route => {
+            const routeDetails = currentTemplate.routeDetails?.[route];
+            return `<option value="${route}">${routeDetails?.name || `Route ${route.slice(-1)}`}</option>`;
+          }).join('')}
+        </select>
+        <small class="form-text">Security zone: <span id="security-zone-display">${currentTemplate.routeDetails?.routeA?.securityZone || 'Loading...'}</span></small>
+      </div>
+
+      <div class="form-group">
+        <label for="journey-type-select">Journey Type</label>
+        <select id="journey-type-select" class="form-control">
+          ${currentTemplate.journeyTypes.map(type => `
+            <option value="${type}" ${type === 'standard' ? 'selected' : ''}>
+              ${type.charAt(0).toUpperCase() + type.slice(1)}
+              ${type === 'minimal' ? '(~20 events, key milestones)' : ''}
+              ${type === 'standard' ? '(~35 events, balanced detail)' : ''}
+              ${type === 'detailed' ? '(~55 events, comprehensive)' : ''}
+            </option>
+          `).join('')}
+        </select>
+        <small class="form-text">Journey type controls event density. All types have the same timeline duration.</small>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Shipment Details</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="shipper-name">Shipper Name</label>
+          <input type="text" id="shipper-name" class="form-control" placeholder="Company or individual name">
+        </div>
+        <div class="form-group">
+          <label for="shipper-address">Shipper Address</label>
+          <input type="text" id="shipper-address" class="form-control" placeholder="Full address">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="recipient-name">Recipient Name</label>
+          <input type="text" id="recipient-name" class="form-control" placeholder="Recipient full name" required>
+        </div>
+        <div class="form-group">
+          <label for="recipient-email">Recipient Email</label>
+          <input type="email" id="recipient-email" class="form-control" placeholder="recipient@example.com">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="recipient-address">Recipient Address</label>
+          <input type="text" id="recipient-address" class="form-control" placeholder="Full delivery address">
+        </div>
+        <div class="form-group">
+          <label for="recipient-city">Recipient City</label>
+          <input type="text" id="recipient-city" class="form-control" placeholder="City" value="${currentTemplate.destinationCity}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="declared-value">Declared Value (USD)</label>
+          <input type="number" id="declared-value" class="form-control" placeholder="0.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="weight-value">Weight (kg)</label>
+          <input type="number" id="weight-value" class="form-control" placeholder="0.0" step="0.1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="start-date">Start Date & Time</label>
+        <input type="datetime-local" id="start-date" class="form-control" value="${new Date().toISOString().slice(0, 16)}">
+        <small class="form-text">Timeline will start from this date/time</small>
+      </div>
+
+      <div class="form-group">
+        <label for="security-code">Security Code (Optional)</label>
+        <input type="text" id="security-code" class="form-control" placeholder="10-digit code" maxlength="10" pattern="[0-9]{10}">
+        <small class="form-text">Leave empty to auto-generate. Must be exactly 10 digits (0-9).</small>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" id="preview-shipment-btn" class="btn-primary">
+        <span>📋</span> Preview Timeline
+      </button>
+      <button type="button" id="reset-form-btn" class="btn-secondary">
+        <span>🔄</span> Reset Form
       </button>
     </div>
-  ` : '';
+  `;
 
-  const showLessButton = showAll ? `
-    <div class="view-more-templates-container">
-      <button type="button" class="btn btn-outline" onclick="toggleTemplateView(false)">
-        Show Less
-      </button>
-    </div>
-  ` : '';
-
-  container.innerHTML = templateCards + viewMoreButton + showLessButton;
+  // Initial swap button state update
+  setTimeout(() => {
+    if (typeof updateSwapButtonState === 'function') {
+      updateSwapButtonState();
+    }
+  }, 0);
 }
 
-// Toggle template view (show all or featured only)
-function toggleTemplateView(showAll) {
-  renderConfigTemplates(showAll);
+// Update swap button state when template changes
+function updateSwapButtonState() {
+  if (!selectedTemplate) return;
+
+  const swapBtn = document.getElementById('swap-route-btn');
+  if (!swapBtn) return;
+
+  // Check if reverse route exists
+  const reverseExists = routeTemplates.some(t =>
+    t.originCountry === selectedTemplate.destinationCountry &&
+    t.originCity === selectedTemplate.destinationCity &&
+    t.destinationCountry === selectedTemplate.originCountry &&
+    t.destinationCity === selectedTemplate.originCity
+  );
+
+  // Update button appearance
+  if (reverseExists) {
+    swapBtn.disabled = false;
+    swapBtn.style.opacity = '1';
+    swapBtn.title = `Swap to ${selectedTemplate.destinationCity} → ${selectedTemplate.originCity}`;
+  } else {
+    swapBtn.disabled = true;
+    swapBtn.style.opacity = '0.5';
+    swapBtn.title = 'No reverse route available';
+  }
 }
 
-// Apply reverse journey (swap origin and destination)
-function applyReverseTemplate(templateId) {
-  const template = configTemplates.find(t => t.id === templateId);
-  if (!template) {
-    console.error('[Shipment Agent] Template not found:', templateId);
-    return;
-  }
+// Setup event listeners
+function setupShipmentAgentEventListeners() {
+  // Preview button
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'preview-shipment-btn' || e.target.closest('#preview-shipment-btn')) {
+      previewShipmentTimeline();
+    }
+  });
 
-  console.log('[Shipment Agent] Applying REVERSE template:', template);
+  // Reset button
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'reset-form-btn' || e.target.closest('#reset-form-btn')) {
+      renderTemplateSelector();
+    }
+  });
 
-  // Create reversed template
-  const reversedTemplate = {
-    ...template,
-    origin: template.destination,
-    destination: template.origin,
-    name: `${template.destination} → ${template.origin}`,
-    description: `Reverse of ${template.name}`
-  };
+  // Swap route button - find and select reverse route
+  document.addEventListener('click', (e) => {
+    // Check if click is on swap button or its children
+    const swapBtn = e.target.closest('#swap-route-btn');
+    if (swapBtn) {
+      e.preventDefault();
+      e.stopPropagation();
 
-  // Apply the reversed template
-  applyTemplateConfig(reversedTemplate);
+      console.log('[Shipment Agent] Swap button clicked');
 
-  showNotification(`Reverse journey applied: ${reversedTemplate.name}`, 'success');
-}
+      if (!selectedTemplate) {
+        console.warn('[Shipment Agent] No template selected');
+        return;
+      }
 
-// Apply configuration template
-function applyConfigTemplate(templateId) {
-  const template = configTemplates.find(t => t.id === templateId);
-  if (!template) {
-    console.error('[Shipment Agent] Template not found:', templateId);
-    return;
-  }
+      console.log('[Shipment Agent] Current template:', selectedTemplate.name);
 
-  console.log('[Shipment Agent] Applying template:', template);
+      // Find reverse route (swap origin and destination)
+      const reverseRoute = routeTemplates.find(t =>
+        t.originCountry === selectedTemplate.destinationCountry &&
+        t.originCity === selectedTemplate.destinationCity &&
+        t.destinationCountry === selectedTemplate.originCountry &&
+        t.destinationCity === selectedTemplate.originCity
+      );
 
-  applyTemplateConfig(template);
-
-  showNotification(`Template "${template.name}" applied`, 'success');
-}
-
-// Core template configuration logic (shared between normal and reverse)
-function applyTemplateConfig(template) {
-
-  // Set airports (hidden from user, but needed for backend)
-  const originSelect = document.getElementById('origin-airport-select');
-  const destinationSelect = document.getElementById('destination-airport-select');
-
-  if (originSelect) {
-    originSelect.value = template.origin;
-    console.log('[Shipment Agent] Set origin to:', template.origin, 'Actual value:', originSelect.value);
-  }
-
-  if (destinationSelect) {
-    destinationSelect.value = template.destination;
-    console.log('[Shipment Agent] Set destination to:', template.destination, 'Actual value:', destinationSelect.value);
-  }
-
-  // Populate security zones dropdown with template's available zones
-  if (template.securityZones && template.securityZones.length > 0) {
-    renderTemplateSecurityZones(template.securityZones);
-
-    // Set default security zone if specified
-    if (template.defaultSecurityZone) {
-      const securitySelect = document.getElementById('security-zone-select');
-      if (securitySelect) {
-        securitySelect.value = template.defaultSecurityZone;
-
-        // Generate security code
-        const securityCodeInput = document.getElementById('security-code-input');
-        if (securityCodeInput) {
-          securityCodeInput.value = generateSecurityCode();
+      if (reverseRoute) {
+        console.log('[Shipment Agent] Found reverse route:', reverseRoute.name);
+        // Found reverse route - select it
+        const reverseIndex = routeTemplates.indexOf(reverseRoute);
+        const templateSelect = document.getElementById('template-select');
+        if (templateSelect) {
+          templateSelect.value = reverseIndex;
+          // Trigger change event to update the UI
+          templateSelect.dispatchEvent(new Event('change'));
+          console.log('[Shipment Agent] Swapped to:', reverseRoute.name);
         }
+      } else {
+        console.warn('[Shipment Agent] No reverse route found');
+        alert(`No reverse route found for ${selectedTemplate.destinationCity} → ${selectedTemplate.originCity}.\n\nAvailable routes only go in one direction.`);
       }
     }
-  } else {
-    // Fallback to route-based filtering
-    filterSecurityZonesByRoute();
-  }
+  });
 
-  // Populate journey type selector with template's journey types
-  if (template.journeyTypes && template.journeyTypes.length > 0) {
-    renderJourneyTypes(template.journeyTypes);
+  // Template selector change - rebuild form with new template
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'template-select') {
+      const templateIndex = parseInt(e.target.value);
+      selectedTemplate = routeTemplates[templateIndex];
 
-    // Select the second option (Standard) by default, or first if only one
-    const journeySelect = document.getElementById('journey-type-select');
-    if (journeySelect && journeySelect.options.length > 1) {
-      journeySelect.selectedIndex = 1; // Standard
+      // Update template info display
+      const templateInfo = document.getElementById('template-info-display');
+      if (templateInfo && selectedTemplate) {
+        templateInfo.innerHTML = `
+          <div class="template-header">
+            <span class="template-icon">✈️</span>
+            <div>
+              <h4>${selectedTemplate.name}</h4>
+              <p class="template-route">${selectedTemplate.originCity}, ${selectedTemplate.originCountry} → ${selectedTemplate.destinationCity}, ${selectedTemplate.destinationCountry}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      // Update route selector
+      const routeSelect = document.getElementById('route-select');
+      if (routeSelect && selectedTemplate) {
+        routeSelect.innerHTML = selectedTemplate.routes.map(route => {
+          const routeDetails = selectedTemplate.routeDetails?.[route];
+          return `<option value="${route}">${routeDetails?.name || `Route ${route.slice(-1)}`}</option>`;
+        }).join('');
+
+        // Update security zone display
+        const securityZoneDisplay = document.getElementById('security-zone-display');
+        if (securityZoneDisplay) {
+          securityZoneDisplay.textContent = selectedTemplate.routeDetails?.routeA?.securityZone || 'Loading...';
+        }
+      }
+
+      // Update journey type selector
+      const journeyTypeSelect = document.getElementById('journey-type-select');
+      if (journeyTypeSelect && selectedTemplate) {
+        journeyTypeSelect.innerHTML = selectedTemplate.journeyTypes.map(type => `
+          <option value="${type}" ${type === 'standard' ? 'selected' : ''}>
+            ${type.charAt(0).toUpperCase() + type.slice(1)}
+            ${type === 'minimal' ? '(~20 events, key milestones)' : ''}
+            ${type === 'standard' ? '(~35 events, balanced detail)' : ''}
+            ${type === 'detailed' ? '(~55 events, comprehensive)' : ''}
+          </option>
+        `).join('');
+      }
+
+      // Update swap button state
+      updateSwapButtonState();
     }
-  }
-}
-
-// Render security zones from template
-function renderTemplateSecurityZones(templateZoneCodes) {
-  const select = document.getElementById('security-zone-select');
-  if (!select) return;
-
-  let html = '<option value="">No Security Hold</option>';
-
-  // Filter to only show zones from template
-  const filteredZones = securityZones.filter(zone => templateZoneCodes.includes(zone.code));
-
-  filteredZones.forEach(zone => {
-    html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
   });
 
-  select.innerHTML = html;
-}
-
-// Render journey types from template
-function renderJourneyTypes(journeyTypes) {
-  const select = document.getElementById('journey-type-select');
-  if (!select) return;
-
-  let html = '';
-
-  journeyTypes.forEach((journeyType) => {
-    html += `<option value="${journeyType.events}">${journeyType.label} (${journeyType.events} events)</option>`;
+  // Route selector change - update security zone display
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'route-select') {
+      const routeKey = e.target.value;
+      const securityZoneDisplay = document.getElementById('security-zone-display');
+      if (securityZoneDisplay && selectedTemplate?.routeDetails?.[routeKey]) {
+        securityZoneDisplay.textContent = selectedTemplate.routeDetails[routeKey].securityZone;
+      }
+    }
   });
 
-  select.innerHTML = html;
+  // Create button (in modal)
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'create-shipment-btn' || e.target.closest('#create-shipment-btn')) {
+      createShipment();
+    }
+  });
 
-  // Update the visible journey type section
-  const journeySection = document.getElementById('journey-type-section');
-  if (journeySection) {
-    journeySection.style.display = 'block';
-  }
+  // Close preview modal
+  document.addEventListener('click', (e) => {
+    if (e.target.classList?.contains('close-shipment-preview-modal') || e.target.closest('.close-shipment-preview-modal')) {
+      closeShipmentPreviewModal();
+    }
+  });
+
+  // Close shipment agent modal
+  document.addEventListener('click', (e) => {
+    if (e.target.classList?.contains('close-shipment-agent-modal')) {
+      closeShipmentAgentModal();
+    }
+  });
+
+  // Close on outside click (preview modal)
+  document.addEventListener('click', (e) => {
+    const previewModal = document.getElementById('shipment-preview-modal');
+    if (e.target === previewModal) {
+      closeShipmentPreviewModal();
+    }
+  });
+
+  // Close on outside click (agent modal)
+  document.addEventListener('click', (e) => {
+    const agentModal = document.getElementById('shipment-agent-modal');
+    if (e.target === agentModal) {
+      closeShipmentAgentModal();
+    }
+  });
 }
 
-// Generate security code (10 digits only)
-function generateSecurityCode() {
-  let code = '';
-  for (let i = 0; i < 10; i++) {
-    code += Math.floor(Math.random() * 10);
-  }
-  return code;
+// Get configuration from form
+function getShipmentConfig() {
+  const route = document.getElementById('route-select')?.value || 'routeA';
+  const journeyType = document.getElementById('journey-type-select')?.value || 'standard';
+  const startDate = document.getElementById('start-date')?.value || new Date().toISOString();
+  const securityCode = document.getElementById('security-code')?.value?.trim() || undefined;
+
+  return {
+    originCountry: selectedTemplate.originCountry,
+    originCity: selectedTemplate.originCity,
+    destinationCountry: selectedTemplate.destinationCountry,
+    destinationCity: selectedTemplate.destinationCity,
+    route,
+    journeyType,
+    startDate,
+    securityCode,
+    // Additional details
+    shipperName: document.getElementById('shipper-name')?.value || '',
+    shipperAddress: document.getElementById('shipper-address')?.value || '',
+    recipientName: document.getElementById('recipient-name')?.value || '',
+    recipientEmail: document.getElementById('recipient-email')?.value || '',
+    recipientAddress: document.getElementById('recipient-address')?.value || '',
+    recipientCity: document.getElementById('recipient-city')?.value || '',
+    recipientPhone: '',
+    declaredValue: document.getElementById('declared-value')?.value || 0,
+    weight: document.getElementById('weight-value')?.value || 0
+  };
 }
 
-// Generate random security code button
-function generateRandomSecurityCode() {
-  const code = generateSecurityCode();
-  document.getElementById('security-code-input').value = code;
+// Validate configuration
+function validateShipmentConfig(config) {
+  const errors = [];
+
+  if (!config.recipientName) {
+    errors.push('Recipient name is required');
+  }
+
+  if (config.securityCode && config.securityCode.length !== 10) {
+    errors.push('Security code must be exactly 10 digits');
+  }
+
+  if (config.securityCode && !/^[0-9]{10}$/.test(config.securityCode)) {
+    errors.push('Security code must contain only numbers (0-9)');
+  }
+
+  if (errors.length > 0) {
+    alert('Validation errors:\n\n' + errors.join('\n'));
+    return false;
+  }
+
+  return true;
 }
 
 // Preview shipment timeline
@@ -453,46 +438,40 @@ async function previewShipmentTimeline() {
   console.log('[Shipment Agent] Config:', config);
 
   if (!validateShipmentConfig(config)) {
-    console.log('[Shipment Agent] Validation failed');
     return;
   }
 
-  console.log('[Shipment Agent] Validation passed, generating preview...');
-
   const previewBtn = document.getElementById('preview-shipment-btn');
   previewBtn.disabled = true;
-  previewBtn.textContent = 'Generating Preview...';
+  previewBtn.innerHTML = '<span>⏳</span> Generating Preview...';
 
   try {
-    console.log('[Shipment Agent] Sending preview request to:', `${API_BASE}/shipment-agent/preview`);
+    console.log('[Shipment Agent] Sending template preview request');
 
-    const response = await fetch(`${API_BASE}/shipment-agent/preview`, {
+    const response = await fetch(`${API_BASE}/shipment-agent/template-preview`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config)
     });
 
-    console.log('[Shipment Agent] Response status:', response.status);
-
     const data = await response.json();
-    console.log('[Shipment Agent] Response data:', data);
+    console.log('[Shipment Agent] Response:', data);
 
     if (!response.ok || !data.success) {
       const errorMsg = data.error || 'Failed to generate preview';
-      const details = data.details ? '\n\nDetails:\n- ' + data.details.join('\n- ') : '';
+      const details = data.details ? '\n\nDetails: ' + data.details : '';
       throw new Error(errorMsg + details);
     }
 
     currentPreview = data;
-    console.log('[Shipment Agent] Preview generated successfully, showing modal');
     showPreviewModal(data);
 
   } catch (error) {
-    console.error('[Shipment Agent] Error generating preview:', error);
-    alert('Failed to generate preview: ' + error.message);
+    console.error('[Shipment Agent] Error:', error);
+    alert('Failed to generate preview:\n\n' + error.message);
   } finally {
     previewBtn.disabled = false;
-    previewBtn.textContent = 'Preview Timeline';
+    previewBtn.innerHTML = '<span>📋</span> Preview Timeline';
   }
 }
 
@@ -504,40 +483,77 @@ function showPreviewModal(preview) {
     return;
   }
 
-  // Set summary
-  document.getElementById('preview-origin').textContent = preview.summary.origin;
-  document.getElementById('preview-destination').textContent = preview.summary.destination;
-  document.getElementById('preview-total-events').textContent = preview.summary.totalEvents;
-  document.getElementById('preview-duration').textContent = preview.summary.estimatedDuration;
-  document.getElementById('preview-route').textContent = preview.summary.route;
+  // Get origin and destination from config
+  const config = getShipmentConfig();
 
-  if (preview.summary.hasSecurityHold) {
-    document.getElementById('preview-security-zone').textContent = preview.summary.securityZone;
-    document.getElementById('preview-security-info').style.display = 'block';
+  // Update summary fields using existing HTML structure
+  document.getElementById('preview-origin').textContent = `${config.originCity}, ${config.originCountry}`;
+  document.getElementById('preview-destination').textContent = `${config.destinationCity}, ${config.destinationCountry}`;
+  document.getElementById('preview-total-events').textContent = `${preview.totalEvents} (${preview.confirmedEvents} confirmed + ${preview.pendingEvents} pending)`;
+  document.getElementById('preview-duration').textContent = new Date(preview.estimatedCompletion).toLocaleDateString();
+  document.getElementById('preview-route').textContent = `${preview.route.routeName} - ${preview.route.journeyType.toUpperCase()}`;
+
+  // Show security zone info if available
+  const securityInfo = document.getElementById('preview-security-info');
+  const securityZone = document.getElementById('preview-security-zone');
+  if (preview.route.securityZone) {
+    securityZone.textContent = preview.route.securityZone;
+    securityInfo.style.display = 'block';
   } else {
-    document.getElementById('preview-security-info').style.display = 'none';
+    securityInfo.style.display = 'none';
   }
 
-  // Render events timeline
-  const eventsContainer = document.getElementById('preview-events-timeline');
-  eventsContainer.innerHTML = preview.events.map((event, index) => `
-    <div class="timeline-event">
-      <div class="timeline-marker">${event.order}</div>
-      <div class="timeline-content">
-        <div class="timeline-time">${event.formattedDate}</div>
-        <div class="timeline-status">${event.status}</div>
-        <div class="timeline-location">${event.location}</div>
-        <div class="timeline-description">${event.description}</div>
-        ${Object.keys(event.details).length > 0 ? `
-          <div class="timeline-details">
-            ${Object.entries(event.details).map(([key, value]) =>
-              `<span class="detail-item"><strong>${key.replace(/_/g, ' ')}:</strong> ${value}</span>`
-            ).join('')}
+  // Build events timeline
+  const confirmedEvents = preview.events.filter(e => !e.is_pending);
+  const pendingEvents = preview.events.filter(e => e.is_pending);
+
+  const eventsHtml = `
+    <div class="events-section">
+      <h4>✓ Confirmed Events (${confirmedEvents.length})</h4>
+      <div class="timeline-events">
+        ${confirmedEvents.map(event => `
+          <div class="timeline-event ${event.status === 'HLD' ? 'security-hold' : ''}">
+            <div class="timeline-marker">${event.order}</div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-status">${event.status}</span>
+                <span class="timeline-time">${event.timestamp ? new Date(event.timestamp).toLocaleString() : 'Pending'}</span>
+              </div>
+              <div class="timeline-location">${event.location}</div>
+              <div class="timeline-description">${event.description}</div>
+            </div>
           </div>
-        ` : ''}
+        `).join('')}
       </div>
     </div>
-  `).join('');
+
+    ${pendingEvents.length > 0 ? `
+    <div class="events-section pending-section">
+      <h4>⏳ Pending Events (${pendingEvents.length}) - After Security Clearance</h4>
+      <div class="timeline-events">
+        ${pendingEvents.map(event => `
+          <div class="timeline-event pending-event">
+            <div class="timeline-marker">P${event.order - confirmedEvents.length}</div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <span class="timeline-status">${event.status}</span>
+                <span class="timeline-offset">+${event.scheduled_offset} days after clearance</span>
+              </div>
+              <div class="timeline-location">${event.location}</div>
+              <div class="timeline-description">${event.description}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+  `;
+
+  // Update timeline container
+  const timelineContainer = document.getElementById('preview-events-timeline');
+  if (timelineContainer) {
+    timelineContainer.innerHTML = eventsHtml;
+  }
 
   modal.style.display = 'flex';
 }
@@ -557,7 +573,7 @@ async function createShipment() {
     return;
   }
 
-  if (!confirm(`Create shipment with ${currentPreview.summary.totalEvents} events?\n\nThis will generate a new tracking ID and save all events to the database.`)) {
+  if (!confirm(`Create shipment with ${currentPreview.totalEvents} events?\n\nThis will generate a new tracking ID and save all events to the database.`)) {
     return;
   }
 
@@ -565,10 +581,10 @@ async function createShipment() {
 
   const createBtn = document.getElementById('create-shipment-btn');
   createBtn.disabled = true;
-  createBtn.textContent = 'Creating Shipment...';
+  createBtn.innerHTML = '<span>⏳</span> Creating Shipment...';
 
   try {
-    const response = await fetch(`${API_BASE}/shipment-agent/create`, {
+    const response = await fetch(`${API_BASE}/shipment-agent/template-create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config)
@@ -580,7 +596,7 @@ async function createShipment() {
       throw new Error(data.error || 'Failed to create shipment');
     }
 
-    alert(`Shipment created successfully!\n\nTracking ID: ${data.trackingId}\nTotal Events: ${data.totalEvents}\n\nFirst Event: ${data.firstEvent.status} at ${new Date(data.firstEvent.timestamp).toLocaleString()}\nLast Event: ${data.lastEvent.status} at ${new Date(data.lastEvent.timestamp).toLocaleString()}`);
+    alert(`✓ Shipment created successfully!\n\nTracking ID: ${data.trackingId}\nTemplate: ${data.template}\nRoute: ${data.route}\nJourney Type: ${data.journeyType}\nTotal Events: ${data.totalEvents} (${data.confirmedEvents} confirmed + ${data.pendingEvents} pending)`);
 
     // Close modals
     closeShipmentPreviewModal();
@@ -593,104 +609,10 @@ async function createShipment() {
 
   } catch (error) {
     console.error('[Shipment Agent] Error creating shipment:', error);
-    alert('Failed to create shipment: ' + error.message);
+    alert('Failed to create shipment:\n\n' + error.message);
   } finally {
     createBtn.disabled = false;
-    createBtn.textContent = 'Create Shipment';
-  }
-}
-
-// Get shipment configuration from form
-function getShipmentConfig() {
-  const currencyCode = document.getElementById('currency-select').value;
-  const currencySymbol = currencies[currencyCode]?.symbol || '$';
-  const declaredAmount = document.getElementById('declared-value-input').value;
-
-  const weightValue = document.getElementById('weight-value-input').value;
-  const weightUnit = document.getElementById('weight-unit-select').value;
-
-  // Check for journey type selector (new template system) or fallback to old events selector
-  const journeyTypeSelect = document.getElementById('journey-type-select');
-  let numberOfEvents = 30; // default
-
-  if (journeyTypeSelect && journeyTypeSelect.value && journeyTypeSelect.options.length > 0) {
-    numberOfEvents = parseInt(journeyTypeSelect.value);
-    console.log('[Shipment Agent] Using journey type:', journeyTypeSelect.value, 'events:', numberOfEvents);
-  } else {
-    const eventsSelect = document.getElementById('number-events-select');
-    if (eventsSelect && eventsSelect.value) {
-      numberOfEvents = parseInt(eventsSelect.value) || 30;
-      console.log('[Shipment Agent] Using fallback events selector:', numberOfEvents);
-    }
-  }
-
-  return {
-    originAirport: document.getElementById('origin-airport-select').value,
-    destinationAirport: document.getElementById('destination-airport-select').value,
-    shipperName: document.getElementById('shipper-name-input').value,
-    shipperAddress: document.getElementById('shipper-address-input').value,
-    recipientName: document.getElementById('recipient-name-input').value,
-    recipientEmail: document.getElementById('recipient-email-input').value,
-    recipientAddress: document.getElementById('recipient-address-input').value,
-    recipientCity: document.getElementById('recipient-city-input').value,
-    declaredValue: `${currencySymbol}${declaredAmount} ${currencyCode}`,
-    weight: `${weightValue} ${weightUnit}`,
-    securityZone: document.getElementById('security-zone-select').value || null,
-    securityCode: document.getElementById('security-code-input').value || null,
-    startDate: document.getElementById('start-date-input').value || null,
-    numberOfEvents: numberOfEvents
-  };
-}
-
-// Validate shipment configuration
-function validateShipmentConfig(config) {
-  const errors = [];
-
-  if (!config.originAirport) errors.push('Origin airport is required');
-  if (!config.destinationAirport) errors.push('Destination airport is required');
-  if (!config.shipperName) errors.push('Shipper name is required');
-  if (!config.recipientName) errors.push('Recipient name is required');
-  if (!config.recipientAddress) errors.push('Recipient address is required');
-  if (!config.recipientCity) errors.push('Recipient city is required');
-  if (!config.declaredValue) errors.push('Declared value is required');
-  if (!config.weight) errors.push('Weight is required');
-
-  // Security code validation: If provided, must be 10 digits
-  // If security zone is selected but no code provided, one will be auto-generated
-  if (config.securityCode) {
-    if (config.securityCode.length !== 10) {
-      errors.push('Security code must be exactly 10 digits');
-    }
-    if (!/^[0-9]{10}$/.test(config.securityCode)) {
-      errors.push('Security code must contain only numbers (0-9)');
-    }
-  }
-
-  if (errors.length > 0) {
-    alert('Please fix the following errors:\n\n' + errors.join('\n'));
-    return false;
-  }
-
-  return true;
-}
-
-// Open shipment agent modal
-function openShipmentAgentModal() {
-  const modal = document.getElementById('shipment-agent-modal');
-  if (!modal) {
-    console.error('[Shipment Agent] Modal not found');
-    return;
-  }
-
-  // Set default start date to now
-  const now = new Date();
-  document.getElementById('start-date-input').value = now.toISOString().slice(0, 16);
-
-  modal.style.display = 'flex';
-
-  // Initialize if not already done
-  if (Object.keys(airportsByRegion).length === 0) {
-    initializeShipmentAgent();
+    createBtn.innerHTML = '<span>✓</span> Create Shipment';
   }
 }
 
@@ -700,115 +622,23 @@ function closeShipmentAgentModal() {
   if (modal) {
     modal.style.display = 'none';
   }
-
-  // Reset form
-  document.getElementById('shipment-agent-form').reset();
-  currentPreview = null;
 }
 
-// Filter security zones based on selected route
-async function filterSecurityZonesByRoute() {
-  const originAirport = document.getElementById('origin-airport-select').value;
-  const destinationAirport = document.getElementById('destination-airport-select').value;
-
-  if (!originAirport || !destinationAirport) {
-    renderSecurityZoneSelection(); // Show all zones
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE}/shipment-agent/routes?from=${originAirport}&to=${destinationAirport}`);
-    const data = await response.json();
-
-    if (data.success && data.recommended) {
-      currentRouteInfo = data;
-      renderFilteredSecurityZones(data.recommended.securityZones);
-    } else {
-      renderSecurityZoneSelection(); // Fallback to all zones
-    }
-  } catch (error) {
-    console.error('[Shipment Agent] Error fetching route info:', error);
-    renderSecurityZoneSelection(); // Fallback to all zones
-  }
-}
-
-// Render filtered security zones based on route
-function renderFilteredSecurityZones(compatibleZones) {
-  const select = document.getElementById('security-zone-select');
-  if (!select) return;
-
-  let html = '<option value="">No Security Hold</option>';
-
-  // Filter to only show compatible zones
-  const filteredZones = securityZones.filter(zone => compatibleZones.includes(zone.code));
-
-  if (filteredZones.length > 0) {
-    filteredZones.forEach(zone => {
-      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
-    });
+// Open shipment agent modal (called from admin page button)
+function openShipmentAgentModal() {
+  const modal = document.getElementById('shipment-agent-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    // Reinitialize template selector when opening
+    renderTemplateSelector();
   } else {
-    // If no compatible zones, show all
-    securityZones.forEach(zone => {
-      html += `<option value="${zone.code}">${zone.name} (${zone.avgHoldTime}h avg hold)</option>`;
-    });
+    console.error('[Shipment Agent] Modal not found');
   }
-
-  select.innerHTML = html;
 }
 
-// Setup event listeners
-function setupShipmentAgentEventListeners() {
-  const previewBtn = document.getElementById('preview-shipment-btn');
-  if (previewBtn) {
-    previewBtn.addEventListener('click', previewShipmentTimeline);
-  }
-
-  const createBtn = document.getElementById('create-shipment-btn');
-  if (createBtn) {
-    createBtn.addEventListener('click', createShipment);
-  }
-
-  const generateCodeBtn = document.getElementById('generate-security-code-btn');
-  if (generateCodeBtn) {
-    generateCodeBtn.addEventListener('click', generateRandomSecurityCode);
-  }
-
-  // Listen for origin/destination changes to filter security zones
-  const originSelect = document.getElementById('origin-airport-select');
-  const destinationSelect = document.getElementById('destination-airport-select');
-
-  if (originSelect) {
-    originSelect.addEventListener('change', filterSecurityZonesByRoute);
-  }
-
-  if (destinationSelect) {
-    destinationSelect.addEventListener('change', filterSecurityZonesByRoute);
-  }
-
-  const closeButtons = document.querySelectorAll('.close-shipment-agent-modal');
-  closeButtons.forEach(btn => {
-    btn.addEventListener('click', closeShipmentAgentModal);
-  });
-
-  const closePreviewButtons = document.querySelectorAll('.close-shipment-preview-modal');
-  closePreviewButtons.forEach(btn => {
-    btn.addEventListener('click', closeShipmentPreviewModal);
-  });
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeShipmentAgent);
+} else {
+  initializeShipmentAgent();
 }
-
-// Show notification
-function showNotification(message, type = 'info') {
-  // Simple notification - can be enhanced
-  console.log(`[${type.toUpperCase()}] ${message}`);
-}
-
-// Export functions
-window.openShipmentAgentModal = openShipmentAgentModal;
-window.closeShipmentAgentModal = closeShipmentAgentModal;
-window.closeShipmentPreviewModal = closeShipmentPreviewModal;
-window.applyConfigTemplate = applyConfigTemplate;
-window.applyReverseTemplate = applyReverseTemplate;
-window.toggleTemplateView = toggleTemplateView;
-window.generateRandomSecurityCode = generateRandomSecurityCode;
-window.previewShipmentTimeline = previewShipmentTimeline;
-window.createShipment = createShipment;
