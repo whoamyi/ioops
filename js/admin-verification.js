@@ -12,6 +12,10 @@ const FRONTEND_URL = window.location.hostname === 'localhost' || window.location
   ? 'http://localhost:5500'
   : 'https://www.ioops.org';
 
+const PRODUCTION_EMAIL_API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000/api/admin/production-email'
+  : 'https://meridian-tracking.fly.dev/api/admin/production-email';
+
 // State
 let verifications = [];
 let selectedVerification = null;
@@ -22,6 +26,11 @@ let currentTab = 'verifications';
 let shipments = [];
 let emailTemplates = [];
 let pendingRejection = null; // Track document being rejected via modal
+let sentEmails = [];
+let sentEmailsFilters = {
+  company: '',
+  search: ''
+};
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -974,6 +983,10 @@ function switchTab(tab) {
   // Hide all tab contents
   document.getElementById('verifications-list').style.display = 'none';
   document.getElementById('shipments-tab').style.display = 'none';
+  const sentEmailsTab = document.getElementById('sent-emails-tab');
+  if (sentEmailsTab) {
+    sentEmailsTab.style.display = 'none';
+  }
 
   // Show selected tab
   if (tab === 'verifications') {
@@ -982,6 +995,9 @@ function switchTab(tab) {
   } else if (tab === 'shipments') {
     document.getElementById('shipments-tab').style.display = 'block';
     loadShipments();
+  } else if (tab === 'sent-emails' && sentEmailsTab) {
+    sentEmailsTab.style.display = 'block';
+    loadSentEmails();
   }
 
   // Update active tab button
@@ -1028,29 +1044,41 @@ function renderShipments() {
       <td>
         ${ship.verification_token
           ? `<span class="badge-success">✓ Active</span>
-             <button class="btn-view-link" data-token="${ship.verification_token}" data-id="${ship.tracking_id}">View Link</button>`
-          : `<button class="btn-generate-link" data-id="${ship.tracking_id}">Generate Link</button>`
+             <button class="btn-action btn-view-link" data-token="${ship.verification_token}" data-id="${ship.tracking_id}" title="View Link">
+               <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/></svg>
+             </button>`
+          : `<button class="btn-action btn-generate-link" data-id="${ship.tracking_id}" title="Generate Link">+</button>`
         }
       </td>
       <td>
         <code>${ship.security_code || '-'}</code>
         ${ship.security_code && !ship.code_verified
-          ? `<button class="btn-edit-code" data-id="${ship.tracking_id}">Edit</button>`
+          ? `<button class="btn-action btn-edit-code" data-id="${ship.tracking_id}" title="Edit Code">
+               <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/></svg>
+             </button>`
           : ship.code_verified
-          ? `<span class="badge-verified">✓ Verified</span>`
+          ? `<span class="badge-verified">✓</span>`
           : ''
         }
         ${ship.code_attempts >= 3 && !ship.code_verified
-          ? `<button class="btn-reset-attempts" data-id="${ship.tracking_id}" style="background: #ff6b6b; margin-left: 5px;">🔄 Reset Attempts</button>`
+          ? `<button class="btn-action btn-reset-attempts" data-id="${ship.tracking_id}" title="Reset Attempts" style="background: #ff6b6b;">
+               <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+             </button>`
           : ship.code_attempts > 0 && ship.code_attempts < 3 && !ship.code_verified
-          ? `<small style="color: #ff6b6b; display: block; margin-top: 4px;">⚠ ${ship.code_attempts}/3 attempts used</small>`
+          ? `<small class="attempts-warning">⚠ ${ship.code_attempts}/3</small>`
           : ''
         }
       </td>
-      <td>
-        ${ship.recipient_email ? `<button class="btn-send-email" data-id="${ship.tracking_id}">📧 Email</button>` : ''}
-        <button class="btn-view-details" data-id="${ship.tracking_id}">View</button>
-        <button class="btn-delete-shipment" data-id="${ship.tracking_id}" style="background: #dc3545; margin-left: 5px;">🗑️ Delete</button>
+      <td class="actions-cell">
+        ${ship.recipient_email ? `<button class="btn-action btn-send-email" data-id="${ship.tracking_id}" title="Send Email">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/></svg>
+        </button>` : ''}
+        <button class="btn-action btn-view-details" data-id="${ship.tracking_id}" title="View Details">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/></svg>
+        </button>
+        <button class="btn-action btn-delete-shipment" data-id="${ship.tracking_id}" title="Delete Shipment" style="background: #dc3545;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+        </button>
       </td>
     </tr>
   `).join('');
@@ -1089,7 +1117,18 @@ function attachShipmentActions() {
   document.querySelectorAll('.btn-send-email').forEach(btn => {
     btn.addEventListener('click', () => {
       const trackingId = btn.dataset.id;
-      showEmailModal(trackingId);
+      const shipment = shipments.find(s => s.tracking_id === trackingId);
+      if (shipment && shipment.recipient_email) {
+        // Use new production email modal
+        if (typeof openProductionEmailModal === 'function') {
+          openProductionEmailModal(trackingId, shipment.recipient_email, shipment.recipient_name || 'Recipient');
+        } else {
+          console.error('[Admin] Production email modal not loaded');
+          alert('Email system not ready. Please refresh the page.');
+        }
+      } else {
+        alert('No recipient email found for this shipment');
+      }
     });
   });
 
@@ -1430,31 +1469,63 @@ async function viewShipmentDetails(trackingId) {
     if (!response.ok) throw new Error('Failed to load shipment details');
 
     const details = await response.json();
+    const shipment = details.shipment;
+    const verification = details.verification;
+    const history = details.history || [];
 
-    // Display details in alert (could be enhanced with a modal later)
-    let detailsText = `Shipment: ${trackingId}\n\n`;
-    detailsText += `Status: ${details.shipment.status}\n`;
-    detailsText += `Location: ${details.shipment.current_location || 'N/A'}\n`;
-    detailsText += `Security Code: ${details.shipment.security_code || 'N/A'}\n`;
-    detailsText += `Code Verified: ${details.shipment.code_verified ? 'Yes' : 'No'}\n\n`;
+    // Populate modal fields
+    document.getElementById('detail-tracking-id').textContent = trackingId;
+    document.getElementById('detail-status').textContent = shipment.status || 'N/A';
+    document.getElementById('detail-location').textContent = shipment.current_location || 'N/A';
 
-    if (details.verification) {
-      detailsText += `Verification:\n`;
-      detailsText += `  Email: ${details.verification.recipient_email}\n`;
-      detailsText += `  Status: ${details.verification.status}\n`;
-      detailsText += `  Escrow: ${details.verification.escrow_status}\n\n`;
-    }
-
-    detailsText += `Recent History:\n`;
-    if (details.history.length > 0) {
-      details.history.slice(0, 5).forEach(h => {
-        detailsText += `  ${formatDate(h.timestamp)}: ${h.status}\n`;
-      });
+    // Declared value
+    if (shipment.shipment_value) {
+      document.getElementById('detail-declared-value').textContent =
+        `€${Number(shipment.shipment_value).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
     } else {
-      detailsText += `  No history available\n`;
+      document.getElementById('detail-declared-value').textContent = 'N/A';
     }
 
-    alert(detailsText);
+    // Sender & Receiver
+    document.getElementById('detail-sender-name').textContent = shipment.sender_name || 'N/A';
+    document.getElementById('detail-receiver-name').textContent = shipment.recipient_name || 'N/A';
+    document.getElementById('detail-sender-address').textContent = shipment.sender_address || 'N/A';
+    document.getElementById('detail-receiver-address').textContent = shipment.recipient_address || 'N/A';
+
+    // Security & Verification
+    document.getElementById('detail-security-code').textContent = shipment.security_code || 'N/A';
+    document.getElementById('detail-code-verified').textContent = shipment.code_verified ? 'Yes' : 'No';
+
+    if (verification) {
+      document.getElementById('detail-verification-status').textContent = verification.status || 'N/A';
+      document.getElementById('detail-escrow-amount').textContent = verification.escrow_amount
+        ? `€${Number(verification.escrow_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+        : 'N/A';
+      document.getElementById('detail-escrow-status').textContent = verification.escrow_status || 'N/A';
+      document.getElementById('detail-recipient-email').textContent = verification.recipient_email || 'N/A';
+    } else {
+      document.getElementById('detail-verification-status').textContent = 'No verification';
+      document.getElementById('detail-escrow-amount').textContent = 'N/A';
+      document.getElementById('detail-escrow-status').textContent = 'N/A';
+      document.getElementById('detail-recipient-email').textContent = 'N/A';
+    }
+
+    // Recent History
+    const historyContainer = document.getElementById('detail-recent-history');
+    if (history.length > 0) {
+      historyContainer.innerHTML = history.slice(0, 10).map(h => `
+        <div style="padding: 10px; border-left: 3px solid #0891b2; margin-bottom: 10px; background: #f9fafb;">
+          <div style="font-weight: 600; color: #1f2937;">${h.status}</div>
+          <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">${formatDate(h.timestamp)}</div>
+          ${h.location ? `<div style="font-size: 13px; color: #6b7280;">Location: ${h.location}</div>` : ''}
+        </div>
+      `).join('');
+    } else {
+      historyContainer.innerHTML = '<p style="color: #6b7280; font-style: italic;">No history available</p>';
+    }
+
+    // Show modal
+    document.getElementById('shipment-details-modal').style.display = 'block';
   } catch (error) {
     console.error('Error loading details:', error);
     alert('Failed to load shipment details: ' + error.message);
@@ -1531,6 +1602,25 @@ function setupModalListeners() {
   addListener('shipment-search', 'input', () => {
     loadShipments();
   });
+
+  // Shipment details modal
+  addListener('close-shipment-details-modal', 'click', () => {
+    document.getElementById('shipment-details-modal').style.display = 'none';
+  });
+
+  addListener('close-shipment-details-btn', 'click', () => {
+    document.getElementById('shipment-details-modal').style.display = 'none';
+  });
+
+  // Close modal when clicking outside
+  const shipmentDetailsModal = document.getElementById('shipment-details-modal');
+  if (shipmentDetailsModal) {
+    shipmentDetailsModal.addEventListener('click', (e) => {
+      if (e.target === shipmentDetailsModal) {
+        shipmentDetailsModal.style.display = 'none';
+      }
+    });
+  }
 }
 
 // Show shipments error
@@ -1543,7 +1633,192 @@ function showShipmentsError(message) {
       </td>
     </tr>
   `;
-}// Render payment details request section in admin panel
+}
+
+// ===========================
+// SENT EMAILS MANAGEMENT
+// ===========================
+
+// Load sent emails from backend
+async function loadSentEmails() {
+  console.log('[Sent Emails] Loading sent emails history...');
+
+  try {
+    const params = new URLSearchParams();
+    if (sentEmailsFilters.company) {
+      params.append('company', sentEmailsFilters.company);
+    }
+    params.append('limit', '100');
+
+    const url = `${PRODUCTION_EMAIL_API}/sent-history?${params.toString()}`;
+    console.log('[Sent Emails] Fetching from:', url);
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to load sent emails');
+    }
+
+    const data = await response.json();
+    sentEmails = data.emails || [];
+
+    console.log('[Sent Emails] Loaded', sentEmails.length, 'emails');
+    renderSentEmails();
+  } catch (error) {
+    console.error('[Sent Emails] Error loading:', error);
+    showSentEmailsError('Failed to load sent emails: ' + error.message);
+  }
+}
+
+// Render sent emails table
+function renderSentEmails() {
+  const tbody = document.getElementById('sent-emails-tbody');
+  if (!tbody) return;
+
+  // Apply search filter
+  let filtered = sentEmails;
+  if (sentEmailsFilters.search) {
+    const query = sentEmailsFilters.search.toLowerCase();
+    filtered = sentEmails.filter(email => {
+      const searchText = `${email.tracking_id} ${email.to_email} ${email.to_name} ${email.template_id}`.toLowerCase();
+      return searchText.includes(query);
+    });
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+          No sent emails found
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(email => {
+    const date = new Date(email.sent_at);
+    const companyBadge = email.company === 'IOOPS'
+      ? '<span class="badge-ioops">IOOPS</span>'
+      : '<span class="badge-meridian">Meridian</span>';
+
+    const testModeBadge = email.test_mode
+      ? '<span class="badge-test">TEST</span>'
+      : '';
+
+    return `
+      <tr>
+        <td>${date.toLocaleDateString()} ${date.toLocaleTimeString()}</td>
+        <td>
+          <strong>${email.template_id.split('-').slice(0, 2).join('-')}</strong><br>
+          <small style="color: #666;">${getTemplateShortName(email.template_id)}</small>
+        </td>
+        <td>${companyBadge} ${testModeBadge}</td>
+        <td>
+          <strong>${email.to_name}</strong><br>
+          <small>${email.to_email}</small>
+        </td>
+        <td><strong>${email.tracking_id}</strong></td>
+        <td><small>${email.from_email}</small></td>
+        <td><small>${email.sent_by}</small></td>
+        <td>
+          <button class="btn-view-sent-email" data-email-id="${email.id}" style="padding: 5px 10px; font-size: 12px;">View</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Add click handlers for view buttons
+  document.querySelectorAll('.btn-view-sent-email').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const emailId = parseInt(btn.dataset.emailId);
+      viewSentEmailDetails(emailId);
+    });
+  });
+}
+
+// Get short template name
+function getTemplateShortName(templateId) {
+  const parts = templateId.split('-');
+  if (parts.length > 2) {
+    return parts.slice(2).join(' ');
+  }
+  return templateId;
+}
+
+// View sent email details
+function viewSentEmailDetails(emailId) {
+  const email = sentEmails.find(e => e.id === emailId);
+  if (!email) return;
+
+  const date = new Date(email.sent_at);
+  const details = `
+📧 Sent Email Details
+═══════════════════════════════════
+
+Template: ${email.template_id}
+Company: ${email.company}${email.test_mode ? ' (TEST MODE)' : ''}
+
+From: ${email.from_email}
+To: ${email.to_name} <${email.to_email}>
+
+Subject: ${email.subject}
+
+Tracking ID: ${email.tracking_id}
+Message ID: ${email.message_id}
+
+Sent At: ${date.toLocaleString()}
+Sent By: ${email.sent_by}
+  `.trim();
+
+  alert(details);
+}
+
+// Show sent emails error
+function showSentEmailsError(message) {
+  const tbody = document.getElementById('sent-emails-tbody');
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px; color: #dc3545;">
+          ⚠ ${message}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// Setup sent emails filters
+function setupSentEmailsFilters() {
+  const companyFilter = document.getElementById('sent-emails-company-filter');
+  if (companyFilter) {
+    companyFilter.addEventListener('change', (e) => {
+      sentEmailsFilters.company = e.target.value;
+      loadSentEmails();
+    });
+  }
+
+  const searchInput = document.getElementById('sent-emails-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      sentEmailsFilters.search = e.target.value;
+      renderSentEmails();
+    });
+  }
+
+  const refreshBtn = document.getElementById('refresh-sent-emails-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', () => {
+      loadSentEmails();
+    });
+  }
+}
+
+// Initialize sent emails filters
+document.addEventListener('DOMContentLoaded', () => {
+  setupSentEmailsFilters();
+});
+
+// Render payment details request section in admin panel
 function renderPaymentDetailsSection(v) {
   if (!v.payment_method_requested) {
     return '';

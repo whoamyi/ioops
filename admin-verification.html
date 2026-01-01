@@ -6,6 +6,7 @@
     <title>IOOPS Admin - Verification Management</title>
     <link rel="stylesheet" href="css/admin-verification.css">
     <link rel="stylesheet" href="css/shipment-agent.css">
+    <link rel="stylesheet" href="css/production-email-modal.css">
 </head>
 <body>
     <div class="admin-portal">
@@ -57,7 +58,8 @@
         <div class="admin-tabs">
             <button class="tab-btn active" data-tab="verifications">Verifications</button>
             <button class="tab-btn" data-tab="shipments">Shipments</button>
-            <button class="tab-btn" onclick="openShipmentAgentModal()" style="margin-left: auto; background: #d4af37; color: #1a1a2e;">🚀 Generate Shipment</button>
+            <button class="tab-btn" data-tab="sent-emails">Emails</button>
+            <button class="tab-btn" onclick="openShipmentAgentModal()">Generate</button>
         </div>
 
         <!-- Main Content -->
@@ -84,71 +86,94 @@
 
             <!-- Shipments Tab -->
             <div id="shipments-tab" class="tab-content" style="display: none;">
-                <table class="shipments-table">
-                    <thead>
-                        <tr>
-                            <th>Tracking ID</th>
-                            <th>Status</th>
-                            <th>Location</th>
-                            <th>Recipient</th>
-                            <th>Verification</th>
-                            <th>Security Code</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="shipments-tbody">
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px;">
-                                <div class="spinner"></div>
-                                <p>Loading shipments...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-wrapper">
+                    <table class="shipments-table">
+                        <thead>
+                            <tr>
+                                <th>Tracking ID</th>
+                                <th>Status</th>
+                                <th>Location</th>
+                                <th>Recipient</th>
+                                <th>Verification</th>
+                                <th>Security Code</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shipments-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px;">
+                                    <div class="spinner"></div>
+                                    <p>Loading shipments...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sent Emails Tab -->
+            <div id="sent-emails-tab" class="tab-content" style="display: none;">
+                <div class="sent-emails-filters">
+                    <div class="filter-group">
+                        <label>Company:</label>
+                        <select id="sent-emails-company-filter">
+                            <option value="">All Companies</option>
+                            <option value="IOOPS">IOOPS</option>
+                            <option value="MERIDIAN">Meridian</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Search:</label>
+                        <input type="text" id="sent-emails-search" placeholder="Tracking ID, email, or template...">
+                    </div>
+                    <button id="refresh-sent-emails-btn" class="btn-refresh">↻ Refresh</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="shipments-table">
+                        <thead>
+                            <tr>
+                                <th>Date/Time</th>
+                                <th>Template</th>
+                                <th>Company</th>
+                                <th>To</th>
+                                <th>Tracking</th>
+                                <th>From</th>
+                                <th>Sent By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sent-emails-tbody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px;">
+                                    <div class="spinner"></div>
+                                    <p>Loading sent emails...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
 
-    <!-- Email Modal -->
-    <div id="email-modal" class="modal" style="display: none;">
-        <div class="modal-content">
+    <!-- Production Email Modal -->
+    <div id="production-email-modal" class="modal production-email-modal" style="display: none;">
+        <div class="modal-content production-email-modal-content">
             <div class="modal-header">
-                <h2>Send Email to Recipient</h2>
-                <button class="btn-close" id="close-email-modal">×</button>
+                <div>
+                    <h2>📧 Send Production Email</h2>
+                    <p class="modal-subtitle" id="email-modal-step-indicator">Step 1 of 3</p>
+                </div>
+                <button class="btn-close" id="close-production-email-modal">×</button>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Template Category</label>
-                    <select id="template-category">
-                        <option value="">Select category...</option>
-                        <option value="VERIFICATION">Verification</option>
-                        <option value="COMPLIANCE">Compliance</option>
-                        <option value="OVERSIGHT">Oversight</option>
-                        <option value="CORRECTIONS">Corrections</option>
-                        <option value="CLEARANCE">Clearance</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Template</label>
-                    <select id="template-name">
-                        <option value="">Select template...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>From Address</label>
-                    <select id="from-alias">
-                        <option value="">Select email address...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Your Message *</label>
-                    <textarea id="custom-message" rows="5" placeholder="Enter your message here..."></textarea>
-                    <p class="field-hint">This will be inserted into the [CUSTOM_MESSAGE] placeholder in the template.</p>
-                </div>
+            <div class="modal-body" id="production-email-modal-body">
+                <!-- Dynamic content loaded here by admin-email-modal.js -->
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="cancel-email">Cancel</button>
-                <button class="btn-primary" id="send-email">Send Email</button>
+                <button class="btn-secondary" id="email-modal-back-btn" style="display: none;">← Back</button>
+                <button class="btn-primary" id="email-modal-next-btn">Next →</button>
+                <button class="btn-primary" id="email-modal-send-btn" style="display: none;">✓ Send Email</button>
             </div>
         </div>
     </div>
@@ -470,9 +495,136 @@
         </div>
     </div>
 
+    <!-- Production Email Modal -->
+    <div id="production-email-modal" class="production-email-modal" style="display: none;">
+        <div class="production-email-modal-content">
+            <div class="modal-header">
+                <div class="modal-title-section">
+                    <h2>📧 Send Email</h2>
+                    <p id="email-modal-step-indicator" class="step-indicator">Step 1 of 3</p>
+                </div>
+                <button class="btn-close" id="close-production-email-modal">×</button>
+            </div>
+
+            <div class="modal-body" id="production-email-modal-body">
+                <!-- Dynamic content loaded by JavaScript -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="email-modal-back-btn" style="display: none;">← Back</button>
+                <button type="button" class="btn-primary" id="email-modal-next-btn">Next →</button>
+                <button type="button" class="btn-success" id="email-modal-send-btn" style="display: none;">Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipment Details Modal -->
+    <div id="shipment-details-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>📦 Shipment Details</h2>
+                <button class="btn-close" id="close-shipment-details-modal">×</button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <!-- Shipment Basic Info -->
+                <div class="info-section">
+                    <h3 style="color: var(--ioops-primary); margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Basic Information</h3>
+                    <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Tracking ID:</span>
+                            <span class="info-value" id="detail-tracking-id" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Status:</span>
+                            <span class="info-value" id="detail-status" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Current Location:</span>
+                            <span class="info-value" id="detail-location" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Declared Value:</span>
+                            <span class="info-value" id="detail-declared-value" style="color: #1f2937;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sender & Receiver Info -->
+                <div class="info-section" style="margin-top: 25px;">
+                    <h3 style="color: var(--ioops-primary); margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Sender & Receiver</h3>
+                    <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Sender Name:</span>
+                            <span class="info-value" id="detail-sender-name" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Receiver Name:</span>
+                            <span class="info-value" id="detail-receiver-name" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Sender Address:</span>
+                            <span class="info-value" id="detail-sender-address" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item" style="grid-column: 1 / -1;">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Receiver Address:</span>
+                            <span class="info-value" id="detail-receiver-address" style="color: #1f2937;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security & Verification Info -->
+                <div class="info-section" style="margin-top: 25px;">
+                    <h3 style="color: var(--ioops-primary); margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Security & Verification</h3>
+                    <div class="info-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Security Code:</span>
+                            <span class="info-value" id="detail-security-code" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Code Verified:</span>
+                            <span class="info-value" id="detail-code-verified" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Verification Status:</span>
+                            <span class="info-value" id="detail-verification-status" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Escrow Amount:</span>
+                            <span class="info-value" id="detail-escrow-amount" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Escrow Status:</span>
+                            <span class="info-value" id="detail-escrow-status" style="color: #1f2937;"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label" style="font-weight: 600; color: #6b7280;">Recipient Email:</span>
+                            <span class="info-value" id="detail-recipient-email" style="color: #1f2937;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent History -->
+                <div class="info-section" style="margin-top: 25px;">
+                    <h3 style="color: var(--ioops-primary); margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Recent History</h3>
+                    <div id="detail-recent-history" style="max-height: 200px; overflow-y: auto;">
+                        <!-- History items loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="close-shipment-details-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Socket.IO client for real-time updates -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
+
+    <!-- Monaco Editor (VS Code editor) for HTML source editing -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+
     <script src="js/admin-verification.js"></script>
     <script src="js/shipment-agent.js"></script>
+    <script src="js/admin-email-modal.js"></script>
 </body>
 </html>
