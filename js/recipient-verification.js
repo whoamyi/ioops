@@ -11,6 +11,10 @@ const WS_BASE = window.location.hostname === 'localhost' || window.location.host
 
 let socket = null;
 
+// Push notification support
+let pushSubscription = null;
+const VAPID_PUBLIC_KEY = 'BPmsX3DYziJkOed2glX1Lv3TpKKV7HE90KjEtXpeEJpThhurBrmdIyX1trUxAZZwcnSxnEsAANhHJ2AQF1gFA8A';
+
 // State Machine
 const STATES = {
   LOADING: 'LOADING',
@@ -135,6 +139,11 @@ function renderState() {
     } else if (currentState === STATES.WAITING_APPROVAL && els.waiting) {
       els.waiting.style.display = 'block';
       renderWaitingState();
+
+      // Show push notification prompt when user reaches waiting state
+      setTimeout(() => {
+        showPushNotificationPrompt();
+      }, 1500); // Small delay after page renders
     } else if (currentState === STATES.REJECTED && els.rejected) {
       els.rejected.style.display = 'block';
       renderRejectedState();
@@ -377,6 +386,8 @@ async function submitAllVerificationInfo() {
 
     // Reload verification data to get updated status
     await loadVerification();
+
+    // Push notification prompt will be shown on the waiting page (see renderState WAITING_APPROVAL)
   } catch (error) {
     showError(error.message);
   }
@@ -1456,6 +1467,205 @@ IOOPS - International Oversight & Operations Protocol System`;
   window.location.href = emailLink;
 }
 
+// Push Notification Functions
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) {
+    console.log('[Push] Service Workers not supported');
+    return null;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    console.log('[Push] Service Worker registered:', registration);
+    return registration;
+  } catch (error) {
+    console.error('[Push] Service Worker registration failed:', error);
+    return null;
+  }
+}
+
+async function subscribeToPushNotifications() {
+  if (!('PushManager' in window)) {
+    console.log('[Push] Push notifications not supported');
+    return false;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+
+    // Check if already subscribed
+    const existingSubscription = await registration.pushManager.getSubscription();
+    if (existingSubscription) {
+      console.log('[Push] Existing subscription found, sending to backend');
+      pushSubscription = existingSubscription;
+
+      // Send existing subscription to backend
+      const response = await fetch(`${API_BASE}/verification/${token}/subscribe-push`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: existingSubscription.toJSON() })
+      });
+
+      if (response.ok) {
+        console.log('[Push] Existing subscription saved to backend');
+        return true;
+      } else {
+        console.error('[Push] Failed to save existing subscription to backend');
+        return false;
+      }
+    }
+
+    // Request permission
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('[Push] Notification permission denied');
+      return false;
+    }
+
+    // Subscribe to push
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    pushSubscription = subscription;
+    console.log('[Push] Push subscription created:', subscription);
+
+    // Send subscription to backend
+    const response = await fetch(`${API_BASE}/verification/${token}/subscribe-push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: subscription.toJSON() })
+    });
+
+    if (response.ok) {
+      console.log('[Push] Subscription saved to backend');
+      return true;
+    } else {
+      console.error('[Push] Failed to save subscription to backend');
+      return false;
+    }
+  } catch (error) {
+    console.error('[Push] Failed to subscribe to push notifications:', error);
+    return false;
+  }
+}
+
+async function initializePushNotifications() {
+  // Register service worker
+  await registerServiceWorker();
+
+  // Check if push notifications are supported
+  if (!('PushManager' in window)) {
+    console.log('[Push] Push notifications not supported in this browser');
+    return;
+  }
+
+  // Check if user has already granted or denied permission
+  if (Notification.permission === 'granted') {
+    // Permission already granted, subscribe immediately
+    console.log('[Push] Notification permission already granted');
+    await subscribeToPushNotifications();
+  } else if (Notification.permission === 'default') {
+    // Permission not asked yet - we'll ask after first document submission
+    console.log('[Push] Will request notification permission after document submission');
+  } else {
+    console.log('[Push] Notification permission denied');
+  }
+}
+
+function showPushNotificationPrompt() {
+  console.log('[Debug] showPushNotificationPrompt called');
+  console.log('[Debug] Current permission:', Notification.permission);
+
+  // Only show if permission hasn't been decided yet
+  if (Notification.permission !== 'default') {
+    console.log('[Debug] Permission not default, skipping prompt');
+    return;
+  }
+
+  console.log('[Debug] Creating modal HTML...');
+  // Create and show a friendly prompt
+  const promptHTML = `
+    <div id="push-permission-modal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    ">
+      <div style="
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      ">
+        <div style="font-size: 48px; margin-bottom: 15px;">🔔</div>
+        <h3 style="margin: 0 0 15px 0; color: #1a1a2e; font-size: 22px;">Get Instant Updates!</h3>
+        <p style="margin: 0 0 10px 0; color: #333; font-size: 15px; line-height: 1.5;">
+          <strong>Don't miss important updates!</strong> Get notified immediately when your verification is approved—no need to keep checking back.
+        </p>
+        <p style="margin: 0 0 25px 0; color: #4CAF50; font-size: 14px; font-weight: 500;">
+          ✓ Instant approval alerts • ✓ Zero spam • ✓ Complete privacy
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button id="enable-push-btn" style="
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+          ">Yes, Notify Me!</button>
+          <button id="maybe-later-btn" style="
+            background: transparent;
+            color: #999;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+          ">Skip for now</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', promptHTML);
+
+  document.getElementById('enable-push-btn').addEventListener('click', async () => {
+    document.getElementById('push-permission-modal').remove();
+    await subscribeToPushNotifications();
+  });
+
+  document.getElementById('maybe-later-btn').addEventListener('click', () => {
+    document.getElementById('push-permission-modal').remove();
+  });
+}
+
 // WebSocket Integration
 function initializeWebSocket() {
   if (!token) {
@@ -1617,7 +1827,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize WebSocket for real-time updates
   initializeWebSocket();
-  
+
+  // Initialize push notifications
+  initializePushNotifications();
+
   // Setup payment request listeners
   setupPaymentRequestListeners();
 
