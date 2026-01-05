@@ -148,6 +148,12 @@ function renderState() {
     } else if (currentState === STATES.REJECTED && els.rejected) {
       els.rejected.style.display = 'block';
       renderRejectedState();
+
+      // Show push notification prompt when user is waiting for review
+      // Keep showing until permission is granted
+      setTimeout(() => {
+        showPushNotificationPrompt();
+      }, 2500); // Slightly longer delay so users can read the status first
     } else if (currentState === STATES.STEP_2_PAYMENT && els.step2) {
       els.step2.style.display = 'block';
       renderPaymentStep();
