@@ -311,10 +311,15 @@ textarea {
    ============================================ */
 
 @media (max-width: 767px) {
-  /* Modal Backdrop */
+  /* Modal Backdrop - only when shown */
   .production-email-modal {
     padding: 0 !important;
     align-items: flex-end !important;
+    justify-content: center !important;
+  }
+
+  .production-email-modal:not([style*="display: none"]) {
+    display: flex !important;
   }
 
   /* Modal Container - Slide from bottom */
@@ -322,8 +327,12 @@ textarea {
     width: 100% !important;
     max-width: 100% !important;
     max-height: 90vh !important;
+    min-height: 50vh !important;
     border-radius: 16px 16px 0 0 !important;
     animation: modalSlideUp 0.3s ease-out !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 
   @keyframes modalSlideUp {
@@ -341,10 +350,21 @@ textarea {
     position: sticky;
     top: 0;
     z-index: 10;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
   }
 
   .production-email-modal .modal-header h2 {
     font-size: 18px !important;
+    margin: 0 !important;
+  }
+
+  .production-email-modal .modal-title-section {
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 
   .production-email-modal .btn-close {
@@ -392,22 +412,31 @@ textarea {
     padding: 16px !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    min-height: 200px !important;
+    background: #f8f9fa !important;
   }
 
   /* Modal content areas - ensure visibility */
   .production-email-modal .modal-body > *,
+  .production-email-modal .modal-body > div,
+  .production-email-modal .modal-body > form,
   .production-email-modal .form-group,
-  .production-email-modal .form-section {
+  .production-email-modal .form-section,
+  .production-email-modal .email-form-container,
+  .production-email-modal .template-selection,
+  .production-email-modal .email-editor {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   /* Modal Footer - Sticky */
@@ -442,6 +471,30 @@ textarea {
     order: 1;
   }
 
+  /* Form elements inside modal - ensure visibility */
+  .production-email-modal input,
+  .production-email-modal select,
+  .production-email-modal textarea,
+  .production-email-modal label,
+  .production-email-modal button:not(.btn-close) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .production-email-modal input,
+  .production-email-modal select,
+  .production-email-modal textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .production-email-modal label {
+    width: 100% !important;
+    margin-bottom: 6px !important;
+  }
+
   /* Shipment Agent Modal - Same fixes */
   .shipment-agent-modal,
   .shipment-preview-modal {
@@ -454,8 +507,12 @@ textarea {
     width: 100% !important;
     max-width: 100% !important;
     max-height: 90vh !important;
+    min-height: 50vh !important;
     border-radius: 16px 16px 0 0 !important;
     animation: modalSlideUp 0.3s ease-out !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 
   .shipment-agent-modal .modal-body,
@@ -464,16 +521,47 @@ textarea {
     max-width: 100% !important;
     padding: 16px !important;
     box-sizing: border-box !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    min-height: 200px !important;
   }
 
   .shipment-agent-modal .modal-body > *,
   .shipment-preview-modal .modal-body > *,
+  .shipment-agent-modal .modal-body > div,
+  .shipment-preview-modal .modal-body > div,
   .shipment-agent-modal .form-group,
   .shipment-preview-modal .form-group {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Form elements inside shipment modals */
+  .shipment-agent-modal input,
+  .shipment-agent-modal select,
+  .shipment-agent-modal textarea,
+  .shipment-preview-modal input,
+  .shipment-preview-modal select,
+  .shipment-preview-modal textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .shipment-agent-modal label,
+  .shipment-preview-modal label {
+    display: block !important;
+    width: 100% !important;
     visibility: visible !important;
     opacity: 1 !important;
   }
