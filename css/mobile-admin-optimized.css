@@ -1,0 +1,745 @@
+/* ============================================
+   MOBILE-FIRST ADMIN PORTAL OPTIMIZATION
+   Native App-Like Experience
+   ============================================ */
+
+/* ============================================
+   GLOBAL MOBILE OPTIMIZATIONS
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
+}
+
+/* Prevent zoom on input focus (iOS) */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* ============================================
+   CARD-BASED SHIPMENT LAYOUT (MOBILE)
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Hide desktop table, show cards */
+  .shipments-table {
+    display: none !important;
+  }
+
+  /* Mobile Cards Container */
+  .table-wrapper {
+    padding: 8px !important;
+  }
+
+  #shipments-tbody {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Shipment Card */
+  .shipment-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+    position: relative;
+  }
+
+  .shipment-card:active {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: scale(0.99);
+  }
+
+  /* Card Header */
+  .shipment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+
+  .tracking-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tracking-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000;
+    margin: 0 0 4px 0;
+    word-break: break-word;
+  }
+
+  .tracking-info .status {
+    font-size: 13px;
+    color: #666;
+    margin: 2px 0;
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .tracking-info .recipient {
+    font-size: 12px;
+    color: #999;
+    margin: 6px 0 0 0;
+    word-break: break-word;
+  }
+
+  /* Menu Toggle Button (3-dot menu) */
+  .menu-toggle {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #666;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .menu-toggle:active {
+    background-color: #f0f0f0;
+  }
+
+  /* Primary Action Buttons */
+  .action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .btn-primary-action,
+  .btn-secondary-action {
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    touch-action: manipulation;
+    font-family: inherit;
+  }
+
+  .btn-primary-action {
+    background-color: #ff6b6b;
+    color: white;
+  }
+
+  .btn-primary-action:active {
+    background-color: #ee5a52;
+    transform: scale(0.98);
+  }
+
+  .btn-secondary-action {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #e0e0e0;
+  }
+
+  .btn-secondary-action:active {
+    background-color: #ebebeb;
+    transform: scale(0.98);
+  }
+
+  /* Icon in buttons */
+  .btn-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* Dropdown Actions Menu */
+  .actions-menu {
+    position: absolute;
+    top: 60px;
+    right: 16px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    min-width: 200px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .actions-menu.show {
+    display: block;
+    animation: dropdownSlide 0.2s ease;
+  }
+
+  @keyframes dropdownSlide {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .menu-item {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.15s ease;
+    min-height: 44px;
+    touch-action: manipulation;
+    font-family: inherit;
+  }
+
+  .menu-item:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .menu-item:active {
+    background-color: #f5f5f5;
+  }
+
+  .menu-item.danger {
+    color: #ff6b6b;
+  }
+
+  .menu-item.danger:active {
+    background-color: #fff5f5;
+  }
+}
+
+/* ============================================
+   MOBILE-OPTIMIZED MODAL
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Modal Backdrop */
+  .production-email-modal {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+
+  /* Modal Container - Slide from bottom */
+  .production-email-modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90vh !important;
+    border-radius: 16px 16px 0 0 !important;
+    animation: modalSlideUp 0.3s ease-out !important;
+  }
+
+  @keyframes modalSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Modal Header */
+  .production-email-modal .modal-header {
+    padding: 16px !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .production-email-modal .modal-header h2 {
+    font-size: 18px !important;
+  }
+
+  .production-email-modal .btn-close {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+  }
+
+  .production-email-modal .btn-close:active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Progress Indicator */
+  .step-indicator {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: #d4af37;
+    width: var(--progress, 33%);
+    transition: width 0.3s ease;
+  }
+
+  /* Modal Body - Scrollable */
+  .production-email-modal .modal-body {
+    padding: 16px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex: 1 !important;
+  }
+
+  /* Modal Footer - Sticky */
+  .production-email-modal .modal-footer {
+    padding: 12px 16px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    background: white !important;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08) !important;
+    z-index: 10 !important;
+  }
+
+  .production-email-modal .modal-footer button {
+    min-height: 44px !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+  }
+
+  .production-email-modal .modal-footer .btn-primary {
+    order: 2;
+  }
+
+  .production-email-modal .modal-footer .btn-secondary {
+    order: 1;
+  }
+}
+
+/* ============================================
+   FORM INPUTS - MOBILE OPTIMIZED
+   ============================================ */
+
+@media (max-width: 767px) {
+  /* Form Groups */
+  .form-group {
+    margin-bottom: 16px !important;
+  }
+
+  .form-group label {
+    display: block !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    margin-bottom: 6px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px !important;
+  }
+
+  /* Text Inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100% !important;
+    padding: 12px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 8px !important;
+    font-size: 16px !important;
+    font-family: inherit !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background-color: white !important;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="number"]:focus,
+  select:focus,
+  textarea:focus {
+    outline: none !important;
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1) !important;
+  }
+
+  /* Select Dropdown */
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    padding-right: 36px !important;
+  }
+
+  /* Radio Buttons - Better for mobile */
+  .radio-option {
+    display: block !important;
+    padding: 12px 16px !important;
+    border: 2px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    background: white !important;
+  }
+
+  .radio-option input[type="radio"] {
+    position: absolute !important;
+    left: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer !important;
+  }
+
+  .radio-option.selected {
+    border-color: #ff6b6b !important;
+    background: #fff5f5 !important;
+  }
+
+  .radio-label {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding-left: 28px !important;
+    cursor: pointer !important;
+  }
+
+  .radio-label strong {
+    font-size: 14px !important;
+    color: #000 !important;
+  }
+
+  .radio-label small {
+    font-size: 12px !important;
+    color: #999 !important;
+  }
+
+  /* Error States */
+  input.error,
+  select.error {
+    border-color: #ff6b6b !important;
+    background-color: #fff5f5 !important;
+  }
+
+  .error-message {
+    font-size: 12px !important;
+    color: #ff6b6b !important;
+    margin-top: 4px !important;
+    display: block !important;
+  }
+
+  /* Success States */
+  input.success,
+  select.success {
+    border-color: #4caf50 !important;
+    background-color: #f1f8f4 !important;
+  }
+
+  /* Disabled States */
+  input:disabled,
+  select:disabled {
+    background-color: #f5f5f5 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+  }
+}
+
+/* ============================================
+   BOTTOM SHEET FOR ACTIONS
+   ============================================ */
+
+@media (max-width: 767px) {
+  .bottom-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    animation: fadeIn 0.2s ease;
+    display: none;
+  }
+
+  .bottom-sheet-overlay.show {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 16px 16px 0 0;
+    animation: sheetSlideUp 0.3s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @keyframes sheetSlideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .bottom-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    margin: 12px auto 16px;
+  }
+
+  .bottom-sheet-content {
+    padding: 0 16px 16px;
+  }
+
+  .bottom-sheet-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: #000;
+  }
+
+  .sheet-action-item {
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    background: #f5f5f5;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    font-family: inherit;
+  }
+
+  .sheet-action-item:active {
+    background: #ebebeb;
+    transform: scale(0.98);
+  }
+
+  .sheet-action-item.danger {
+    color: #ff6b6b;
+  }
+
+  .sheet-action-item.danger:active {
+    background: #fff5f5;
+  }
+
+  .sheet-action-close {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #999;
+    cursor: pointer;
+    min-height: 44px;
+    font-family: inherit;
+  }
+
+  .sheet-action-close:active {
+    background: #f5f5f5;
+  }
+}
+
+/* ============================================
+   FILTERS BAR - MOBILE OPTIMIZED
+   ============================================ */
+
+@media (max-width: 767px) {
+  .filters-bar {
+    padding: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .filter-group {
+    width: 100% !important;
+  }
+
+  .filter-group label {
+    font-size: 12px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .filter-group select,
+  .filter-group input {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+
+  #refresh-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+}
+
+/* ============================================
+   ADMIN TABS - MOBILE OPTIMIZED
+   ============================================ */
+
+@media (max-width: 767px) {
+  .admin-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    scrollbar-width: none !important;
+  }
+
+  .admin-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .tab-btn {
+    flex-shrink: 0 !important;
+    padding: 10px 20px !important;
+    min-height: 44px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  .tab-btn.active {
+    background: #ff6b6b !important;
+    color: white !important;
+  }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading-spinner {
+  text-align: center !important;
+  padding: 40px 20px !important;
+}
+
+.spinner {
+  width: 40px !important;
+  height: 40px !important;
+  border: 4px solid #f3f3f3 !important;
+  border-top: 4px solid #ff6b6b !important;
+  border-radius: 50% !important;
+  animation: spin 1s linear infinite !important;
+  margin: 0 auto 12px !important;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================
+   TOUCH FEEDBACK
+   ============================================ */
+
+@media (max-width: 767px) {
+  button,
+  a,
+  .clickable {
+    -webkit-tap-highlight-color: rgba(255, 107, 107, 0.1) !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+  }
+
+  button:active,
+  a:active,
+  .clickable:active {
+    opacity: 0.8 !important;
+  }
+}
+
+/* ============================================
+   SAFE AREA INSETS (for notched devices)
+   ============================================ */
+
+@supports (padding: max(0px)) {
+  @media (max-width: 767px) {
+    .admin-header {
+      padding-top: max(20px, env(safe-area-inset-top)) !important;
+    }
+
+    .production-email-modal-content {
+      padding-bottom: max(0px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .bottom-sheet {
+      padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
