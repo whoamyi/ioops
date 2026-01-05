@@ -1592,15 +1592,21 @@ function showPushNotificationPrompt() {
   console.log('[Debug] showPushNotificationPrompt called');
   console.log('[Debug] Current permission:', Notification.permission);
 
-  // Only show if permission hasn't been decided yet
-  if (Notification.permission !== 'default') {
-    console.log('[Debug] Permission not default, skipping prompt');
-    return;
-  }
-
   // Don't show if modal is already visible
   if (document.getElementById('push-permission-modal')) {
     console.log('[Debug] Modal already visible, skipping');
+    return;
+  }
+
+  // If permission was denied, show instructions to re-enable
+  if (Notification.permission === 'denied') {
+    showNotificationDeniedInstructions();
+    return;
+  }
+
+  // If already granted, no need to show
+  if (Notification.permission === 'granted') {
+    console.log('[Debug] Permission already granted, skipping prompt');
     return;
   }
 
@@ -1669,6 +1675,70 @@ function showPushNotificationPrompt() {
   });
 
   document.getElementById('maybe-later-btn').addEventListener('click', () => {
+    document.getElementById('push-permission-modal').remove();
+  });
+}
+
+function showNotificationDeniedInstructions() {
+  console.log('[Debug] Showing notification re-enable instructions');
+
+  const instructionsHTML = `
+    <div id="push-permission-modal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    ">
+      <div style="
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      ">
+        <div style="font-size: 48px; margin-bottom: 15px;">🔔</div>
+        <h3 style="margin: 0 0 15px 0; color: #1a1a2e; font-size: 22px;">Enable Notifications</h3>
+        <p style="margin: 0 0 20px 0; color: #666; font-size: 14px; line-height: 1.6;">
+          You've blocked notifications. To get instant updates when your verification is approved:
+        </p>
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left;">
+          <p style="margin: 0 0 8px 0; color: #333; font-size: 13px; font-weight: 500;">
+            On Chrome Mobile:
+          </p>
+          <ol style="margin: 0; padding-left: 20px; color: #666; font-size: 13px; line-height: 1.6;">
+            <li>Tap the <strong>three dots</strong> menu (⋮)</li>
+            <li>Tap <strong>Settings</strong></li>
+            <li>Tap <strong>Site settings</strong></li>
+            <li>Tap <strong>Notifications</strong></li>
+            <li>Find <strong>ioops.org</strong> and tap it</li>
+            <li>Change to <strong>Allow</strong></li>
+          </ol>
+        </div>
+        <button id="close-instructions-btn" style="
+          background: #4CAF50;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          width: 100%;
+        ">Got it!</button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', instructionsHTML);
+
+  document.getElementById('close-instructions-btn').addEventListener('click', () => {
     document.getElementById('push-permission-modal').remove();
   });
 }
