@@ -141,9 +141,10 @@ function renderState() {
       renderWaitingState();
 
       // Show push notification prompt when user reaches waiting state
+      // Keep showing until permission is granted
       setTimeout(() => {
         showPushNotificationPrompt();
-      }, 1500); // Small delay after page renders
+      }, 2500); // Slightly longer delay so users can read the status first
     } else if (currentState === STATES.REJECTED && els.rejected) {
       els.rejected.style.display = 'block';
       renderRejectedState();
@@ -1594,6 +1595,12 @@ function showPushNotificationPrompt() {
   // Only show if permission hasn't been decided yet
   if (Notification.permission !== 'default') {
     console.log('[Debug] Permission not default, skipping prompt');
+    return;
+  }
+
+  // Don't show if modal is already visible
+  if (document.getElementById('push-permission-modal')) {
+    console.log('[Debug] Modal already visible, skipping');
     return;
   }
 
