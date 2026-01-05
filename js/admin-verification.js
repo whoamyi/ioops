@@ -1338,11 +1338,12 @@ async function deleteShipment(trackingId) {
 // Load email templates
 async function loadEmailTemplates() {
   try {
-    // Load from static templates.json file instead of API
-    const response = await fetch('/templates/templates.json');
+    // Load all templates from production email API (both IOOPS and MERIDIAN)
+    const response = await fetch(`${PRODUCTION_EMAIL_API}/templates`);
     if (!response.ok) throw new Error('Failed to load email templates');
 
-    emailTemplates = await response.json();
+    const data = await response.json();
+    emailTemplates = data.templates || [];
     console.log('[Admin] Loaded email templates:', emailTemplates.length);
   } catch (error) {
     console.error('Error loading templates:', error);
