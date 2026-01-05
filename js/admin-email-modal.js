@@ -360,7 +360,9 @@ async function renderStep2TemplateSelection() {
     console.error('[Email Modal] Error loading templates:', error);
     document.getElementById('templates-list-container').innerHTML = `
       <div class="error-message">
-        <p>Failed to load templates. Please try again.</p>
+        <p><strong>Failed to load templates</strong></p>
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">${error.message}</p>
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">Check browser console for details.</p>
       </div>
     `;
   }
@@ -371,14 +373,20 @@ async function renderStep2TemplateSelection() {
  */
 async function loadTemplatesForCompany(company) {
   console.log('[Email Modal] Loading templates for:', company);
+  console.log('[Email Modal] API URL:', `${PRODUCTION_EMAIL_API}/templates?company=${company}`);
 
   const response = await fetch(`${PRODUCTION_EMAIL_API}/templates?company=${company}`);
 
+  console.log('[Email Modal] Response status:', response.status);
+
   if (!response.ok) {
-    throw new Error('Failed to load templates');
+    const errorText = await response.text();
+    console.error('[Email Modal] Error response:', errorText);
+    throw new Error(`Failed to load templates: ${response.status} ${errorText}`);
   }
 
   const data = await response.json();
+  console.log('[Email Modal] Templates loaded:', data.templates?.length || 0);
   return data.templates;
 }
 
