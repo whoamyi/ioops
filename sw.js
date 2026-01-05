@@ -37,8 +37,8 @@ self.addEventListener('push', (event) => {
 
     const options = {
       body: data.body,
-      icon: data.icon || '/images/ioops-logo.png',
-      badge: data.badge || '/images/badge-icon.png',
+      icon: data.icon || '/assets/icons/favicon.svg',
+      badge: data.badge || '/assets/icons/favicon.ico',
       tag: data.tag || 'ioops-notification',
       data: data.data || {},
       requireInteraction: true, // Keep visible until user interacts
