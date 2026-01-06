@@ -41,12 +41,9 @@ self.addEventListener('push', (event) => {
       badge: data.badge || '/assets/icons/favicon.ico',
       tag: data.tag || 'ioops-notification',
       data: data.data || {},
-      requireInteraction: true, // Keep visible until user interacts
+      requireInteraction: false, // Let browser auto-dismiss to avoid spam detection
       vibrate: [200, 100, 200], // Vibration pattern for mobile devices
-      actions: [
-        { action: 'view', title: 'View Details', icon: '/images/view-icon.png' },
-        { action: 'close', title: 'Dismiss', icon: '/images/close-icon.png' }
-      ]
+      silent: false // Allow sound
     };
 
     event.waitUntil(
